@@ -137,7 +137,7 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
   const [builderType, setBuilderType] = useState<BuilderType | ''>('')
 
   // Step 2: Integration Details
-  const [connectingSystem, setConnectingSystem] = useState('')
+  const [connectingSystem, setConnectingSystem] = useState(partner?.name ?? '')
   const [useCase, setUseCase] = useState<UseCase | ''>('')
   const [useCaseDetail, setUseCaseDetail] = useState('')
   const [endpointsRequested, setEndpointsRequested] = useState('')
@@ -661,24 +661,26 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
   function renderStep2() {
     return (
       <div className="space-y-8">
-        {/* Connecting system */}
-        <div>
-          <label className="block text-sm font-semibold text-ww-gray-700 mb-1.5">
-            What system are you connecting WorkWave to? <span className="text-ww-red">*</span>
-          </label>
-          <p className="text-xs text-ww-gray-500 mb-3">
-            Name of the external system, application, or platform.
-          </p>
-          <input
-            type="text"
-            value={connectingSystem}
-            onChange={e => setConnectingSystem(e.target.value)}
-            onBlur={() => touch('connectingSystem')}
-            placeholder="e.g. Salesforce, QuickBooks, Custom CRM"
-            className="w-full px-4 py-2.5 rounded-lg border border-ww-gray-300 text-sm text-ww-gray-800 placeholder:text-ww-gray-400 focus:outline-none focus:ring-2 focus:ring-ww-primary focus:border-transparent transition-shadow"
-          />
-          {renderError(fieldError('connectingSystem', !!connectingSystem.trim()))}
-        </div>
+        {/* Connecting system — only shown for unlisted partners */}
+        {!partner && (
+          <div>
+            <label className="block text-sm font-semibold text-ww-gray-700 mb-1.5">
+              What system are you connecting WorkWave to? <span className="text-ww-red">*</span>
+            </label>
+            <p className="text-xs text-ww-gray-500 mb-3">
+              Name of the external system, application, or platform.
+            </p>
+            <input
+              type="text"
+              value={connectingSystem}
+              onChange={e => setConnectingSystem(e.target.value)}
+              onBlur={() => touch('connectingSystem')}
+              placeholder="e.g. Salesforce, QuickBooks, Custom CRM"
+              className="w-full px-4 py-2.5 rounded-lg border border-ww-gray-300 text-sm text-ww-gray-800 placeholder:text-ww-gray-400 focus:outline-none focus:ring-2 focus:ring-ww-primary focus:border-transparent transition-shadow"
+            />
+            {renderError(fieldError('connectingSystem', !!connectingSystem.trim()))}
+          </div>
+        )}
 
         {/* Use case */}
         <div>
