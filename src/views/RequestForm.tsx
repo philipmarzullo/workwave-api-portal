@@ -1,36 +1,13 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import {
-  Lock,
-  ChevronRight,
-  ChevronLeft,
-  CheckCircle2,
-  Building2,
-  Settings2,
-  Server,
-  FileCheck,
-  Send,
-  Globe,
-  Mail,
-  AlertTriangle,
-  ExternalLink,
-  Info,
+  Lock, ChevronRight, ChevronLeft, CheckCircle2,
+  Building2, Settings2, Server, FileCheck,
+  Send, Globe, Mail, AlertTriangle, ExternalLink, Info, Phone,
 } from 'lucide-react'
-import type {
-  CustomerUser,
-  WorkWaveProduct,
-  BuilderType,
-  UseCase,
-  DataCategory,
-  Environment,
-} from '@/data/types'
+import type { CustomerUser, WorkWaveProduct, BuilderType, UseCase, DataCategory, Environment } from '@/data/types'
 import { store } from '@/data/store'
-import {
-  PRODUCT_LABELS,
-  TIER_LABELS,
-  USE_CASE_LABELS,
-  DATA_CATEGORY_LABELS,
-} from '@/App'
+import { PRODUCT_LABELS, TIER_LABELS, USE_CASE_LABELS, DATA_CATEGORY_LABELS } from '@/App'
 
 interface RequestFormProps {
   activeUser?: CustomerUser
@@ -78,11 +55,19 @@ const STEPS = [
   { label: 'Terms & Confirmation', icon: FileCheck },
 ]
 
+const TIMELINE_OPTIONS: { value: string; label: string }[] = [
+  { value: 'asap', label: 'As soon as possible' },
+  { value: 'this_quarter', label: 'This quarter' },
+  { value: 'next_quarter', label: 'Next quarter' },
+  { value: 'exploring', label: 'Just exploring' },
+]
+
 // ── Touched state type ─────────────────────────────────────────
 type TouchedFields = {
   partnerName: boolean
   partnerWebsite: boolean
   partnerContact: boolean
+  partnerContactName: boolean
   selectedProduct: boolean
   builderType: boolean
   connectingSystem: boolean
@@ -92,12 +77,19 @@ type TouchedFields = {
   dataLeavesEnvironment: boolean
   environment: boolean
   termsAccepted: boolean
+  techContactName: boolean
+  techContactEmail: boolean
+  techContactPhone: boolean
+  targetTimeline: boolean
+  listedPartnerContactName: boolean
+  listedPartnerContactEmail: boolean
 }
 
 const initialTouched: TouchedFields = {
   partnerName: false,
   partnerWebsite: false,
   partnerContact: false,
+  partnerContactName: false,
   selectedProduct: false,
   builderType: false,
   connectingSystem: false,
@@ -107,6 +99,12 @@ const initialTouched: TouchedFields = {
   dataLeavesEnvironment: false,
   environment: false,
   termsAccepted: false,
+  techContactName: false,
+  techContactEmail: false,
+  techContactPhone: false,
+  targetTimeline: false,
+  listedPartnerContactName: false,
+  listedPartnerContactEmail: false,
 }
 
 export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
@@ -131,6 +129,7 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
   const [partnerName, setPartnerName] = useState('')
   const [partnerWebsite, setPartnerWebsite] = useState('')
   const [partnerContact, setPartnerContact] = useState('')
+  const [partnerContactName, setPartnerContactName] = useState('')
   const [selectedProduct, setSelectedProduct] = useState<WorkWaveProduct | ''>('')
   const [builderType, setBuilderType] = useState<BuilderType | ''>('')
 
@@ -141,6 +140,17 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
   const [dataRead, setDataRead] = useState<DataCategory[]>([])
   const [dataWrite, setDataWrite] = useState<DataCategory[]>([])
   const [dataLeavesEnvironment, setDataLeavesEnvironment] = useState<boolean | null>(null)
+
+  // Contact Information (Step 2)
+  const [techContactSameAsRequester, setTechContactSameAsRequester] = useState(true)
+  const [techContactName, setTechContactName] = useState('')
+  const [techContactEmail, setTechContactEmail] = useState('')
+  const [techContactPhone, setTechContactPhone] = useState('')
+  const [targetTimeline, setTargetTimeline] = useState('')
+
+  // Listed partner contact (optional, for listed partners)
+  const [listedPartnerContactName, setListedPartnerContactName] = useState('')
+  const [listedPartnerContactEmail, setListedPartnerContactEmail] = useState('')
 
   // Step 3: Environment
   const [environment, setEnvironment] = useState<Environment | ''>('')
@@ -184,6 +194,7 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
     if (partnerName.trim()) return true
     if (partnerWebsite.trim()) return true
     if (partnerContact.trim()) return true
+    if (partnerContactName.trim()) return true
     if (selectedProduct && customerProducts.length !== 1) return true
     if (builderType) return true
     if (connectingSystem.trim()) return true
@@ -192,6 +203,13 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
     if (dataRead.length > 0) return true
     if (dataWrite.length > 0) return true
     if (dataLeavesEnvironment !== null) return true
+    if (!techContactSameAsRequester) return true
+    if (techContactName.trim()) return true
+    if (techContactEmail.trim()) return true
+    if (techContactPhone.trim()) return true
+    if (targetTimeline) return true
+    if (listedPartnerContactName.trim()) return true
+    if (listedPartnerContactEmail.trim()) return true
     if (environment) return true
     if (termsAccepted) return true
     return false
@@ -201,7 +219,7 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
 
   function isStep1Valid(): boolean {
     if (!partner) {
-      if (!partnerName.trim() || !partnerWebsite.trim() || !partnerContact.trim()) return false
+      if (!partnerName.trim() || !partnerWebsite.trim() || !partnerContact.trim() || !partnerContactName.trim()) return false
     }
     if (!selectedProduct || !builderType) return false
     return true
@@ -213,6 +231,10 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
     if (!useCaseDetail.trim()) return false
     if (dataRead.length === 0) return false
     if (dataLeavesEnvironment === null) return false
+    if (!techContactSameAsRequester) {
+      if (!techContactName.trim() || !techContactEmail.trim()) return false
+    }
+    if (!targetTimeline) return false
     return true
   }
 
@@ -374,7 +396,7 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
                       ? 'bg-ww-blue text-white'
                       : isComplete
                         ? 'bg-ww-green text-white'
-                        : 'bg-ww-gray-100 text-ww-gray-400'
+                        : 'bg-ww-gray-200 text-ww-gray-400'
                   }`}
                 >
                   {isComplete ? (
@@ -499,6 +521,20 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
                   className="w-full px-4 py-2.5 rounded-lg border border-ww-gray-300 text-sm text-ww-gray-800 placeholder:text-ww-gray-400 focus:outline-none focus:ring-2 focus:ring-ww-blue focus:border-transparent transition-shadow"
                 />
                 {renderError(fieldError('partnerWebsite', !!partnerWebsite.trim()))}
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-ww-gray-700 mb-1.5">
+                  Partner Contact Name <span className="text-ww-red">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={partnerContactName}
+                  onChange={e => setPartnerContactName(e.target.value)}
+                  onBlur={() => touch('partnerContactName')}
+                  placeholder="e.g. Jane Smith"
+                  className="w-full px-4 py-2.5 rounded-lg border border-ww-gray-300 text-sm text-ww-gray-800 placeholder:text-ww-gray-400 focus:outline-none focus:ring-2 focus:ring-ww-blue focus:border-transparent transition-shadow"
+                />
+                {renderError(fieldError('partnerContactName', !!partnerContactName.trim()))}
               </div>
               <div>
                 <label className="block text-sm font-medium text-ww-gray-700 mb-1.5">
@@ -832,6 +868,151 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
           </div>
           {touched.dataLeavesEnvironment && dataLeavesEnvironment === null && renderError('This field is required')}
         </div>
+
+        {/* ── Contact Information ─────────────────────────────────── */}
+        <div>
+          <label className="block text-sm font-semibold text-ww-gray-700 mb-4">
+            Contact Information
+          </label>
+
+          {/* Requester (read-only) */}
+          <div className="bg-ww-gray-50 border border-ww-gray-200 rounded-lg p-4 mb-5">
+            <p className="text-sm text-ww-gray-700">
+              Requesting as <span className="font-medium text-ww-gray-800">{activeUser!.name}</span>{' '}
+              ({activeUser!.email}) — {customer?.name ?? 'Unknown Company'}
+            </p>
+          </div>
+
+          {/* Technical contact */}
+          <div className="mb-5">
+            <p className="text-sm font-medium text-ww-gray-700 mb-3">Technical Contact</p>
+            <label className="flex items-center gap-2.5 cursor-pointer mb-3">
+              <input
+                type="checkbox"
+                checked={techContactSameAsRequester}
+                onChange={e => setTechContactSameAsRequester(e.target.checked)}
+                className="sr-only"
+              />
+              <CheckBox checked={techContactSameAsRequester} />
+              <span className="text-sm text-ww-gray-700">Same as requester</span>
+            </label>
+            {!techContactSameAsRequester && (
+              <div className="space-y-3 pl-0">
+                <div>
+                  <label className="block text-sm font-medium text-ww-gray-700 mb-1.5">
+                    Name <span className="text-ww-red">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={techContactName}
+                    onChange={e => setTechContactName(e.target.value)}
+                    onBlur={() => touch('techContactName')}
+                    placeholder="Technical contact name"
+                    className="w-full px-4 py-2.5 rounded-lg border border-ww-gray-300 text-sm text-ww-gray-800 placeholder:text-ww-gray-400 focus:outline-none focus:ring-2 focus:ring-ww-blue focus:border-transparent transition-shadow"
+                  />
+                  {renderError(fieldError('techContactName', !!techContactName.trim()))}
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-ww-gray-700 mb-1.5">
+                    <span className="flex items-center gap-1.5">
+                      <Mail size={14} />
+                      Email <span className="text-ww-red">*</span>
+                    </span>
+                  </label>
+                  <input
+                    type="email"
+                    value={techContactEmail}
+                    onChange={e => setTechContactEmail(e.target.value)}
+                    onBlur={() => touch('techContactEmail')}
+                    placeholder="tech@example.com"
+                    className="w-full px-4 py-2.5 rounded-lg border border-ww-gray-300 text-sm text-ww-gray-800 placeholder:text-ww-gray-400 focus:outline-none focus:ring-2 focus:ring-ww-blue focus:border-transparent transition-shadow"
+                  />
+                  {renderError(fieldError('techContactEmail', !!techContactEmail.trim()))}
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-ww-gray-700 mb-1.5">
+                    <span className="flex items-center gap-1.5">
+                      <Phone size={14} />
+                      Phone
+                    </span>
+                  </label>
+                  <input
+                    type="text"
+                    value={techContactPhone}
+                    onChange={e => setTechContactPhone(e.target.value)}
+                    onBlur={() => touch('techContactPhone')}
+                    placeholder="+1 (555) 123-4567"
+                    className="w-full px-4 py-2.5 rounded-lg border border-ww-gray-300 text-sm text-ww-gray-800 placeholder:text-ww-gray-400 focus:outline-none focus:ring-2 focus:ring-ww-blue focus:border-transparent transition-shadow"
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Partner contact for listed partner (optional) */}
+          {partner && (
+            <div className="mb-5">
+              <p className="text-sm font-medium text-ww-gray-700 mb-3">
+                Partner contact for this integration (optional)
+              </p>
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-sm font-medium text-ww-gray-700 mb-1.5">
+                    Name
+                  </label>
+                  <input
+                    type="text"
+                    value={listedPartnerContactName}
+                    onChange={e => setListedPartnerContactName(e.target.value)}
+                    onBlur={() => touch('listedPartnerContactName')}
+                    placeholder="Partner contact name"
+                    className="w-full px-4 py-2.5 rounded-lg border border-ww-gray-300 text-sm text-ww-gray-800 placeholder:text-ww-gray-400 focus:outline-none focus:ring-2 focus:ring-ww-blue focus:border-transparent transition-shadow"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-ww-gray-700 mb-1.5">
+                    <span className="flex items-center gap-1.5">
+                      <Mail size={14} />
+                      Email
+                    </span>
+                  </label>
+                  <input
+                    type="email"
+                    value={listedPartnerContactEmail}
+                    onChange={e => setListedPartnerContactEmail(e.target.value)}
+                    onBlur={() => touch('listedPartnerContactEmail')}
+                    placeholder="partner@example.com"
+                    className="w-full px-4 py-2.5 rounded-lg border border-ww-gray-300 text-sm text-ww-gray-800 placeholder:text-ww-gray-400 focus:outline-none focus:ring-2 focus:ring-ww-blue focus:border-transparent transition-shadow"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Target Timeline */}
+        <div>
+          <label className="block text-sm font-semibold text-ww-gray-700 mb-1.5">
+            Target Timeline <span className="text-ww-red">*</span>
+          </label>
+          <select
+            value={targetTimeline}
+            onChange={e => {
+              setTargetTimeline(e.target.value)
+              touch('targetTimeline')
+            }}
+            onBlur={() => touch('targetTimeline')}
+            className="w-full px-4 py-2.5 rounded-lg border border-ww-gray-300 text-sm text-ww-gray-800 focus:outline-none focus:ring-2 focus:ring-ww-blue focus:border-transparent transition-shadow bg-white"
+          >
+            <option value="">Select a timeline...</option>
+            {TIMELINE_OPTIONS.map(opt => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
+          {renderError(fieldError('targetTimeline', !!targetTimeline))}
+        </div>
       </div>
     )
   }
@@ -911,165 +1092,192 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
   // ── Step 4: Terms & Confirmation ──────────────────────────────
 
   function renderStep4() {
+    const timelineLabel = TIMELINE_OPTIONS.find(o => o.value === targetTimeline)?.label ?? targetTimeline
+
     return (
-      <div className="space-y-8">
-        {/* Request Summary */}
-        <div>
-          <label className="block text-sm font-semibold text-ww-gray-700 mb-3">
-            Request Summary
-          </label>
-          <div className="bg-ww-gray-50 rounded-xl border border-ww-gray-200 divide-y divide-ww-gray-200">
-            {/* Section: Partner & Product */}
-            <div className="px-5 py-3 bg-ww-gray-100/50 rounded-t-xl">
-              <button
-                type="button"
-                onClick={() => setCurrentStep(0)}
-                className="text-xs font-semibold text-ww-blue hover:underline"
-              >
-                Partner & Product
-              </button>
+      <div className="space-y-6">
+        {/* ── Section: Partner & Product ──────────────────────── */}
+        <div className="mb-6">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="font-display font-semibold text-sm text-ww-gray-800">Partner & Product</h3>
+            <button
+              type="button"
+              onClick={() => setCurrentStep(0)}
+              className="text-xs text-ww-blue hover:underline cursor-pointer"
+            >
+              Edit
+            </button>
+          </div>
+          <div className="space-y-0">
+            <div className="flex py-2">
+              <span className="text-[13px] text-ww-gray-500 w-44 shrink-0">Partner</span>
+              <span className="text-sm text-ww-gray-800">{partner ? partner.name : (partnerName || '--')}</span>
             </div>
-            <div className="px-5 py-3.5 flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4">
-              <span className="text-xs font-medium text-ww-gray-500 sm:w-44 shrink-0">
-                Partner
-              </span>
-              <span className="text-sm text-ww-gray-800 font-medium">
-                {partner ? partner.name : partnerName || '--'}
+            <div className="flex py-2">
+              <span className="text-[13px] text-ww-gray-500 w-44 shrink-0">Product</span>
+              <span className="text-sm text-ww-gray-800">{selectedProduct ? (PRODUCT_LABELS[selectedProduct] ?? selectedProduct) : '--'}</span>
+            </div>
+            <div className="flex py-2">
+              <span className="text-[13px] text-ww-gray-500 w-44 shrink-0">Builder Type</span>
+              <span className="text-sm text-ww-gray-800">{builderType ? BUILDER_TYPE_LABELS[builderType] : '--'}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* ── Section: Integration Details ────────────────────── */}
+        <div className="mb-6">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="font-display font-semibold text-sm text-ww-gray-800">Integration Details</h3>
+            <button
+              type="button"
+              onClick={() => setCurrentStep(1)}
+              className="text-xs text-ww-blue hover:underline cursor-pointer"
+            >
+              Edit
+            </button>
+          </div>
+          <div className="space-y-0">
+            <div className="flex py-2">
+              <span className="text-[13px] text-ww-gray-500 w-44 shrink-0">Connecting System</span>
+              <span className="text-sm text-ww-gray-800">{connectingSystem || '--'}</span>
+            </div>
+            <div className="flex py-2">
+              <span className="text-[13px] text-ww-gray-500 w-44 shrink-0">Use Case</span>
+              <span className="text-sm text-ww-gray-800">{useCase ? (USE_CASE_LABELS[useCase] ?? useCase) : '--'}</span>
+            </div>
+            <div className="py-2">
+              <div className="flex">
+                <span className="text-[13px] text-ww-gray-500 w-44 shrink-0">Use Case Details</span>
+                {useCaseDetail && useCaseDetail.length <= 80 && (
+                  <span className="text-sm text-ww-gray-800">{useCaseDetail}</span>
+                )}
+              </div>
+              {useCaseDetail && useCaseDetail.length > 80 && (
+                <div className="border border-ww-gray-200 rounded-lg p-3 mt-1 text-sm text-ww-gray-700 leading-relaxed">
+                  {useCaseDetail}
+                </div>
+              )}
+              {!useCaseDetail && (
+                <span className="text-sm text-ww-gray-800">--</span>
+              )}
+            </div>
+            <div className="py-2">
+              <div className="flex">
+                <span className="text-[13px] text-ww-gray-500 w-44 shrink-0">Data to Read</span>
+                <div className="flex flex-wrap gap-1.5">
+                  {dataRead.length > 0
+                    ? dataRead.map(cat => (
+                        <span
+                          key={cat}
+                          className="bg-ww-gray-100 text-ww-gray-700 text-xs px-2 py-0.5 rounded"
+                        >
+                          {DATA_CATEGORY_LABELS[cat] ?? cat}
+                        </span>
+                      ))
+                    : <span className="text-sm text-ww-gray-400">None selected</span>}
+                </div>
+              </div>
+            </div>
+            <div className="py-2">
+              <div className="flex">
+                <span className="text-[13px] text-ww-gray-500 w-44 shrink-0">Data to Write</span>
+                <div className="flex flex-wrap gap-1.5">
+                  {dataWrite.length > 0
+                    ? dataWrite.map(cat => (
+                        <span
+                          key={cat}
+                          className="bg-ww-gray-100 text-ww-gray-700 text-xs px-2 py-0.5 rounded"
+                        >
+                          {DATA_CATEGORY_LABELS[cat] ?? cat}
+                        </span>
+                      ))
+                    : <span className="text-sm text-ww-gray-400">None selected</span>}
+                </div>
+              </div>
+            </div>
+            <div className="flex py-2">
+              <span className="text-[13px] text-ww-gray-500 w-44 shrink-0">Data Leaves Environment</span>
+              {dataLeavesEnvironment === true ? (
+                <span className="bg-amber-100 text-amber-800 text-xs px-2 py-0.5 rounded font-medium">
+                  Yes — data leaves environment
+                </span>
+              ) : dataLeavesEnvironment === false ? (
+                <span className="bg-ww-gray-100 text-ww-gray-700 text-xs px-2 py-0.5 rounded">No</span>
+              ) : (
+                <span className="text-sm text-ww-gray-400">--</span>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* ── Section: Contact Information ────────────────────── */}
+        <div className="mb-6">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="font-display font-semibold text-sm text-ww-gray-800">Contact Information</h3>
+            <button
+              type="button"
+              onClick={() => setCurrentStep(1)}
+              className="text-xs text-ww-blue hover:underline cursor-pointer"
+            >
+              Edit
+            </button>
+          </div>
+          <div className="space-y-0">
+            <div className="flex py-2">
+              <span className="text-[13px] text-ww-gray-500 w-44 shrink-0">Requester</span>
+              <span className="text-sm text-ww-gray-800">{activeUser!.name} ({activeUser!.email})</span>
+            </div>
+            <div className="flex py-2">
+              <span className="text-[13px] text-ww-gray-500 w-44 shrink-0">Technical Contact</span>
+              <span className="text-sm text-ww-gray-800">
+                {techContactSameAsRequester
+                  ? 'Same as requester'
+                  : `${techContactName || '--'} (${techContactEmail || '--'})`}
               </span>
             </div>
-            {!partner && (
-              <>
-                <div className="px-5 py-3.5 flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4">
-                  <span className="text-xs font-medium text-ww-gray-500 sm:w-44 shrink-0">
-                    Partner Website
-                  </span>
+            {/* Partner contact info */}
+            {partner ? (
+              (listedPartnerContactName || listedPartnerContactEmail) && (
+                <div className="flex py-2">
+                  <span className="text-[13px] text-ww-gray-500 w-44 shrink-0">Partner Contact</span>
                   <span className="text-sm text-ww-gray-800">
-                    {partnerWebsite || '--'}
+                    {listedPartnerContactName}{listedPartnerContactName && listedPartnerContactEmail ? ' ' : ''}{listedPartnerContactEmail ? `(${listedPartnerContactEmail})` : ''}
                   </span>
                 </div>
-                <div className="px-5 py-3.5 flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4">
-                  <span className="text-xs font-medium text-ww-gray-500 sm:w-44 shrink-0">
-                    Partner Contact
-                  </span>
+              )
+            ) : (
+              (partnerContactName || partnerContact) && (
+                <div className="flex py-2">
+                  <span className="text-[13px] text-ww-gray-500 w-44 shrink-0">Partner Contact</span>
                   <span className="text-sm text-ww-gray-800">
-                    {partnerContact || '--'}
+                    {partnerContactName}{partnerContactName && partnerContact ? ' ' : ''}{partnerContact ? `(${partnerContact})` : ''}
                   </span>
                 </div>
-              </>
+              )
             )}
-            <div className="px-5 py-3.5 flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4">
-              <span className="text-xs font-medium text-ww-gray-500 sm:w-44 shrink-0">
-                Product
-              </span>
-              <span className="text-sm text-ww-gray-800 font-medium">
-                {selectedProduct ? (PRODUCT_LABELS[selectedProduct] ?? selectedProduct) : '--'}
-              </span>
+            <div className="flex py-2">
+              <span className="text-[13px] text-ww-gray-500 w-44 shrink-0">Target Timeline</span>
+              <span className="text-sm text-ww-gray-800">{timelineLabel || '--'}</span>
             </div>
-            <div className="px-5 py-3.5 flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4">
-              <span className="text-xs font-medium text-ww-gray-500 sm:w-44 shrink-0">
-                Builder Type
-              </span>
-              <span className="text-sm text-ww-gray-800">
-                {builderType ? BUILDER_TYPE_LABELS[builderType] : '--'}
-              </span>
-            </div>
+          </div>
+        </div>
 
-            {/* Section: Integration Details */}
-            <div className="px-5 py-3 bg-ww-gray-100/50">
-              <button
-                type="button"
-                onClick={() => setCurrentStep(1)}
-                className="text-xs font-semibold text-ww-blue hover:underline"
-              >
-                Integration Details
-              </button>
-            </div>
-            <div className="px-5 py-3.5 flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4">
-              <span className="text-xs font-medium text-ww-gray-500 sm:w-44 shrink-0">
-                Connecting System
-              </span>
+        {/* ── Section: Environment ────────────────────────────── */}
+        <div className="mb-6">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="font-display font-semibold text-sm text-ww-gray-800">Environment</h3>
+            <button
+              type="button"
+              onClick={() => setCurrentStep(2)}
+              className="text-xs text-ww-blue hover:underline cursor-pointer"
+            >
+              Edit
+            </button>
+          </div>
+          <div className="space-y-0">
+            <div className="flex py-2">
+              <span className="text-[13px] text-ww-gray-500 w-44 shrink-0">Environment</span>
               <span className="text-sm text-ww-gray-800">
-                {connectingSystem || '--'}
-              </span>
-            </div>
-            <div className="px-5 py-3.5 flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4">
-              <span className="text-xs font-medium text-ww-gray-500 sm:w-44 shrink-0">
-                Use Case
-              </span>
-              <span className="text-sm text-ww-gray-800">
-                {useCase ? (USE_CASE_LABELS[useCase] ?? useCase) : '--'}
-              </span>
-            </div>
-            <div className="px-5 py-3.5 flex flex-col sm:flex-row gap-1 sm:gap-4">
-              <span className="text-xs font-medium text-ww-gray-500 sm:w-44 shrink-0 sm:pt-0.5">
-                Use Case Details
-              </span>
-              <span className="text-sm text-ww-gray-800 leading-relaxed">
-                {useCaseDetail || '--'}
-              </span>
-            </div>
-            <div className="px-5 py-3.5 flex flex-col sm:flex-row gap-1 sm:gap-4">
-              <span className="text-xs font-medium text-ww-gray-500 sm:w-44 shrink-0 sm:pt-0.5">
-                Data to Read
-              </span>
-              <div className="flex flex-wrap gap-1.5">
-                {dataRead.length > 0
-                  ? dataRead.map(cat => (
-                      <span
-                        key={cat}
-                        className="text-xs px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 font-medium"
-                      >
-                        {DATA_CATEGORY_LABELS[cat] ?? cat}
-                      </span>
-                    ))
-                  : <span className="text-sm text-ww-gray-400">None selected</span>}
-              </div>
-            </div>
-            <div className="px-5 py-3.5 flex flex-col sm:flex-row gap-1 sm:gap-4">
-              <span className="text-xs font-medium text-ww-gray-500 sm:w-44 shrink-0 sm:pt-0.5">
-                Data to Write
-              </span>
-              <div className="flex flex-wrap gap-1.5">
-                {dataWrite.length > 0
-                  ? dataWrite.map(cat => (
-                      <span
-                        key={cat}
-                        className="text-xs px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 font-medium"
-                      >
-                        {DATA_CATEGORY_LABELS[cat] ?? cat}
-                      </span>
-                    ))
-                  : <span className="text-sm text-ww-gray-400">None selected</span>}
-              </div>
-            </div>
-            <div className="px-5 py-3.5 flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4">
-              <span className="text-xs font-medium text-ww-gray-500 sm:w-44 shrink-0">
-                Data Leaves Environment
-              </span>
-              <span className="text-sm text-ww-gray-800">
-                {dataLeavesEnvironment === true
-                  ? 'Yes'
-                  : dataLeavesEnvironment === false
-                    ? 'No'
-                    : '--'}
-              </span>
-            </div>
-
-            {/* Section: Environment & Data */}
-            <div className="px-5 py-3 bg-ww-gray-100/50">
-              <button
-                type="button"
-                onClick={() => setCurrentStep(2)}
-                className="text-xs font-semibold text-ww-blue hover:underline"
-              >
-                Environment & Data
-              </button>
-            </div>
-            <div className="px-5 py-3.5 flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 rounded-b-xl">
-              <span className="text-xs font-medium text-ww-gray-500 sm:w-44 shrink-0">
-                Environment
-              </span>
-              <span className="text-sm text-ww-gray-800 font-medium">
                 {environment === 'sandbox'
                   ? 'Sandbox'
                   : environment === 'production'
@@ -1080,8 +1288,8 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
           </div>
         </div>
 
-        {/* Terms acceptance */}
-        <div className="bg-ww-gray-50 rounded-xl border border-ww-gray-200 p-5">
+        {/* ── Terms checkbox ─────────────────────────────────── */}
+        <div className="bg-ww-gray-50 border border-ww-gray-200 rounded-xl p-5">
           <label className="flex items-start gap-3 cursor-pointer">
             <input
               type="checkbox"
@@ -1093,7 +1301,7 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
               className="sr-only"
             />
             <div
-              className={`w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 mt-0.5 transition-colors ${
+              className={`w-[18px] h-[18px] rounded border-2 flex items-center justify-center shrink-0 mt-0.5 transition-colors ${
                 termsAccepted
                   ? 'bg-ww-blue border-ww-blue'
                   : 'border-ww-gray-300 bg-white'
@@ -1126,13 +1334,13 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
     const isLastStep = currentStep === STEPS.length - 1
 
     return (
-      <div className="border-t border-ww-gray-100 px-6 sm:px-8 py-4 flex items-center justify-between">
+      <div className="border-t border-ww-gray-100 px-8 py-5 flex items-center justify-between bg-ww-gray-50/50">
         {/* Left side: Cancel + Back */}
         <div className="flex items-center gap-2">
           <button
             type="button"
             onClick={handleCancel}
-            className="px-4 py-2.5 rounded-lg text-sm font-medium text-ww-gray-500 hover:text-ww-gray-700 transition-colors"
+            className="text-sm text-ww-gray-500 hover:text-ww-gray-700 transition-colors"
           >
             Cancel
           </button>
@@ -1154,6 +1362,7 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
             type="button"
             onClick={handleSubmit}
             disabled={!canProceed() || isSubmitting}
+            title={!termsAccepted ? 'Accept the terms to submit' : undefined}
             className="flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-semibold text-white bg-ww-blue hover:bg-ww-blue-light disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             <Send size={16} />
@@ -1193,9 +1402,9 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
       {renderStepIndicator()}
 
       {/* Form card */}
-      <div className="bg-white rounded-2xl border border-ww-gray-200 shadow-sm">
+      <div className="bg-white rounded-2xl border border-ww-gray-200 shadow-sm overflow-hidden">
         {/* Form content area */}
-        <div className="px-6 sm:px-8 py-6">
+        <div className="px-8 py-6">
           {/* Step title */}
           <h2 className="font-display text-lg font-semibold text-ww-gray-800 mb-6">
             {STEPS[currentStep].label}
