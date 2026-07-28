@@ -141,8 +141,6 @@ export function ReviewerRequestDetail({ onRefresh }: { onRefresh: () => void }) 
     initPricing()
   }, [initPricing])
 
-  const isApproved = request?.status === 'sandbox_approved' || request?.status === 'production_approved' || request?.status === 'pending_production_review'
-
   const handleSavePricing = () => {
     if (!requestId) return
     const monthly = parseFloat(pricingMonthly)
@@ -656,7 +654,7 @@ export function ReviewerRequestDetail({ onRefresh }: { onRefresh: () => void }) 
             </div>
 
             {/* Pricing Panel — visible for approved requests */}
-            {isApproved && (
+            {(
               <div className="bg-white rounded-md border border-ww-gray-200 p-5">
                 <h3 className="text-sm font-display font-mono font-semibold text-ww-gray-900 uppercase tracking-wide mb-4 flex items-center gap-2">
                   <DollarSign size={14} className="text-ww-navy" />
