@@ -9,6 +9,8 @@ import {
   Users,
   Search,
   Layers,
+  ChevronDown,
+  User,
 } from 'lucide-react'
 import { store } from '@/data/store'
 import type { ViewMode, CustomerUser } from '@/data/types'
@@ -147,9 +149,10 @@ export default function App() {
   const location = useLocation()
   const [viewMode, setViewMode] = useState<ViewMode>(store.getViewMode())
   const [refreshKey, setRefreshKey] = useState(0)
+  const [personaOpen, setPersonaOpen] = useState(false)
 
-  // Set a default demo user silently (needed for RequestForm internals)
-  const [activeUser] = useState<CustomerUser | undefined>(() => {
+  // Persona / active user state
+  const [activeUser, setActiveUser] = useState<CustomerUser | undefined>(() => {
     const existing = store.getActiveUser()
     if (existing) return existing
     const users = store.getCustomerUsers()
@@ -160,6 +163,17 @@ export default function App() {
     }
     return undefined
   })
+
+  const allUsers = store.getCustomerUsers().filter(u => u.canRequestApi)
+
+  const switchUser = (user: CustomerUser) => {
+    store.setActiveUserId(user.id)
+    setActiveUser(user)
+    setPersonaOpen(false)
+    setRefreshKey(k => k + 1)
+  }
+
+  const activeCustomer = activeUser ? store.getCustomer(activeUser.customerId) : undefined
 
   const toggleViewMode = () => {
     const next: ViewMode = viewMode === 'customer' ? 'reviewer' : 'customer'
@@ -231,6 +245,52 @@ export default function App() {
 
             {/* Right controls */}
             <div className="flex items-center gap-2">
+              {/* Persona picker — customer mode only */}
+              {viewMode === 'customer' && activeUser && (
+                <div className="relative">
+                  <button
+                    onClick={() => setPersonaOpen(!personaOpen)}
+                    className="flex items-center gap-1.5 px-2.5 py-1 rounded text-[11px] transition-colors bg-white/8 hover:bg-white/15 text-white/70 hover:text-white"
+                  >
+                    <User size={11} />
+                    <span className="font-medium max-w-[140px] truncate">{activeUser.name}</span>
+                    <span className="text-white/40 font-mono hidden md:inline">({activeCustomer?.name?.split(' ')[0]})</span>
+                    <ChevronDown size={10} className="text-white/40" />
+                  </button>
+                  {personaOpen && (
+                    <>
+                      <div className="fixed inset-0 z-40" onClick={() => setPersonaOpen(false)} />
+                      <div className="absolute z-50 top-full mt-1 right-0 w-72 bg-white border border-ww-gray-200 rounded-md shadow-lg py-1">
+                        <p className="px-3 py-1.5 text-[10px] font-mono text-ww-gray-400 uppercase tracking-wider">Switch Persona</p>
+                        {allUsers.map(u => {
+                          const cust = store.getCustomer(u.customerId)
+                          const isActive = u.id === activeUser.id
+                          return (
+                            <button
+                              key={u.id}
+                              onClick={() => switchUser(u)}
+                              className={`w-full text-left px-3 py-2 text-sm hover:bg-ww-gray-50 transition-colors ${
+                                isActive ? 'bg-ww-sky' : ''
+                              }`}
+                            >
+                              <div className="flex items-center justify-between">
+                                <div>
+                                  <p className={`font-medium ${isActive ? 'text-ww-navy' : 'text-ww-gray-900'}`}>{u.name}</p>
+                                  <p className="text-[11px] text-ww-gray-500">{cust?.name} &middot; {u.role}</p>
+                                </div>
+                                {isActive && (
+                                  <span className="text-[10px] font-semibold text-ww-navy bg-ww-sky px-1.5 py-0.5 rounded">Active</span>
+                                )}
+                              </div>
+                            </button>
+                          )
+                        })}
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
+
               <button
                 onClick={toggleViewMode}
                 className="flex items-center gap-1.5 px-2.5 py-1 rounded text-[11px] font-mono uppercase tracking-wider transition-colors bg-white/8 hover:bg-white/15 text-white/70 hover:text-white"

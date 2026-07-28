@@ -1094,14 +1094,12 @@ export function ReviewerRequestDetail({ onRefresh }: { onRefresh: () => void }) 
               <div className="space-y-3">
                 {/* Estimated Volume context */}
                 {request.estimatedMonthlyVolume ? (
-                  <div className="flex items-center justify-between p-2.5 rounded-md bg-ww-gray-50 border border-ww-gray-100">
-                    <div>
-                      <p className="text-[10px] text-ww-gray-400 font-mono uppercase tracking-wide">Est. Volume</p>
-                      <p className="text-sm font-semibold text-ww-gray-900">{request.estimatedMonthlyVolume.toLocaleString()} calls/mo</p>
-                    </div>
+                  <div className="p-2.5 rounded-md bg-ww-gray-50 border border-ww-gray-100">
+                    <p className="text-[10px] text-ww-gray-400 font-mono uppercase tracking-wide">Est. Volume</p>
+                    <p className="text-sm font-semibold text-ww-gray-900">{request.estimatedMonthlyVolume.toLocaleString()} calls/mo</p>
                     {suggestedTier && (
-                      <span className="inline-flex px-2 py-0.5 rounded text-[10px] font-semibold bg-ww-sky text-ww-navy">
-                        Suggested: {VOLUME_TIER_LABELS[suggestedTier]}
+                      <span className="inline-flex mt-1 px-2 py-0.5 rounded text-[10px] font-semibold bg-ww-sky text-ww-navy">
+                        Suggested: Tier {suggestedTier}
                       </span>
                     )}
                   </div>
@@ -1135,11 +1133,10 @@ export function ReviewerRequestDetail({ onRefresh }: { onRefresh: () => void }) 
                     <table className="w-full text-[11px]">
                       <thead>
                         <tr className="bg-ww-gray-50 text-ww-gray-500 font-mono uppercase tracking-wide">
-                          <th className="text-left px-2 py-1.5">Tier</th>
-                          <th className="text-right px-2 py-1.5">Calls/Mo</th>
-                          <th className="text-right px-2 py-1.5">Monthly</th>
-                          <th className="text-right px-2 py-1.5">Per Call</th>
-                          <th className="text-right px-2 py-1.5">Overage</th>
+                          <th className="text-left pl-2 pr-1 py-1.5">Tier</th>
+                          <th className="text-right px-1 py-1.5">Calls/Mo</th>
+                          <th className="text-right px-1 py-1.5">Monthly</th>
+                          <th className="text-right pl-1 pr-2 py-1.5">Per Call</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -1154,7 +1151,7 @@ export function ReviewerRequestDetail({ onRefresh }: { onRefresh: () => void }) 
                                 isSelected ? 'bg-ww-sky font-medium' : 'hover:bg-ww-gray-50'
                               }`}
                             >
-                              <td className="px-2 py-1.5 text-ww-gray-900 whitespace-nowrap">
+                              <td className="pl-2 pr-1 py-1.5 text-ww-gray-900 whitespace-nowrap">
                                 <div className="flex items-center gap-1">
                                   <input
                                     type="radio"
@@ -1164,20 +1161,20 @@ export function ReviewerRequestDetail({ onRefresh }: { onRefresh: () => void }) 
                                   />
                                   <span>{t.tier}</span>
                                   {isSuggested && (
-                                    <span className="inline-flex px-1 py-0 rounded text-[9px] font-semibold bg-ww-navy/10 text-ww-navy">Suggested</span>
+                                    <span className="inline-flex px-1 py-0 rounded text-[9px] font-semibold bg-ww-navy/10 text-ww-navy">Rec.</span>
                                   )}
                                 </div>
                               </td>
-                              <td className="px-2 py-1.5 text-right text-ww-gray-700 font-mono">{t.callsPerMonth >= 1_000_000 ? `${t.callsPerMonth / 1_000_000}M` : `${t.callsPerMonth / 1_000}K`}</td>
-                              <td className="px-2 py-1.5 text-right text-ww-gray-700 font-mono">${t.monthlyRate.toLocaleString()}</td>
-                              <td className="px-2 py-1.5 text-right text-ww-gray-700 font-mono">${t.perCallRate}</td>
-                              <td className="px-2 py-1.5 text-right text-ww-gray-700 font-mono">${t.overageRate}</td>
+                              <td className="px-1 py-1.5 text-right text-ww-gray-700 font-mono">{t.callsPerMonth >= 1_000_000 ? `${t.callsPerMonth / 1_000_000}M` : `${t.callsPerMonth / 1_000}K`}</td>
+                              <td className="px-1 py-1.5 text-right text-ww-gray-700 font-mono">${t.monthlyRate.toLocaleString()}</td>
+                              <td className="pl-1 pr-2 py-1.5 text-right text-ww-gray-700 font-mono">${t.perCallRate}</td>
                             </tr>
                           )
                         })}
                       </tbody>
                     </table>
                   </div>
+                  <p className="text-[10px] text-ww-gray-400 mt-1 font-mono">Overage: 2.5× per-call rate</p>
                 </div>
 
                 {/* Notes */}
