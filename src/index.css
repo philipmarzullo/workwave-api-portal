@@ -1,0 +1,53 @@
+@import url('https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;500;600;700&family=Titillium+Web:wght@300;400;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --color-ww-navy: #002D5C;
+  --color-ww-navy-light: #003d7a;
+  --color-ww-blue: #4d65ff;
+  --color-ww-blue-light: #6b7fff;
+  --color-ww-sky: #e8ecff;
+  --color-ww-green: #22c55e;
+  --color-ww-amber: #f59e0b;
+  --color-ww-red: #ef4444;
+  --color-ww-gray-50: #f8fafc;
+  --color-ww-gray-100: #f1f5f9;
+  --color-ww-gray-200: #e2e8f0;
+  --color-ww-gray-300: #cbd5e1;
+  --color-ww-gray-400: #94a3b8;
+  --color-ww-gray-500: #64748b;
+  --color-ww-gray-600: #475569;
+  --color-ww-gray-700: #334155;
+  --color-ww-gray-800: #1e293b;
+  --color-ww-gray-900: #0f172a;
+  --font-display: 'Exo 2', sans-serif;
+  --font-body: 'Titillium Web', sans-serif;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background: var(--color-ww-gray-50);
+  color: var(--color-ww-gray-800);
+  min-height: 100vh;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+}
+
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
