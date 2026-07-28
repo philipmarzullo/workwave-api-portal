@@ -48,7 +48,7 @@ const ALL_DATA_CATEGORIES: DataCategory[] = [
 
 const ALL_PRODUCTS: WorkWaveProduct[] = [
   'pestpac', 'realgreen', 'winteam', 'lighthouse',
-  'timegate_plus', 'route_manager', 'hire', 'service_ceo',
+  'timegate_plus', 'route_manager', 'hire',
 ]
 
 const ALL_BUILDER_TYPES: BuilderType[] = ['partner', 'internal_team', 'contractor']

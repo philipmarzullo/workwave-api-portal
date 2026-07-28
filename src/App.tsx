@@ -30,7 +30,6 @@ export const PRODUCT_LABELS: Record<string, string> = {
   timegate_plus: 'Timegate+',
   route_manager: 'RouteManager',
   hire: 'Hire by WorkWave',
-  service_ceo: 'ServiceCEO',
 }
 
 export const TIER_LABELS: Record<string, { label: string; color: string }> = {

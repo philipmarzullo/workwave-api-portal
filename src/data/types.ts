@@ -1,5 +1,5 @@
 // Product lines
-export type WorkWaveProduct = 'pestpac' | 'realgreen' | 'winteam' | 'lighthouse' | 'timegate_plus' | 'route_manager' | 'hire' | 'service_ceo'
+export type WorkWaveProduct = 'pestpac' | 'realgreen' | 'winteam' | 'lighthouse' | 'timegate_plus' | 'route_manager' | 'hire'
 
 // Partner tiers
 export type PartnerTier = 'approved' | 'under_review' | 'unapproved'
