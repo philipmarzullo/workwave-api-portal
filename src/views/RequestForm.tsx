@@ -148,7 +148,6 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
   const [dataLeavesEnvironment, setDataLeavesEnvironment] = useState<boolean | null>(null)
 
   // Contact Information (Step 2)
-  const [techContactSameAsRequester, setTechContactSameAsRequester] = useState(true)
   const [techContactName, setTechContactName] = useState('')
   const [techContactEmail, setTechContactEmail] = useState('')
   const [techContactPhone, setTechContactPhone] = useState('')
@@ -207,7 +206,6 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
     if (dataRead.length > 0) return true
     if (dataWrite.length > 0) return true
     if (dataLeavesEnvironment !== null) return true
-    if (!techContactSameAsRequester) return true
     if (techContactName.trim()) return true
     if (techContactEmail.trim()) return true
     if (techContactPhone.trim()) return true
@@ -235,9 +233,7 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
     if (!useCaseDetail.trim()) return false
     if (dataRead.length === 0) return false
     if (dataLeavesEnvironment === null) return false
-    if (!techContactSameAsRequester) {
-      if (!techContactName.trim() || !techContactEmail.trim()) return false
-    }
+    if (!techContactName.trim() || !techContactEmail.trim()) return false
     if (!targetTimeline) return false
     return true
   }
@@ -313,9 +309,9 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
         endpointsRequested: endpointsRequested.trim(),
         thirdPartyTool: thirdPartyTool.trim() || null,
         thirdPartyToolUrl: thirdPartyToolUrl.trim() || null,
-        technicalContactName: techContactSameAsRequester ? null : (techContactName.trim() || null),
-        technicalContactEmail: techContactSameAsRequester ? null : (techContactEmail.trim() || null),
-        technicalContactPhone: techContactSameAsRequester ? null : (techContactPhone.trim() || null),
+        technicalContactName: techContactName.trim() || null,
+        technicalContactEmail: techContactEmail.trim() || null,
+        technicalContactPhone: techContactPhone.trim() || null,
         targetTimeline: targetTimeline || null,
         environment: environment as Environment,
       })
@@ -925,78 +921,55 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
             Contact Information
           </label>
 
-          {/* Requester (read-only) */}
-          <div className="bg-ww-gray-50 border border-ww-gray-200 rounded-lg p-4 mb-5">
-            <p className="text-sm text-ww-gray-700">
-              Requesting as <span className="font-medium text-ww-gray-800">{activeUser!.name}</span>{' '}
-              ({activeUser!.email}) — {store.getCustomer(activeUser!.customerId)?.name ?? 'Unknown Company'}
-            </p>
-          </div>
-
-          {/* Technical contact */}
-          <div className="mb-5">
-            <p className="text-sm font-medium text-ww-gray-700 mb-3">Technical Contact</p>
-            <label className="flex items-center gap-2.5 cursor-pointer mb-3">
+          {/* Your contact info */}
+          <div className="space-y-3 mb-5">
+            <div>
+              <label className="block text-sm font-medium text-ww-gray-700 mb-1.5">
+                Your Name <span className="text-ww-red">*</span>
+              </label>
               <input
-                type="checkbox"
-                checked={techContactSameAsRequester}
-                onChange={e => setTechContactSameAsRequester(e.target.checked)}
-                className="sr-only"
+                type="text"
+                value={techContactName}
+                onChange={e => setTechContactName(e.target.value)}
+                onBlur={() => touch('techContactName')}
+                placeholder="e.g. Jane Smith"
+                className="w-full px-4 py-2.5 rounded-lg border border-ww-gray-300 text-sm text-ww-gray-800 placeholder:text-ww-gray-400 focus:outline-none focus:ring-2 focus:ring-ww-primary focus:border-transparent transition-shadow"
               />
-              <CheckBox checked={techContactSameAsRequester} />
-              <span className="text-sm text-ww-gray-700">Same as requester</span>
-            </label>
-            {!techContactSameAsRequester && (
-              <div className="space-y-3 pl-0">
-                <div>
-                  <label className="block text-sm font-medium text-ww-gray-700 mb-1.5">
-                    Name <span className="text-ww-red">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={techContactName}
-                    onChange={e => setTechContactName(e.target.value)}
-                    onBlur={() => touch('techContactName')}
-                    placeholder="Technical contact name"
-                    className="w-full px-4 py-2.5 rounded-lg border border-ww-gray-300 text-sm text-ww-gray-800 placeholder:text-ww-gray-400 focus:outline-none focus:ring-2 focus:ring-ww-primary focus:border-transparent transition-shadow"
-                  />
-                  {renderError(fieldError('techContactName', !!techContactName.trim()))}
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-ww-gray-700 mb-1.5">
-                    <span className="flex items-center gap-1.5">
-                      <Mail size={14} />
-                      Email <span className="text-ww-red">*</span>
-                    </span>
-                  </label>
-                  <input
-                    type="email"
-                    value={techContactEmail}
-                    onChange={e => setTechContactEmail(e.target.value)}
-                    onBlur={() => touch('techContactEmail')}
-                    placeholder="tech@example.com"
-                    className="w-full px-4 py-2.5 rounded-lg border border-ww-gray-300 text-sm text-ww-gray-800 placeholder:text-ww-gray-400 focus:outline-none focus:ring-2 focus:ring-ww-primary focus:border-transparent transition-shadow"
-                  />
-                  {renderError(fieldError('techContactEmail', !!techContactEmail.trim()))}
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-ww-gray-700 mb-1.5">
-                    <span className="flex items-center gap-1.5">
-                      <Phone size={14} />
-                      Phone
-                    </span>
-                  </label>
-                  <input
-                    type="text"
-                    value={techContactPhone}
-                    onChange={e => setTechContactPhone(e.target.value)}
-                    onBlur={() => touch('techContactPhone')}
-                    placeholder="+1 (555) 123-4567"
-                    className="w-full px-4 py-2.5 rounded-lg border border-ww-gray-300 text-sm text-ww-gray-800 placeholder:text-ww-gray-400 focus:outline-none focus:ring-2 focus:ring-ww-primary focus:border-transparent transition-shadow"
-                  />
-                </div>
-              </div>
-            )}
+              {renderError(fieldError('techContactName', !!techContactName.trim()))}
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-ww-gray-700 mb-1.5">
+                <span className="flex items-center gap-1.5">
+                  <Mail size={14} />
+                  Email <span className="text-ww-red">*</span>
+                </span>
+              </label>
+              <input
+                type="email"
+                value={techContactEmail}
+                onChange={e => setTechContactEmail(e.target.value)}
+                onBlur={() => touch('techContactEmail')}
+                placeholder="you@company.com"
+                className="w-full px-4 py-2.5 rounded-lg border border-ww-gray-300 text-sm text-ww-gray-800 placeholder:text-ww-gray-400 focus:outline-none focus:ring-2 focus:ring-ww-primary focus:border-transparent transition-shadow"
+              />
+              {renderError(fieldError('techContactEmail', !!techContactEmail.trim()))}
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-ww-gray-700 mb-1.5">
+                <span className="flex items-center gap-1.5">
+                  <Phone size={14} />
+                  Phone
+                </span>
+              </label>
+              <input
+                type="text"
+                value={techContactPhone}
+                onChange={e => setTechContactPhone(e.target.value)}
+                onBlur={() => touch('techContactPhone')}
+                placeholder="+1 (555) 123-4567"
+                className="w-full px-4 py-2.5 rounded-lg border border-ww-gray-300 text-sm text-ww-gray-800 placeholder:text-ww-gray-400 focus:outline-none focus:ring-2 focus:ring-ww-primary focus:border-transparent transition-shadow"
+              />
+            </div>
           </div>
 
           {/* Partner contact for listed partner (optional) */}
@@ -1284,17 +1257,15 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
           </div>
           <div className="space-y-0">
             <div className="flex py-2">
-              <span className="text-[13px] text-ww-gray-500 w-44 shrink-0">Requester</span>
-              <span className="text-sm text-ww-gray-800">{activeUser!.name} ({activeUser!.email})</span>
+              <span className="text-[13px] text-ww-gray-500 w-44 shrink-0">Contact</span>
+              <span className="text-sm text-ww-gray-800">{techContactName || '--'} ({techContactEmail || '--'})</span>
             </div>
-            <div className="flex py-2">
-              <span className="text-[13px] text-ww-gray-500 w-44 shrink-0">Technical Contact</span>
-              <span className="text-sm text-ww-gray-800">
-                {techContactSameAsRequester
-                  ? 'Same as requester'
-                  : `${techContactName || '--'} (${techContactEmail || '--'})`}
-              </span>
-            </div>
+            {techContactPhone && (
+              <div className="flex py-2">
+                <span className="text-[13px] text-ww-gray-500 w-44 shrink-0">Phone</span>
+                <span className="text-sm text-ww-gray-800">{techContactPhone}</span>
+              </div>
+            )}
             {/* Partner contact info */}
             {partner ? (
               (listedPartnerContactName || listedPartnerContactEmail) && (
