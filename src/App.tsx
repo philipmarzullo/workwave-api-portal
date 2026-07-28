@@ -140,7 +140,7 @@ export default function App() {
     <div className="min-h-screen flex flex-col">
       {/* WorkWave-style header */}
       <header className="bg-ww-navy text-white sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-[1200px] mx-auto px-6">
           <div className="flex items-center justify-between h-16">
             {/* Logo + title */}
             <div className="flex items-center gap-3">
@@ -283,24 +283,26 @@ export default function App() {
 
       {/* Main content */}
       <main className="flex-1" key={refreshKey}>
-        <Routes>
-          {/* Customer routes */}
-          <Route path="/" element={<Directory activeUser={activeUser} />} />
-          <Route path="/request/:partnerId?" element={<RequestForm activeUser={activeUser} onSubmit={refresh} />} />
-          <Route path="/my-requests" element={<MyRequests activeUser={activeUser} onRefresh={refresh} />} />
-          <Route path="/my-requests/:requestId" element={<RequestDetail onRefresh={refresh} />} />
+        <div className="max-w-[1200px] mx-auto px-6">
+          <Routes>
+            {/* Customer routes */}
+            <Route path="/" element={<Directory activeUser={activeUser} />} />
+            <Route path="/request/:partnerId?" element={<RequestForm activeUser={activeUser} onSubmit={refresh} />} />
+            <Route path="/my-requests" element={<MyRequests activeUser={activeUser} onRefresh={refresh} />} />
+            <Route path="/my-requests/:requestId" element={<RequestDetail onRefresh={refresh} />} />
 
-          {/* Reviewer routes */}
-          <Route path="/reviewer" element={<ReviewerQueue />} />
-          <Route path="/reviewer/request/:requestId" element={<ReviewerRequestDetail onRefresh={refresh} />} />
-          <Route path="/reviewer/partners" element={<Directory activeUser={activeUser} isReviewerView />} />
-          <Route path="/reviewer/partner/:partnerId" element={<PartnerDetail />} />
-        </Routes>
+            {/* Reviewer routes */}
+            <Route path="/reviewer" element={<ReviewerQueue />} />
+            <Route path="/reviewer/request/:requestId" element={<ReviewerRequestDetail onRefresh={refresh} />} />
+            <Route path="/reviewer/partners" element={<Directory activeUser={activeUser} isReviewerView />} />
+            <Route path="/reviewer/partner/:partnerId" element={<PartnerDetail />} />
+          </Routes>
+        </div>
       </main>
 
       {/* Footer */}
       <footer className="bg-ww-navy text-white/50 py-6 mt-auto">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
+        <div className="max-w-[1200px] mx-auto px-6 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Shield size={14} />
             <span className="text-xs font-display">WorkWave API Access Portal</span>

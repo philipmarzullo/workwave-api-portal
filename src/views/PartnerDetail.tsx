@@ -69,7 +69,7 @@ export function PartnerDetail() {
 
   if (!partner) {
     return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 text-center">
+      <div className="mx-auto py-12 text-center">
         <ShieldAlert size={48} className="mx-auto text-ww-gray-300 mb-4" />
         <h2 className="text-xl font-display font-bold text-ww-gray-700 mb-2">Partner Not Found</h2>
         <p className="text-sm text-ww-gray-500 mb-4">The partner you are looking for does not exist.</p>
@@ -86,7 +86,7 @@ export function PartnerDetail() {
   const tierInfo = TIER_LABELS[partner.tier]
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="mx-auto py-8">
       {/* Back button */}
       <button
         onClick={() => navigate(-1)}

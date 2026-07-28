@@ -52,7 +52,7 @@ export function MyRequests({ activeUser, onRefresh }: MyRequestsProps) {
 
   if (!activeUser) {
     return (
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+      <div className="max-w-4xl mx-auto py-16">
         <div className="text-center">
           <div className="w-16 h-16 rounded-2xl bg-ww-gray-100 flex items-center justify-center mx-auto mb-4">
             <ClipboardList size={28} className="text-ww-gray-400" />
@@ -85,7 +85,7 @@ export function MyRequests({ activeUser, onRefresh }: MyRequestsProps) {
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="max-w-4xl mx-auto py-8">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">

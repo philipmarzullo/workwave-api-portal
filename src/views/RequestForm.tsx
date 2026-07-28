@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import {
   Lock,
@@ -7,7 +7,8 @@ import {
   CheckCircle2,
   Building2,
   Settings2,
-  ClipboardCheck,
+  Server,
+  FileCheck,
   Send,
   Globe,
   Mail,
@@ -73,8 +74,40 @@ const ALL_BUILDER_TYPES: BuilderType[] = ['partner', 'internal_team', 'contracto
 const STEPS = [
   { label: 'Partner & Product', icon: Building2 },
   { label: 'Integration Details', icon: Settings2 },
-  { label: 'Environment & Review', icon: ClipboardCheck },
+  { label: 'Environment & Data', icon: Server },
+  { label: 'Terms & Confirmation', icon: FileCheck },
 ]
+
+// ── Touched state type ─────────────────────────────────────────
+type TouchedFields = {
+  partnerName: boolean
+  partnerWebsite: boolean
+  partnerContact: boolean
+  selectedProduct: boolean
+  builderType: boolean
+  connectingSystem: boolean
+  useCase: boolean
+  useCaseDetail: boolean
+  dataRead: boolean
+  dataLeavesEnvironment: boolean
+  environment: boolean
+  termsAccepted: boolean
+}
+
+const initialTouched: TouchedFields = {
+  partnerName: false,
+  partnerWebsite: false,
+  partnerContact: false,
+  selectedProduct: false,
+  builderType: false,
+  connectingSystem: false,
+  useCase: false,
+  useCaseDetail: false,
+  dataRead: false,
+  dataLeavesEnvironment: false,
+  environment: false,
+  termsAccepted: false,
+}
 
 export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
   const navigate = useNavigate()
@@ -86,6 +119,13 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
 
   // Step state
   const [currentStep, setCurrentStep] = useState(0)
+
+  // Touched state
+  const [touched, setTouched] = useState<TouchedFields>({ ...initialTouched })
+
+  function touch(field: keyof TouchedFields) {
+    setTouched(prev => ({ ...prev, [field]: true }))
+  }
 
   // Step 1: Partner & Product
   const [partnerName, setPartnerName] = useState('')
@@ -102,17 +142,26 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
   const [dataWrite, setDataWrite] = useState<DataCategory[]>([])
   const [dataLeavesEnvironment, setDataLeavesEnvironment] = useState<boolean | null>(null)
 
-  // Step 3: Environment & Review
+  // Step 3: Environment
   const [environment, setEnvironment] = useState<Environment | ''>('')
+
+  // Step 4: Terms
   const [termsAccepted, setTermsAccepted] = useState(false)
 
   // Submitting state
   const [isSubmitting, setIsSubmitting] = useState(false)
 
+  // Auto-select product if customer has exactly one
+  useEffect(() => {
+    if (customerProducts.length === 1 && !selectedProduct) {
+      setSelectedProduct(customerProducts[0])
+    }
+  }, [customerProducts, selectedProduct])
+
   // ── Locked state ──────────────────────────────────────────────
   if (!activeUser || !activeUser.canRequestApi) {
     return (
-      <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+      <div className="max-w-[720px] mx-auto py-10">
         <div className="bg-white rounded-2xl border border-ww-gray-200 shadow-sm p-12 text-center">
           <div className="w-16 h-16 rounded-2xl bg-ww-gray-100 flex items-center justify-center mx-auto mb-6">
             <Lock size={28} className="text-ww-gray-400" />
@@ -129,6 +178,25 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
     )
   }
 
+  // ── Dirty check ─────────────────────────────────────────────────
+
+  function isDirty(): boolean {
+    if (partnerName.trim()) return true
+    if (partnerWebsite.trim()) return true
+    if (partnerContact.trim()) return true
+    if (selectedProduct && customerProducts.length !== 1) return true
+    if (builderType) return true
+    if (connectingSystem.trim()) return true
+    if (useCase) return true
+    if (useCaseDetail.trim()) return true
+    if (dataRead.length > 0) return true
+    if (dataWrite.length > 0) return true
+    if (dataLeavesEnvironment !== null) return true
+    if (environment) return true
+    if (termsAccepted) return true
+    return false
+  }
+
   // ── Validation per step ───────────────────────────────────────
 
   function isStep1Valid(): boolean {
@@ -143,22 +211,31 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
     if (!connectingSystem.trim()) return false
     if (!useCase) return false
     if (!useCaseDetail.trim()) return false
-    if (dataRead.length === 0 && dataWrite.length === 0) return false
+    if (dataRead.length === 0) return false
     if (dataLeavesEnvironment === null) return false
     return true
   }
 
   function isStep3Valid(): boolean {
     if (!environment) return false
+    return true
+  }
+
+  function isStep4Valid(): boolean {
     if (!termsAccepted) return false
     return true
   }
 
-  function canProceed(): boolean {
-    if (currentStep === 0) return isStep1Valid()
-    if (currentStep === 1) return isStep2Valid()
-    if (currentStep === 2) return isStep3Valid()
+  function isStepValid(step: number): boolean {
+    if (step === 0) return isStep1Valid()
+    if (step === 1) return isStep2Valid()
+    if (step === 2) return isStep3Valid()
+    if (step === 3) return isStep4Valid()
     return false
+  }
+
+  function canProceed(): boolean {
+    return isStepValid(currentStep)
   }
 
   // ── Checkbox toggle helpers ───────────────────────────────────
@@ -167,12 +244,22 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
     setDataRead(prev =>
       prev.includes(cat) ? prev.filter(c => c !== cat) : [...prev, cat]
     )
+    touch('dataRead')
   }
 
   function toggleDataWrite(cat: DataCategory) {
     setDataWrite(prev =>
       prev.includes(cat) ? prev.filter(c => c !== cat) : [...prev, cat]
     )
+  }
+
+  // ── Cancel handler ────────────────────────────────────────────
+
+  function handleCancel() {
+    if (isDirty()) {
+      if (!window.confirm('Discard this request?')) return
+    }
+    navigate('/')
   }
 
   // ── Submit ────────────────────────────────────────────────────
@@ -208,53 +295,106 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
     }
   }
 
+  // ── Inline error helper ───────────────────────────────────────
+
+  function fieldError(field: keyof TouchedFields, isValid: boolean): string | null {
+    if (!touched[field]) return null
+    if (isValid) return null
+    return 'This field is required'
+  }
+
+  function renderError(msg: string | null) {
+    if (!msg) return null
+    return <p className="text-xs text-red-500 mt-1">{msg}</p>
+  }
+
+  // ── Reusable radio dot ────────────────────────────────────────
+
+  function RadioDot({ selected }: { selected: boolean }) {
+    return (
+      <div
+        className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 ${
+          selected ? 'border-ww-blue' : 'border-ww-gray-300'
+        }`}
+      >
+        {selected && <div className="w-2 h-2 rounded-full bg-ww-blue" />}
+      </div>
+    )
+  }
+
+  // ── Reusable checkbox box ─────────────────────────────────────
+
+  function CheckBox({ checked }: { checked: boolean }) {
+    return (
+      <div
+        className={`w-4 h-4 rounded border-2 flex items-center justify-center shrink-0 transition-colors ${
+          checked ? 'bg-ww-blue border-ww-blue' : 'border-ww-gray-300 bg-white'
+        }`}
+      >
+        {checked && (
+          <svg width="10" height="8" viewBox="0 0 10 8" fill="none" className="text-white">
+            <path d="M1 4L3.5 6.5L9 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        )}
+      </div>
+    )
+  }
+
   // ── Step indicator ────────────────────────────────────────────
 
   function renderStepIndicator() {
     return (
-      <div className="flex items-center justify-center gap-0 mb-10">
+      <div className="flex items-start justify-center gap-0 mb-10">
         {STEPS.map((step, idx) => {
           const isActive = idx === currentStep
           const isComplete = idx < currentStep
           const StepIcon = step.icon
+          const isClickable = isComplete
 
           return (
-            <div key={idx} className="flex items-center">
+            <div key={idx} className="flex items-start">
               {idx > 0 && (
                 <div
-                  className={`w-12 sm:w-20 h-0.5 ${
-                    isComplete ? 'bg-ww-navy' : 'bg-ww-gray-200'
+                  className={`w-10 sm:w-16 h-0.5 mt-4 ${
+                    isComplete ? 'bg-ww-green' : 'bg-ww-gray-200'
                   }`}
                 />
               )}
-              <div className="flex flex-col items-center gap-2">
+              <button
+                type="button"
+                disabled={!isClickable}
+                onClick={() => isClickable && setCurrentStep(idx)}
+                className={`flex flex-col items-center gap-2 ${
+                  isClickable ? 'cursor-pointer' : 'cursor-default'
+                }`}
+              >
                 <div
-                  className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
+                  className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${
                     isActive
-                      ? 'bg-ww-navy text-white'
+                      ? 'bg-ww-blue text-white'
                       : isComplete
-                        ? 'bg-ww-navy text-white'
+                        ? 'bg-ww-green text-white'
                         : 'bg-ww-gray-100 text-ww-gray-400'
                   }`}
                 >
                   {isComplete ? (
-                    <CheckCircle2 size={20} />
+                    <CheckCircle2 size={18} />
                   ) : (
-                    <StepIcon size={18} />
+                    <StepIcon size={16} />
                   )}
                 </div>
                 <span
-                  className={`text-xs font-medium whitespace-nowrap ${
+                  className={`text-[11px] font-medium whitespace-nowrap ${
                     isActive
-                      ? 'text-ww-navy'
+                      ? 'text-ww-blue'
                       : isComplete
-                        ? 'text-ww-navy'
+                        ? 'text-ww-green'
                         : 'text-ww-gray-400'
                   }`}
                 >
                   {step.label}
                 </span>
-              </div>
+              </button>
             </div>
           )
         })}
@@ -311,17 +451,22 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
           </div>
         ) : (
           <div>
-            <div className="flex items-center gap-2 mb-4">
-              <AlertTriangle size={16} className="text-ww-amber" />
-              <span className="text-sm font-medium text-ww-gray-700">
-                Unlisted Partner Request
-              </span>
+            {/* Amber warning callout */}
+            <div className="bg-amber-50 border-l-4 border-amber-400 p-4 rounded-r-lg mb-6">
+              <div className="flex gap-3">
+                <AlertTriangle size={18} className="text-amber-500 shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm font-medium text-amber-800 mb-1">
+                    Unlisted Partner Request
+                  </p>
+                  <p className="text-xs text-amber-700 leading-relaxed">
+                    You are requesting API access for a partner not currently listed in our
+                    directory. Please provide their details below. Note that unlisted partner
+                    requests require additional review and may take longer to process.
+                  </p>
+                </div>
+              </div>
             </div>
-            <p className="text-xs text-ww-gray-500 mb-5 leading-relaxed">
-              You are requesting API access for a partner not currently listed in our
-              directory. Please provide their details below. Note that unlisted partner
-              requests may take longer to review.
-            </p>
 
             <div className="space-y-4">
               <div>
@@ -332,9 +477,11 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
                   type="text"
                   value={partnerName}
                   onChange={e => setPartnerName(e.target.value)}
+                  onBlur={() => touch('partnerName')}
                   placeholder="e.g. Acme Software Inc."
                   className="w-full px-4 py-2.5 rounded-lg border border-ww-gray-300 text-sm text-ww-gray-800 placeholder:text-ww-gray-400 focus:outline-none focus:ring-2 focus:ring-ww-blue focus:border-transparent transition-shadow"
                 />
+                {renderError(fieldError('partnerName', !!partnerName.trim()))}
               </div>
               <div>
                 <label className="block text-sm font-medium text-ww-gray-700 mb-1.5">
@@ -347,9 +494,11 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
                   type="text"
                   value={partnerWebsite}
                   onChange={e => setPartnerWebsite(e.target.value)}
+                  onBlur={() => touch('partnerWebsite')}
                   placeholder="https://www.example.com"
                   className="w-full px-4 py-2.5 rounded-lg border border-ww-gray-300 text-sm text-ww-gray-800 placeholder:text-ww-gray-400 focus:outline-none focus:ring-2 focus:ring-ww-blue focus:border-transparent transition-shadow"
                 />
+                {renderError(fieldError('partnerWebsite', !!partnerWebsite.trim()))}
               </div>
               <div>
                 <label className="block text-sm font-medium text-ww-gray-700 mb-1.5">
@@ -362,9 +511,11 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
                   type="email"
                   value={partnerContact}
                   onChange={e => setPartnerContact(e.target.value)}
+                  onBlur={() => touch('partnerContact')}
                   placeholder="contact@example.com"
                   className="w-full px-4 py-2.5 rounded-lg border border-ww-gray-300 text-sm text-ww-gray-800 placeholder:text-ww-gray-400 focus:outline-none focus:ring-2 focus:ring-ww-blue focus:border-transparent transition-shadow"
                 />
+                {renderError(fieldError('partnerContact', !!partnerContact.trim()))}
               </div>
             </div>
           </div>
@@ -378,45 +529,57 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
           <p className="text-xs text-ww-gray-500 mb-3">
             Select the WorkWave product you want to integrate with.
           </p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {customerProducts.map(product => (
-              <label
-                key={product}
-                className={`relative flex items-center gap-3 px-4 py-3.5 rounded-xl border-2 cursor-pointer transition-all ${
-                  selectedProduct === product
-                    ? 'border-ww-navy bg-ww-sky'
-                    : 'border-ww-gray-200 bg-white hover:border-ww-gray-300'
-                }`}
-              >
-                <input
-                  type="radio"
-                  name="product"
-                  value={product}
-                  checked={selectedProduct === product}
-                  onChange={() => setSelectedProduct(product)}
-                  className="sr-only"
-                />
-                <div
-                  className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 ${
-                    selectedProduct === product
-                      ? 'border-ww-navy'
-                      : 'border-ww-gray-300'
-                  }`}
-                >
-                  {selectedProduct === product && (
-                    <div className="w-2 h-2 rounded-full bg-ww-navy" />
-                  )}
-                </div>
-                <span
-                  className={`text-sm font-medium ${
-                    selectedProduct === product ? 'text-ww-navy' : 'text-ww-gray-700'
-                  }`}
-                >
-                  {PRODUCT_LABELS[product] ?? product}
+
+          {customerProducts.length === 1 ? (
+            /* Single product: read-only confirmed value */
+            <div className="flex items-center gap-3 px-4 py-3.5 rounded-xl border-2 border-ww-green/40 bg-emerald-50/50">
+              <CheckCircle2 size={18} className="text-ww-green shrink-0" />
+              <div>
+                <span className="text-sm font-medium text-ww-gray-800">
+                  {PRODUCT_LABELS[customerProducts[0]] ?? customerProducts[0]}
                 </span>
-              </label>
-            ))}
-          </div>
+                <p className="text-xs text-ww-gray-500 mt-0.5">
+                  Your organization is licensed for {PRODUCT_LABELS[customerProducts[0]] ?? customerProducts[0]}
+                </p>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-2.5">
+              {customerProducts.map(product => (
+                <label
+                  key={product}
+                  className={`relative flex items-center gap-3 px-4 py-3.5 rounded-xl border-2 cursor-pointer transition-all ${
+                    selectedProduct === product
+                      ? 'border-ww-blue bg-ww-sky/30'
+                      : 'border-ww-gray-200 bg-white hover:border-ww-gray-300'
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="product"
+                    value={product}
+                    checked={selectedProduct === product}
+                    onChange={() => {
+                      setSelectedProduct(product)
+                      touch('selectedProduct')
+                    }}
+                    className="sr-only"
+                  />
+                  <RadioDot selected={selectedProduct === product} />
+                  <span
+                    className={`text-sm font-medium ${
+                      selectedProduct === product ? 'text-ww-gray-800' : 'text-ww-gray-700'
+                    }`}
+                  >
+                    {PRODUCT_LABELS[product] ?? product}
+                  </span>
+                </label>
+              ))}
+            </div>
+          )}
+
+          {touched.selectedProduct && !selectedProduct && renderError('This field is required')}
+
           {customerProducts.length === 0 && (
             <p className="text-xs text-ww-gray-400 italic mt-2">
               No products found for your account.
@@ -429,13 +592,13 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
           <label className="block text-sm font-semibold text-ww-gray-700 mb-3">
             Who is building this integration? <span className="text-ww-red">*</span>
           </label>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div className="space-y-2.5">
             {ALL_BUILDER_TYPES.map(bt => (
               <label
                 key={bt}
                 className={`relative flex items-center gap-3 px-4 py-3.5 rounded-xl border-2 cursor-pointer transition-all ${
                   builderType === bt
-                    ? 'border-ww-navy bg-ww-sky'
+                    ? 'border-ww-blue bg-ww-sky/30'
                     : 'border-ww-gray-200 bg-white hover:border-ww-gray-300'
                 }`}
               >
@@ -444,21 +607,16 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
                   name="builderType"
                   value={bt}
                   checked={builderType === bt}
-                  onChange={() => setBuilderType(bt)}
+                  onChange={() => {
+                    setBuilderType(bt)
+                    touch('builderType')
+                  }}
                   className="sr-only"
                 />
-                <div
-                  className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 ${
-                    builderType === bt ? 'border-ww-navy' : 'border-ww-gray-300'
-                  }`}
-                >
-                  {builderType === bt && (
-                    <div className="w-2 h-2 rounded-full bg-ww-navy" />
-                  )}
-                </div>
+                <RadioDot selected={builderType === bt} />
                 <span
                   className={`text-sm font-medium ${
-                    builderType === bt ? 'text-ww-navy' : 'text-ww-gray-700'
+                    builderType === bt ? 'text-ww-gray-800' : 'text-ww-gray-700'
                   }`}
                 >
                   {BUILDER_TYPE_LABELS[bt]}
@@ -466,6 +624,7 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
               </label>
             ))}
           </div>
+          {touched.builderType && !builderType && renderError('This field is required')}
         </div>
       </div>
     )
@@ -488,9 +647,11 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
             type="text"
             value={connectingSystem}
             onChange={e => setConnectingSystem(e.target.value)}
+            onBlur={() => touch('connectingSystem')}
             placeholder="e.g. Salesforce, QuickBooks, Custom CRM"
             className="w-full px-4 py-2.5 rounded-lg border border-ww-gray-300 text-sm text-ww-gray-800 placeholder:text-ww-gray-400 focus:outline-none focus:ring-2 focus:ring-ww-blue focus:border-transparent transition-shadow"
           />
+          {renderError(fieldError('connectingSystem', !!connectingSystem.trim()))}
         </div>
 
         {/* Use case */}
@@ -502,9 +663,9 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
             {ALL_USE_CASES.map(uc => (
               <label
                 key={uc}
-                className={`relative flex items-center gap-3 px-4 py-3 rounded-xl border-2 cursor-pointer transition-all ${
+                className={`relative flex items-center gap-3 px-4 py-3.5 rounded-xl border-2 cursor-pointer transition-all ${
                   useCase === uc
-                    ? 'border-ww-navy bg-ww-sky'
+                    ? 'border-ww-blue bg-ww-sky/30'
                     : 'border-ww-gray-200 bg-white hover:border-ww-gray-300'
                 }`}
               >
@@ -513,21 +674,16 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
                   name="useCase"
                   value={uc}
                   checked={useCase === uc}
-                  onChange={() => setUseCase(uc)}
+                  onChange={() => {
+                    setUseCase(uc)
+                    touch('useCase')
+                  }}
                   className="sr-only"
                 />
-                <div
-                  className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 ${
-                    useCase === uc ? 'border-ww-navy' : 'border-ww-gray-300'
-                  }`}
-                >
-                  {useCase === uc && (
-                    <div className="w-2 h-2 rounded-full bg-ww-navy" />
-                  )}
-                </div>
+                <RadioDot selected={useCase === uc} />
                 <span
                   className={`text-sm font-medium ${
-                    useCase === uc ? 'text-ww-navy' : 'text-ww-gray-700'
+                    useCase === uc ? 'text-ww-gray-800' : 'text-ww-gray-700'
                   }`}
                 >
                   {USE_CASE_LABELS[uc] ?? uc}
@@ -535,6 +691,7 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
               </label>
             ))}
           </div>
+          {touched.useCase && !useCase && renderError('This field is required')}
         </div>
 
         {/* Use case detail */}
@@ -548,10 +705,12 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
           <textarea
             value={useCaseDetail}
             onChange={e => setUseCaseDetail(e.target.value)}
+            onBlur={() => touch('useCaseDetail')}
             placeholder="Describe how you plan to use the API, what data flows you need, and the business problem you are solving..."
             rows={4}
             className="w-full px-4 py-2.5 rounded-lg border border-ww-gray-300 text-sm text-ww-gray-800 placeholder:text-ww-gray-400 focus:outline-none focus:ring-2 focus:ring-ww-blue focus:border-transparent transition-shadow resize-none"
           />
+          {renderError(fieldError('useCaseDetail', !!useCaseDetail.trim()))}
         </div>
 
         {/* Data to READ */}
@@ -568,7 +727,7 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
                 key={`read-${cat}`}
                 className={`flex items-center gap-2.5 px-3.5 py-2.5 rounded-lg border cursor-pointer transition-all ${
                   dataRead.includes(cat)
-                    ? 'border-ww-navy bg-ww-sky'
+                    ? 'border-ww-blue bg-ww-sky/30'
                     : 'border-ww-gray-200 bg-white hover:border-ww-gray-300'
                 }`}
               >
@@ -578,22 +737,10 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
                   onChange={() => toggleDataRead(cat)}
                   className="sr-only"
                 />
-                <div
-                  className={`w-4 h-4 rounded border-2 flex items-center justify-center shrink-0 transition-colors ${
-                    dataRead.includes(cat)
-                      ? 'bg-ww-navy border-ww-navy'
-                      : 'border-ww-gray-300 bg-white'
-                  }`}
-                >
-                  {dataRead.includes(cat) && (
-                    <svg width="10" height="8" viewBox="0 0 10 8" fill="none" className="text-white">
-                      <path d="M1 4L3.5 6.5L9 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                  )}
-                </div>
+                <CheckBox checked={dataRead.includes(cat)} />
                 <span
                   className={`text-sm ${
-                    dataRead.includes(cat) ? 'text-ww-navy font-medium' : 'text-ww-gray-700'
+                    dataRead.includes(cat) ? 'text-ww-gray-800 font-medium' : 'text-ww-gray-700'
                   }`}
                 >
                   {DATA_CATEGORY_LABELS[cat] ?? cat}
@@ -601,6 +748,7 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
               </label>
             ))}
           </div>
+          {touched.dataRead && dataRead.length === 0 && renderError('Select at least one data category to read')}
         </div>
 
         {/* Data to WRITE */}
@@ -617,7 +765,7 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
                 key={`write-${cat}`}
                 className={`flex items-center gap-2.5 px-3.5 py-2.5 rounded-lg border cursor-pointer transition-all ${
                   dataWrite.includes(cat)
-                    ? 'border-ww-navy bg-ww-sky'
+                    ? 'border-ww-blue bg-ww-sky/30'
                     : 'border-ww-gray-200 bg-white hover:border-ww-gray-300'
                 }`}
               >
@@ -627,22 +775,10 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
                   onChange={() => toggleDataWrite(cat)}
                   className="sr-only"
                 />
-                <div
-                  className={`w-4 h-4 rounded border-2 flex items-center justify-center shrink-0 transition-colors ${
-                    dataWrite.includes(cat)
-                      ? 'bg-ww-navy border-ww-navy'
-                      : 'border-ww-gray-300 bg-white'
-                  }`}
-                >
-                  {dataWrite.includes(cat) && (
-                    <svg width="10" height="8" viewBox="0 0 10 8" fill="none" className="text-white">
-                      <path d="M1 4L3.5 6.5L9 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                  )}
-                </div>
+                <CheckBox checked={dataWrite.includes(cat)} />
                 <span
                   className={`text-sm ${
-                    dataWrite.includes(cat) ? 'text-ww-navy font-medium' : 'text-ww-gray-700'
+                    dataWrite.includes(cat) ? 'text-ww-gray-800 font-medium' : 'text-ww-gray-700'
                   }`}
                 >
                   {DATA_CATEGORY_LABELS[cat] ?? cat}
@@ -667,9 +803,9 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
             ].map(opt => (
               <label
                 key={String(opt.value)}
-                className={`flex items-center gap-3 px-5 py-3 rounded-xl border-2 cursor-pointer transition-all ${
+                className={`flex items-center gap-3 px-5 py-3.5 rounded-xl border-2 cursor-pointer transition-all ${
                   dataLeavesEnvironment === opt.value
-                    ? 'border-ww-navy bg-ww-sky'
+                    ? 'border-ww-blue bg-ww-sky/30'
                     : 'border-ww-gray-200 bg-white hover:border-ww-gray-300'
                 }`}
               >
@@ -677,25 +813,16 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
                   type="radio"
                   name="dataLeavesEnvironment"
                   checked={dataLeavesEnvironment === opt.value}
-                  onChange={() => setDataLeavesEnvironment(opt.value)}
+                  onChange={() => {
+                    setDataLeavesEnvironment(opt.value)
+                    touch('dataLeavesEnvironment')
+                  }}
                   className="sr-only"
                 />
-                <div
-                  className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 ${
-                    dataLeavesEnvironment === opt.value
-                      ? 'border-ww-navy'
-                      : 'border-ww-gray-300'
-                  }`}
-                >
-                  {dataLeavesEnvironment === opt.value && (
-                    <div className="w-2 h-2 rounded-full bg-ww-navy" />
-                  )}
-                </div>
+                <RadioDot selected={dataLeavesEnvironment === opt.value} />
                 <span
                   className={`text-sm font-medium ${
-                    dataLeavesEnvironment === opt.value
-                      ? 'text-ww-navy'
-                      : 'text-ww-gray-700'
+                    dataLeavesEnvironment === opt.value ? 'text-ww-gray-800' : 'text-ww-gray-700'
                   }`}
                 >
                   {opt.label}
@@ -703,46 +830,50 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
               </label>
             ))}
           </div>
+          {touched.dataLeavesEnvironment && dataLeavesEnvironment === null && renderError('This field is required')}
         </div>
       </div>
     )
   }
 
-  // ── Step 3: Environment & Review ──────────────────────────────
+  // ── Step 3: Environment & Data ────────────────────────────────
 
   function renderStep3() {
     return (
       <div className="space-y-8">
         {/* Environment */}
         <div>
-          <label className="block text-sm font-semibold text-ww-gray-700 mb-1.5">
+          <label className="block text-sm font-semibold text-ww-gray-700 mb-3">
             Target Environment <span className="text-ww-red">*</span>
           </label>
-          <div className="flex items-start gap-2 mb-4">
-            <Info size={14} className="text-ww-blue mt-0.5 shrink-0" />
-            <p className="text-xs text-ww-gray-500 leading-relaxed">
-              Sandbox approval is required before production access can be granted. We
-              recommend starting with Sandbox to validate your integration.
+
+          {/* Info callout */}
+          <div className="flex items-start gap-2.5 mb-5 bg-blue-50 border border-blue-200 rounded-lg px-4 py-3">
+            <Info size={16} className="text-ww-blue mt-0.5 shrink-0" />
+            <p className="text-xs text-blue-800 leading-relaxed">
+              Sandbox approval is required before production access can be granted. We recommend
+              starting with Sandbox to validate your integration.
             </p>
           </div>
+
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {[
               {
                 value: 'sandbox' as Environment,
                 label: 'Sandbox',
-                desc: 'Test environment with sample data',
+                desc: 'Test environment with sample data. Ideal for development and validation.',
               },
               {
                 value: 'production' as Environment,
                 label: 'Production',
-                desc: 'Live environment with real data',
+                desc: 'Live environment with real customer data. Requires prior sandbox approval.',
               },
             ].map(env => (
               <label
                 key={env.value}
                 className={`relative flex flex-col gap-1 px-5 py-4 rounded-xl border-2 cursor-pointer transition-all ${
                   environment === env.value
-                    ? 'border-ww-navy bg-ww-sky'
+                    ? 'border-ww-blue bg-ww-sky/30'
                     : 'border-ww-gray-200 bg-white hover:border-ww-gray-300'
                 }`}
               >
@@ -751,44 +882,55 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
                   name="environment"
                   value={env.value}
                   checked={environment === env.value}
-                  onChange={() => setEnvironment(env.value)}
+                  onChange={() => {
+                    setEnvironment(env.value)
+                    touch('environment')
+                  }}
                   className="sr-only"
                 />
                 <div className="flex items-center gap-3">
-                  <div
-                    className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 ${
-                      environment === env.value
-                        ? 'border-ww-navy'
-                        : 'border-ww-gray-300'
-                    }`}
-                  >
-                    {environment === env.value && (
-                      <div className="w-2 h-2 rounded-full bg-ww-navy" />
-                    )}
-                  </div>
+                  <RadioDot selected={environment === env.value} />
                   <span
                     className={`text-sm font-semibold ${
-                      environment === env.value ? 'text-ww-navy' : 'text-ww-gray-700'
+                      environment === env.value ? 'text-ww-gray-800' : 'text-ww-gray-700'
                     }`}
                   >
                     {env.label}
                   </span>
                 </div>
-                <p className="text-xs text-ww-gray-500 ml-7">{env.desc}</p>
+                <p className="text-xs text-ww-gray-500 ml-7 leading-relaxed">{env.desc}</p>
               </label>
             ))}
           </div>
+          {touched.environment && !environment && renderError('This field is required')}
         </div>
+      </div>
+    )
+  }
 
-        {/* Summary */}
+  // ── Step 4: Terms & Confirmation ──────────────────────────────
+
+  function renderStep4() {
+    return (
+      <div className="space-y-8">
+        {/* Request Summary */}
         <div>
           <label className="block text-sm font-semibold text-ww-gray-700 mb-3">
             Request Summary
           </label>
           <div className="bg-ww-gray-50 rounded-xl border border-ww-gray-200 divide-y divide-ww-gray-200">
-            {/* Partner */}
+            {/* Section: Partner & Product */}
+            <div className="px-5 py-3 bg-ww-gray-100/50 rounded-t-xl">
+              <button
+                type="button"
+                onClick={() => setCurrentStep(0)}
+                className="text-xs font-semibold text-ww-blue hover:underline"
+              >
+                Partner & Product
+              </button>
+            </div>
             <div className="px-5 py-3.5 flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4">
-              <span className="text-xs font-medium text-ww-gray-500 sm:w-40 shrink-0">
+              <span className="text-xs font-medium text-ww-gray-500 sm:w-44 shrink-0">
                 Partner
               </span>
               <span className="text-sm text-ww-gray-800 font-medium">
@@ -798,7 +940,7 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
             {!partner && (
               <>
                 <div className="px-5 py-3.5 flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4">
-                  <span className="text-xs font-medium text-ww-gray-500 sm:w-40 shrink-0">
+                  <span className="text-xs font-medium text-ww-gray-500 sm:w-44 shrink-0">
                     Partner Website
                   </span>
                   <span className="text-sm text-ww-gray-800">
@@ -806,7 +948,7 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
                   </span>
                 </div>
                 <div className="px-5 py-3.5 flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4">
-                  <span className="text-xs font-medium text-ww-gray-500 sm:w-40 shrink-0">
+                  <span className="text-xs font-medium text-ww-gray-500 sm:w-44 shrink-0">
                     Partner Contact
                   </span>
                   <span className="text-sm text-ww-gray-800">
@@ -816,7 +958,7 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
               </>
             )}
             <div className="px-5 py-3.5 flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4">
-              <span className="text-xs font-medium text-ww-gray-500 sm:w-40 shrink-0">
+              <span className="text-xs font-medium text-ww-gray-500 sm:w-44 shrink-0">
                 Product
               </span>
               <span className="text-sm text-ww-gray-800 font-medium">
@@ -824,15 +966,26 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
               </span>
             </div>
             <div className="px-5 py-3.5 flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4">
-              <span className="text-xs font-medium text-ww-gray-500 sm:w-40 shrink-0">
+              <span className="text-xs font-medium text-ww-gray-500 sm:w-44 shrink-0">
                 Builder Type
               </span>
               <span className="text-sm text-ww-gray-800">
                 {builderType ? BUILDER_TYPE_LABELS[builderType] : '--'}
               </span>
             </div>
+
+            {/* Section: Integration Details */}
+            <div className="px-5 py-3 bg-ww-gray-100/50">
+              <button
+                type="button"
+                onClick={() => setCurrentStep(1)}
+                className="text-xs font-semibold text-ww-blue hover:underline"
+              >
+                Integration Details
+              </button>
+            </div>
             <div className="px-5 py-3.5 flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4">
-              <span className="text-xs font-medium text-ww-gray-500 sm:w-40 shrink-0">
+              <span className="text-xs font-medium text-ww-gray-500 sm:w-44 shrink-0">
                 Connecting System
               </span>
               <span className="text-sm text-ww-gray-800">
@@ -840,7 +993,7 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
               </span>
             </div>
             <div className="px-5 py-3.5 flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4">
-              <span className="text-xs font-medium text-ww-gray-500 sm:w-40 shrink-0">
+              <span className="text-xs font-medium text-ww-gray-500 sm:w-44 shrink-0">
                 Use Case
               </span>
               <span className="text-sm text-ww-gray-800">
@@ -848,7 +1001,7 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
               </span>
             </div>
             <div className="px-5 py-3.5 flex flex-col sm:flex-row gap-1 sm:gap-4">
-              <span className="text-xs font-medium text-ww-gray-500 sm:w-40 shrink-0 sm:pt-0.5">
+              <span className="text-xs font-medium text-ww-gray-500 sm:w-44 shrink-0 sm:pt-0.5">
                 Use Case Details
               </span>
               <span className="text-sm text-ww-gray-800 leading-relaxed">
@@ -856,7 +1009,7 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
               </span>
             </div>
             <div className="px-5 py-3.5 flex flex-col sm:flex-row gap-1 sm:gap-4">
-              <span className="text-xs font-medium text-ww-gray-500 sm:w-40 shrink-0 sm:pt-0.5">
+              <span className="text-xs font-medium text-ww-gray-500 sm:w-44 shrink-0 sm:pt-0.5">
                 Data to Read
               </span>
               <div className="flex flex-wrap gap-1.5">
@@ -873,7 +1026,7 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
               </div>
             </div>
             <div className="px-5 py-3.5 flex flex-col sm:flex-row gap-1 sm:gap-4">
-              <span className="text-xs font-medium text-ww-gray-500 sm:w-40 shrink-0 sm:pt-0.5">
+              <span className="text-xs font-medium text-ww-gray-500 sm:w-44 shrink-0 sm:pt-0.5">
                 Data to Write
               </span>
               <div className="flex flex-wrap gap-1.5">
@@ -890,7 +1043,7 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
               </div>
             </div>
             <div className="px-5 py-3.5 flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4">
-              <span className="text-xs font-medium text-ww-gray-500 sm:w-40 shrink-0">
+              <span className="text-xs font-medium text-ww-gray-500 sm:w-44 shrink-0">
                 Data Leaves Environment
               </span>
               <span className="text-sm text-ww-gray-800">
@@ -901,8 +1054,19 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
                     : '--'}
               </span>
             </div>
-            <div className="px-5 py-3.5 flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4">
-              <span className="text-xs font-medium text-ww-gray-500 sm:w-40 shrink-0">
+
+            {/* Section: Environment & Data */}
+            <div className="px-5 py-3 bg-ww-gray-100/50">
+              <button
+                type="button"
+                onClick={() => setCurrentStep(2)}
+                className="text-xs font-semibold text-ww-blue hover:underline"
+              >
+                Environment & Data
+              </button>
+            </div>
+            <div className="px-5 py-3.5 flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 rounded-b-xl">
+              <span className="text-xs font-medium text-ww-gray-500 sm:w-44 shrink-0">
                 Environment
               </span>
               <span className="text-sm text-ww-gray-800 font-medium">
@@ -922,13 +1086,16 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
             <input
               type="checkbox"
               checked={termsAccepted}
-              onChange={e => setTermsAccepted(e.target.checked)}
+              onChange={e => {
+                setTermsAccepted(e.target.checked)
+                touch('termsAccepted')
+              }}
               className="sr-only"
             />
             <div
               className={`w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 mt-0.5 transition-colors ${
                 termsAccepted
-                  ? 'bg-ww-navy border-ww-navy'
+                  ? 'bg-ww-blue border-ww-blue'
                   : 'border-ww-gray-300 bg-white'
               }`}
             >
@@ -939,11 +1106,15 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
               )}
             </div>
             <span className="text-sm text-ww-gray-700 leading-relaxed">
-              I acknowledge that API access is subject to WorkWave's API Terms of Service.
-              Access granted through this portal is void if used with an unapproved
-              integration partner.
+              I acknowledge that API access is subject to WorkWave's API Terms of Service and
+              Integration Partner Agreement. Access granted through this portal is void if used
+              in connection with an unapproved integration partner. I confirm the information
+              provided above is accurate.
             </span>
           </label>
+          {touched.termsAccepted && !termsAccepted && (
+            <p className="text-xs text-red-500 mt-2 ml-8">You must accept the terms to continue</p>
+          )}
         </div>
       </div>
     )
@@ -951,37 +1122,49 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
 
   // ── Navigation buttons ────────────────────────────────────────
 
-  function renderNavButtons() {
+  function renderFooter() {
     const isLastStep = currentStep === STEPS.length - 1
 
     return (
-      <div className="flex items-center justify-between pt-8 border-t border-ww-gray-200 mt-8">
-        {currentStep > 0 ? (
+      <div className="border-t border-ww-gray-100 px-6 sm:px-8 py-4 flex items-center justify-between">
+        {/* Left side: Cancel + Back */}
+        <div className="flex items-center gap-2">
           <button
-            onClick={() => setCurrentStep(s => s - 1)}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium text-ww-gray-600 bg-white border border-ww-gray-300 hover:bg-ww-gray-50 transition-colors"
+            type="button"
+            onClick={handleCancel}
+            className="px-4 py-2.5 rounded-lg text-sm font-medium text-ww-gray-500 hover:text-ww-gray-700 transition-colors"
           >
-            <ChevronLeft size={16} />
-            Back
+            Cancel
           </button>
-        ) : (
-          <div />
-        )}
+          {currentStep > 0 && (
+            <button
+              type="button"
+              onClick={() => setCurrentStep(s => s - 1)}
+              className="flex items-center gap-1.5 px-4 py-2.5 rounded-lg text-sm font-medium text-ww-gray-600 bg-white border border-ww-gray-300 hover:bg-ww-gray-50 transition-colors"
+            >
+              <ChevronLeft size={16} />
+              Back
+            </button>
+          )}
+        </div>
 
+        {/* Right side: Next or Submit */}
         {isLastStep ? (
           <button
+            type="button"
             onClick={handleSubmit}
             disabled={!canProceed() || isSubmitting}
-            className="flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-semibold text-white bg-ww-navy hover:bg-ww-navy-light disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-semibold text-white bg-ww-blue hover:bg-ww-blue-light disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             <Send size={16} />
             {isSubmitting ? 'Submitting...' : 'Submit Request'}
           </button>
         ) : (
           <button
+            type="button"
             onClick={() => setCurrentStep(s => s + 1)}
             disabled={!canProceed()}
-            className="flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-semibold text-white bg-ww-navy hover:bg-ww-navy-light disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-semibold text-white bg-ww-blue hover:bg-ww-blue-light disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             Next
             <ChevronRight size={16} />
@@ -994,7 +1177,7 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
   // ── Main render ───────────────────────────────────────────────
 
   return (
-    <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <div className="max-w-[720px] mx-auto py-10">
       {/* Page header */}
       <div className="text-center mb-8">
         <h1 className="font-display text-2xl font-bold text-ww-gray-800 mb-2">
@@ -1010,19 +1193,23 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
       {renderStepIndicator()}
 
       {/* Form card */}
-      <div className="bg-white rounded-2xl border border-ww-gray-200 shadow-sm p-6 sm:p-8">
-        {/* Step title */}
-        <h2 className="font-display text-lg font-semibold text-ww-gray-800 mb-6">
-          {STEPS[currentStep].label}
-        </h2>
+      <div className="bg-white rounded-2xl border border-ww-gray-200 shadow-sm">
+        {/* Form content area */}
+        <div className="px-6 sm:px-8 py-6">
+          {/* Step title */}
+          <h2 className="font-display text-lg font-semibold text-ww-gray-800 mb-6">
+            {STEPS[currentStep].label}
+          </h2>
 
-        {/* Step content */}
-        {currentStep === 0 && renderStep1()}
-        {currentStep === 1 && renderStep2()}
-        {currentStep === 2 && renderStep3()}
+          {/* Step content */}
+          {currentStep === 0 && renderStep1()}
+          {currentStep === 1 && renderStep2()}
+          {currentStep === 2 && renderStep3()}
+          {currentStep === 3 && renderStep4()}
+        </div>
 
-        {/* Navigation */}
-        {renderNavButtons()}
+        {/* Footer bar with navigation */}
+        {renderFooter()}
       </div>
     </div>
   )
