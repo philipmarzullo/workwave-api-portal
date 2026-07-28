@@ -36,7 +36,7 @@ import {
 
 // ── Storage helpers ──────────────────────────────────────────────
 
-const SEED_VERSION = '7'
+const SEED_VERSION = '8'
 const PREFIX = 'ww-api-portal:'
 
 function key(name: string): string {
