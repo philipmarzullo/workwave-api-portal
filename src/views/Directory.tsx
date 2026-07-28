@@ -20,29 +20,12 @@ const INTEGRATION_TYPE_LABELS: Record<IntegrationType, string> = {
   custom: 'Custom',
 }
 
-// ── Monogram color palette ──────────────────────────────────────
-
-const MONOGRAM_COLORS = [
-  { bg: 'bg-blue-50', text: 'text-blue-600' },
-  { bg: 'bg-emerald-50', text: 'text-emerald-600' },
-  { bg: 'bg-amber-50', text: 'text-amber-600' },
-  { bg: 'bg-purple-50', text: 'text-purple-600' },
-  { bg: 'bg-rose-50', text: 'text-rose-600' },
-  { bg: 'bg-cyan-50', text: 'text-cyan-600' },
-]
-
-function getMonogramColor(name: string) {
-  let hash = 0
-  for (const char of name) hash = ((hash << 5) - hash + char.charCodeAt(0)) | 0
-  return MONOGRAM_COLORS[Math.abs(hash) % MONOGRAM_COLORS.length]
-}
-
 // ── Tier section config (reviewer only) ─────────────────────────
 
 const TIER_SECTIONS: { key: PartnerTier; label: string; accent: string }[] = [
-  { key: 'approved', label: 'Approved', accent: 'border-l-emerald-500' },
-  { key: 'under_review', label: 'Under Review', accent: 'border-l-amber-500' },
-  { key: 'unapproved', label: 'Not Approved', accent: 'border-l-red-400' },
+  { key: 'approved', label: 'APPROVED', accent: 'border-l-ww-teal' },
+  { key: 'under_review', label: 'UNDER REVIEW', accent: 'border-l-ww-amber' },
+  { key: 'unapproved', label: 'NOT APPROVED', accent: 'border-l-ww-red' },
 ]
 
 // ── Props ───────────────────────────────────────────────────────
@@ -115,13 +98,10 @@ export function Directory({ activeUser, isReviewerView = false }: DirectoryProps
     return groups
   }, [filteredPartners])
 
-  // Active filter chips
   const hasActiveFilters = selectedProduct !== '' || selectedIntegrationType !== ''
 
-  // Card click handler
   const handleCardClick = (partner: Partner) => {
     if (!isReviewerView && partner.tier !== 'approved') return
-    if (partner.tier === 'unapproved' && !isReviewerView) return
     if (isReviewerView) {
       navigate(`/reviewer/partner/${partner.id}`)
     } else {
@@ -129,44 +109,41 @@ export function Directory({ activeUser, isReviewerView = false }: DirectoryProps
     }
   }
 
-  // ── No user selected state ──────────────────────────────────
+  // ── No user selected ──────────────────────────────────────────
   if (!isReviewerView && !activeUser) {
     return (
       <div className="py-20 text-center">
-        <div className="w-14 h-14 rounded-full bg-ww-gray-100 flex items-center justify-center mx-auto mb-4">
-          <HelpCircle size={22} className="text-ww-gray-400" />
+        <div className="w-12 h-12 rounded-md bg-ww-gray-100 flex items-center justify-center mx-auto mb-4">
+          <HelpCircle size={20} className="text-ww-gray-400" />
         </div>
-        <h2 className="font-display text-xl font-semibold text-ww-gray-800 mb-2">
+        <h2 className="font-display text-lg font-bold text-ww-navy mb-2">
           No User Selected
         </h2>
-        <p className="text-sm text-ww-gray-500 max-w-md mx-auto">
-          Please select a user from the header menu to browse the partner directory and submit API access requests.
+        <p className="text-sm text-ww-gray-500 max-w-sm mx-auto">
+          Select a user from the header to browse the partner directory.
         </p>
       </div>
     )
   }
 
-  // ── Shared header + filters ───────────────────────────────────
+  // ── Header + filters ──────────────────────────────────────────
 
   function renderHeader() {
     return (
       <>
-        {/* Header row */}
-        <div className="py-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="pt-8 pb-6 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
           <div className="min-w-0">
-            <h1 className="text-xl font-display font-semibold text-ww-gray-800">
+            <p className="text-[11px] font-mono font-medium uppercase tracking-[0.1em] text-ww-gray-400 mb-1">
+              {isReviewerView ? 'Admin' : 'Directory'}
+            </p>
+            <h1 className="text-[28px] font-display font-bold text-ww-navy leading-tight tracking-tight">
               {isReviewerView ? 'Partner Directory' : 'Integration Partners'}
             </h1>
-            <p className="text-sm text-ww-gray-500 mt-0.5">
-              {isReviewerView
-                ? 'All partners across tiers with approval status and linked customers.'
-                : 'Browse approved partners and request API access for your integrations.'}
-            </p>
           </div>
           <div className="flex items-center gap-3 shrink-0">
             <div className="relative">
               <Search
-                size={15}
+                size={14}
                 className="absolute left-3 top-1/2 -translate-y-1/2 text-ww-gray-400 pointer-events-none"
               />
               <input
@@ -174,15 +151,15 @@ export function Directory({ activeUser, isReviewerView = false }: DirectoryProps
                 placeholder="Search partners..."
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
-                className="w-56 pl-9 pr-3 py-2 rounded-lg border border-ww-gray-200 bg-white text-sm text-ww-gray-800 placeholder:text-ww-gray-400 focus:outline-none focus:ring-2 focus:ring-ww-blue/30 focus:border-ww-blue transition-colors"
+                className="w-52 pl-9 pr-3 py-2 rounded-md border border-ww-gray-200 bg-white text-sm placeholder:text-ww-gray-400 focus:outline-none focus:ring-2 focus:ring-ww-primary/20 focus:border-ww-primary transition-colors"
               />
             </div>
             {!isReviewerView && (
               <button
                 onClick={() => navigate('/request')}
-                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium bg-ww-blue text-white hover:bg-ww-blue-light transition-colors shrink-0"
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-md text-[13px] font-semibold bg-ww-primary text-white hover:bg-ww-primary-light transition-colors shrink-0"
               >
-                <Plus size={15} />
+                <Plus size={14} />
                 <span className="hidden sm:inline">Request Unlisted Partner</span>
                 <span className="sm:hidden">New</span>
               </button>
@@ -190,12 +167,12 @@ export function Directory({ activeUser, isReviewerView = false }: DirectoryProps
           </div>
         </div>
 
-        {/* Filter row */}
-        <div className="flex flex-wrap items-center gap-3 pb-5 border-b border-ww-gray-100">
+        {/* Filters */}
+        <div className="flex flex-wrap items-center gap-3 pb-5 border-b border-ww-gray-200">
           <select
             value={selectedProduct}
             onChange={e => setSelectedProduct(e.target.value as WorkWaveProduct | '')}
-            className="px-3 py-1.5 rounded-lg border border-ww-gray-200 bg-white text-xs text-ww-gray-700 focus:outline-none focus:ring-2 focus:ring-ww-blue/30 focus:border-ww-blue transition-colors cursor-pointer"
+            className="px-3 py-1.5 rounded-md border border-ww-gray-200 bg-white text-[12px] font-mono uppercase tracking-wider text-ww-gray-600 focus:outline-none focus:ring-2 focus:ring-ww-primary/20 focus:border-ww-primary cursor-pointer"
           >
             <option value="">All Products</option>
             {Object.entries(PRODUCT_LABELS).map(([value, label]) => (
@@ -205,7 +182,7 @@ export function Directory({ activeUser, isReviewerView = false }: DirectoryProps
           <select
             value={selectedIntegrationType}
             onChange={e => setSelectedIntegrationType(e.target.value as IntegrationType | '')}
-            className="px-3 py-1.5 rounded-lg border border-ww-gray-200 bg-white text-xs text-ww-gray-700 focus:outline-none focus:ring-2 focus:ring-ww-blue/30 focus:border-ww-blue transition-colors cursor-pointer"
+            className="px-3 py-1.5 rounded-md border border-ww-gray-200 bg-white text-[12px] font-mono uppercase tracking-wider text-ww-gray-600 focus:outline-none focus:ring-2 focus:ring-ww-primary/20 focus:border-ww-primary cursor-pointer"
           >
             <option value="">All Types</option>
             {availableIntegrationTypes.map(type => (
@@ -215,24 +192,24 @@ export function Directory({ activeUser, isReviewerView = false }: DirectoryProps
           {hasActiveFilters && (
             <div className="flex items-center gap-2">
               {selectedProduct && (
-                <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-ww-blue/10 text-ww-blue text-xs font-medium">
+                <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md border border-ww-primary/20 text-ww-primary text-[11px] font-mono uppercase tracking-wider">
                   {PRODUCT_LABELS[selectedProduct] ?? selectedProduct}
-                  <button onClick={() => setSelectedProduct('')} className="hover:text-ww-blue/70 transition-colors">
-                    <X size={12} />
+                  <button onClick={() => setSelectedProduct('')} className="hover:text-ww-primary/60 transition-colors">
+                    <X size={11} />
                   </button>
                 </span>
               )}
               {selectedIntegrationType && (
-                <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-ww-blue/10 text-ww-blue text-xs font-medium">
+                <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md border border-ww-primary/20 text-ww-primary text-[11px] font-mono uppercase tracking-wider">
                   {INTEGRATION_TYPE_LABELS[selectedIntegrationType] ?? selectedIntegrationType}
-                  <button onClick={() => setSelectedIntegrationType('')} className="hover:text-ww-blue/70 transition-colors">
-                    <X size={12} />
+                  <button onClick={() => setSelectedIntegrationType('')} className="hover:text-ww-primary/60 transition-colors">
+                    <X size={11} />
                   </button>
                 </span>
               )}
             </div>
           )}
-          <span className="ml-auto text-xs text-ww-gray-500">
+          <span className="ml-auto text-[11px] font-mono text-ww-gray-400 uppercase tracking-wider">
             {filteredPartners.length} {filteredPartners.length === 1 ? 'partner' : 'partners'}
           </span>
         </div>
@@ -243,52 +220,48 @@ export function Directory({ activeUser, isReviewerView = false }: DirectoryProps
   // ── Partner card (customer view) ──────────────────────────────
 
   function renderPartnerCard(partner: Partner) {
-    const mono = getMonogramColor(partner.name)
     const initial = partner.name.charAt(0).toUpperCase()
 
     return (
       <div
         key={partner.id}
         onClick={() => handleCardClick(partner)}
-        className="bg-white rounded-xl border border-ww-gray-200 hover:border-ww-gray-300 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 cursor-pointer flex flex-col overflow-hidden"
+        className="bg-white rounded-md border border-ww-gray-200 hover:border-ww-primary transition-colors duration-150 cursor-pointer flex flex-col"
       >
         <div className="p-5 flex-1 flex flex-col">
           {/* Logo + Name */}
           <div className="flex items-start gap-3.5 mb-3">
-            <div className={`w-12 h-12 rounded-lg flex items-center justify-center text-xl font-semibold shrink-0 ${mono.bg} ${mono.text}`}>
+            <div className="w-12 h-12 rounded-md bg-ww-sky flex items-center justify-center text-lg font-bold font-mono text-ww-navy shrink-0">
               {initial}
             </div>
-            <div className="min-w-0 flex-1 pt-0.5">
-              <h3 className="font-display font-semibold text-ww-gray-800 text-base leading-tight">
+            <div className="min-w-0 flex-1 pt-1">
+              <h3 className="font-display font-semibold text-ww-navy text-base leading-tight tracking-tight">
                 {partner.name}
               </h3>
             </div>
           </div>
 
-          {/* Description — 2 lines then truncate */}
+          {/* Description — 2 lines */}
           <p className="text-sm text-ww-gray-500 leading-relaxed mb-4 line-clamp-2">
             {partner.description}
           </p>
 
-          {/* Spacer */}
           <div className="flex-1" />
 
-          {/* Divider */}
-          <div className="border-t border-ww-gray-100 pt-3 mt-1">
+          {/* Divider + metadata */}
+          <div className="border-t border-ww-gray-200 pt-3 mt-1">
             <div className="flex items-center justify-between gap-2">
-              {/* Product tags */}
               <div className="flex flex-wrap gap-1.5 min-w-0">
                 {partner.productsSupported.map(product => (
                   <span
                     key={product}
-                    className="text-[11px] font-medium px-2 py-0.5 rounded bg-ww-gray-100 text-ww-gray-600"
+                    className="text-[11px] font-mono font-medium uppercase tracking-[0.05em] px-2 py-0.5 rounded-sm border border-ww-gray-200 text-ww-gray-600"
                   >
                     {PRODUCT_LABELS[product] ?? product}
                   </span>
                 ))}
               </div>
-              {/* Integration type */}
-              <span className="text-[11px] text-ww-gray-400 whitespace-nowrap shrink-0">
+              <span className="text-[11px] font-mono text-ww-gray-400 uppercase tracking-wider whitespace-nowrap shrink-0">
                 {INTEGRATION_TYPE_LABELS[partner.integrationType] ?? partner.integrationType}
               </span>
             </div>
@@ -298,12 +271,11 @@ export function Directory({ activeUser, isReviewerView = false }: DirectoryProps
     )
   }
 
-  // ── Reviewer row (for tier-grouped list) ──────────────────────
+  // ── Reviewer row ──────────────────────────────────────────────
 
   function renderReviewerRow(partner: Partner) {
     const isUnapproved = partner.tier === 'unapproved'
     const isUnderReview = partner.tier === 'under_review'
-    const mono = getMonogramColor(partner.name)
     const initial = partner.name.charAt(0).toUpperCase()
     const tierInfo = TIER_LABELS[partner.tier]
 
@@ -311,36 +283,30 @@ export function Directory({ activeUser, isReviewerView = false }: DirectoryProps
       <div
         key={partner.id}
         onClick={() => handleCardClick(partner)}
-        className={`flex items-center gap-4 py-4 px-4 transition-colors ${
-          isUnapproved
-            ? 'cursor-pointer hover:bg-ww-gray-50'
-            : 'cursor-pointer hover:bg-ww-gray-50'
-        } ${isUnderReview ? 'border-l-[3px] border-l-amber-300' : ''}`}
+        className={`flex items-center gap-4 py-3.5 px-4 transition-colors cursor-pointer hover:bg-ww-gray-50 ${
+          isUnderReview ? 'border-l-[3px] border-l-ww-amber' : ''
+        }`}
       >
-        {/* Monogram tile */}
         <div
-          className={`w-10 h-10 rounded-lg flex items-center justify-center text-sm font-semibold shrink-0 ${
-            isUnapproved ? 'bg-ww-gray-100 text-ww-gray-400' : `${mono.bg} ${mono.text}`
+          className={`w-9 h-9 rounded-md flex items-center justify-center text-sm font-bold font-mono shrink-0 ${
+            isUnapproved ? 'bg-ww-gray-100 text-ww-gray-400' : 'bg-ww-sky text-ww-navy'
           }`}
         >
           {initial}
         </div>
 
-        {/* Name */}
         <span
-          className={`text-[15px] font-semibold shrink-0 w-44 truncate ${
-            isUnapproved ? 'text-ww-gray-400' : 'text-ww-gray-800'
+          className={`text-[15px] font-semibold tracking-tight shrink-0 w-44 truncate ${
+            isUnapproved ? 'text-ww-gray-400' : 'text-ww-navy'
           }`}
         >
           {partner.name}
         </span>
 
-        {/* Tier badge */}
-        <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full uppercase tracking-wide shrink-0 ${tierInfo?.color ?? 'bg-gray-100 text-gray-600'}`}>
+        <span className={`text-[10px] font-mono font-medium uppercase tracking-[0.08em] px-2 py-0.5 rounded-sm shrink-0 ${tierInfo?.color ?? 'bg-gray-100 text-gray-600'}`}>
           {tierInfo?.label ?? partner.tier}
         </span>
 
-        {/* Description */}
         <span
           className={`text-sm flex-1 min-w-0 truncate ${
             isUnapproved ? 'text-ww-gray-300' : 'text-ww-gray-500'
@@ -349,12 +315,11 @@ export function Directory({ activeUser, isReviewerView = false }: DirectoryProps
           {partner.description}
         </span>
 
-        {/* Product tags */}
         <div className="shrink-0 flex items-center gap-1.5 ml-3">
           {partner.productsSupported.map(product => (
             <span
               key={product}
-              className="text-[11px] px-1.5 py-0.5 rounded bg-ww-gray-100 text-ww-gray-600 whitespace-nowrap"
+              className="text-[10px] font-mono uppercase tracking-wider px-1.5 py-0.5 rounded-sm border border-ww-gray-200 text-ww-gray-500 whitespace-nowrap"
             >
               {PRODUCT_LABELS[product] ?? product}
             </span>
@@ -369,22 +334,22 @@ export function Directory({ activeUser, isReviewerView = false }: DirectoryProps
   function renderEmpty() {
     return (
       <div className="py-20 text-center">
-        <div className="w-12 h-12 rounded-full bg-ww-gray-100 flex items-center justify-center mx-auto mb-3">
-          <Search size={20} className="text-ww-gray-400" />
+        <div className="w-10 h-10 rounded-md bg-ww-gray-100 flex items-center justify-center mx-auto mb-3">
+          <Search size={18} className="text-ww-gray-400" />
         </div>
-        <p className="text-sm font-medium text-ww-gray-700 mb-1">No partners found</p>
+        <p className="text-sm font-semibold text-ww-gray-700 mb-1">No partners found</p>
         <p className="text-sm text-ww-gray-500">
-          Try adjusting your search or filter criteria.
+          Adjust your search or filter criteria.
         </p>
       </div>
     )
   }
 
-  // ── CUSTOMER VIEW: Card grid ──────────────────────────────────
+  // ── CUSTOMER VIEW ─────────────────────────────────────────────
 
   if (!isReviewerView) {
     return (
-      <div className="pb-10">
+      <div className="pb-12">
         {renderHeader()}
 
         {filteredPartners.length === 0 ? (
@@ -398,10 +363,10 @@ export function Directory({ activeUser, isReviewerView = false }: DirectoryProps
     )
   }
 
-  // ── REVIEWER VIEW: Tier-grouped rows ──────────────────────────
+  // ── REVIEWER VIEW ─────────────────────────────────────────────
 
   return (
-    <div className="pb-10">
+    <div className="pb-12">
       {renderHeader()}
 
       {filteredPartners.length === 0 ? (
@@ -416,25 +381,23 @@ export function Directory({ activeUser, isReviewerView = false }: DirectoryProps
 
             return (
               <div key={section.key} className="mb-3">
-                {/* Section header */}
                 <button
                   onClick={() => toggleSection(section.key)}
-                  className={`w-full flex items-center gap-2.5 py-3 px-4 border-l-[3px] ${section.accent} bg-ww-gray-50/60 hover:bg-ww-gray-50 transition-colors rounded-r-lg`}
+                  className={`w-full flex items-center gap-2.5 py-2.5 px-4 border-l-[3px] ${section.accent} bg-ww-gray-50 hover:bg-ww-gray-100 transition-colors rounded-r-sm`}
                 >
                   {isCollapsed ? (
-                    <ChevronRight size={16} className="text-ww-gray-400 shrink-0" />
+                    <ChevronRight size={14} className="text-ww-gray-400 shrink-0" />
                   ) : (
-                    <ChevronDown size={16} className="text-ww-gray-400 shrink-0" />
+                    <ChevronDown size={14} className="text-ww-gray-400 shrink-0" />
                   )}
-                  <span className="text-sm font-display font-semibold text-ww-gray-700">
+                  <span className="text-[11px] font-mono font-medium uppercase tracking-[0.1em] text-ww-gray-600">
                     {section.label}
                   </span>
-                  <span className="text-xs text-ww-gray-400 font-normal">
+                  <span className="text-[11px] font-mono text-ww-gray-400">
                     {sectionPartners.length}
                   </span>
                 </button>
 
-                {/* Section rows */}
                 {!isCollapsed && (
                   <div className="divide-y divide-ww-gray-100">
                     {sectionPartners.map(partner => renderReviewerRow(partner))}

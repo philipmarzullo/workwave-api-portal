@@ -133,82 +133,70 @@ export default function App() {
 
   const navItems = viewMode === 'customer' ? customerNav : reviewerNav
 
-  const customer = activeUser ? store.getCustomer(activeUser.customerId) : undefined
   const allUsers = store.getCustomerUsers()
 
   return (
     <div className="min-h-screen flex flex-col">
-      {/* WorkWave-style header */}
-      <header className="bg-ww-navy text-white sticky top-0 z-50">
+      {/* ── Nav bar — tight, structural ── */}
+      <header className="bg-ww-navy text-white sticky top-0 z-50 border-b border-white/5">
         <div className="w-full max-w-[1200px] mx-auto px-8">
-          <div className="flex items-center justify-between h-16">
-            {/* Logo + title */}
-            <div className="flex items-center gap-3">
-              <button onClick={() => navigate(viewMode === 'reviewer' ? '/reviewer' : '/')} className="flex items-center gap-2.5 hover:opacity-90 transition-opacity">
-                <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center">
-                  <Shield size={18} className="text-white" />
-                </div>
-                <div>
-                  <span className="font-display font-semibold text-sm tracking-wide">WorkWave</span>
-                  <span className="text-white/60 text-sm font-light ml-1.5">API Access</span>
-                </div>
-              </button>
-            </div>
+          <div className="flex items-center justify-between h-12">
+            {/* Logo */}
+            <button onClick={() => navigate(viewMode === 'reviewer' ? '/reviewer' : '/')} className="flex items-center gap-2 hover:opacity-90 transition-opacity">
+              <Shield size={16} className="text-ww-teal" />
+              <span className="font-display font-bold text-[13px] tracking-tight">WORKWAVE</span>
+              <span className="text-white/40 text-[13px] font-mono">/ api</span>
+            </button>
 
-            {/* Navigation */}
-            <nav className="hidden sm:flex items-center gap-1">
+            {/* Nav links */}
+            <nav className="hidden sm:flex items-center gap-0.5">
               {navItems.map(item => {
                 const isActive = location.pathname === item.path
                 return (
                   <button
                     key={item.path}
                     onClick={() => navigate(item.path)}
-                    className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded text-[13px] font-medium transition-colors ${
                       isActive
-                        ? 'bg-white/15 text-white'
-                        : 'text-white/70 hover:text-white hover:bg-white/10'
+                        ? 'bg-white/12 text-white'
+                        : 'text-white/60 hover:text-white hover:bg-white/8'
                     }`}
                   >
-                    <item.icon size={14} />
+                    <item.icon size={13} />
                     {item.label}
                   </button>
                 )
               })}
             </nav>
 
-            {/* Right side controls */}
-            <div className="flex items-center gap-3">
-              {/* View mode toggle */}
+            {/* Right controls */}
+            <div className="flex items-center gap-2">
               <button
                 onClick={toggleViewMode}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors bg-white/10 hover:bg-white/20 text-white"
+                className="flex items-center gap-1.5 px-2.5 py-1 rounded text-[11px] font-mono uppercase tracking-wider transition-colors bg-white/8 hover:bg-white/15 text-white/70 hover:text-white"
               >
-                {viewMode === 'customer' ? <Eye size={12} /> : <Users size={12} />}
-                {viewMode === 'customer' ? 'Customer View' : 'Reviewer View'}
+                {viewMode === 'customer' ? <Eye size={11} /> : <Users size={11} />}
+                {viewMode === 'customer' ? 'Customer' : 'Reviewer'}
               </button>
 
-              {/* User picker (customer mode only) */}
               {viewMode === 'customer' && activeUser && (
                 <div className="relative">
                   <button
                     onClick={() => setUserPickerOpen(!userPickerOpen)}
-                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs bg-white/10 hover:bg-white/20 transition-colors"
+                    className="flex items-center gap-1.5 px-2.5 py-1 rounded text-[11px] bg-white/8 hover:bg-white/15 transition-colors"
                   >
-                    <div className="w-5 h-5 rounded-full bg-ww-blue flex items-center justify-center text-[10px] font-bold">
-                      {activeUser.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                    <div className="w-4 h-4 rounded bg-ww-primary flex items-center justify-center text-[9px] font-bold font-mono">
+                      {activeUser.name.charAt(0)}
                     </div>
-                    <div className="text-left hidden md:block">
-                      <div className="font-medium text-white">{activeUser.name}</div>
-                      <div className="text-white/50 text-[10px]">{customer?.name}</div>
-                    </div>
-                    <ChevronDown size={12} className="text-white/50" />
+                    <span className="hidden md:inline text-white/80">{activeUser.name.split(' ')[0]}</span>
+                    <ChevronDown size={10} className="text-white/40" />
                   </button>
 
                   {userPickerOpen && (
                     <>
                       <div className="fixed inset-0 z-40" onClick={() => setUserPickerOpen(false)} />
-                      <div className="absolute right-0 top-full mt-1 w-72 bg-white rounded-xl shadow-xl border border-ww-gray-200 z-50 py-2 max-h-96 overflow-y-auto">
-                        <div className="px-3 py-1.5 text-[10px] font-semibold text-ww-gray-400 uppercase tracking-wider">Switch Demo User</div>
+                      <div className="absolute right-0 top-full mt-1 w-72 bg-white rounded-md border border-ww-gray-200 z-50 py-1 max-h-96 overflow-y-auto">
+                        <div className="px-3 py-1.5 text-[10px] font-mono font-medium text-ww-gray-400 uppercase tracking-[0.08em]">Switch Demo User</div>
                         {allUsers.map(u => {
                           const c = store.getCustomer(u.customerId)
                           return (
@@ -219,17 +207,17 @@ export default function App() {
                                 u.id === activeUser?.id ? 'bg-ww-sky' : ''
                               }`}
                             >
-                              <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold text-white ${u.canRequestApi ? 'bg-ww-blue' : 'bg-ww-gray-400'}`}>
-                                {u.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                              <div className={`w-5 h-5 rounded flex items-center justify-center text-[9px] font-bold font-mono text-white ${u.canRequestApi ? 'bg-ww-primary' : 'bg-ww-gray-400'}`}>
+                                {u.name.charAt(0)}
                               </div>
                               <div className="flex-1 min-w-0">
-                                <div className="text-xs font-medium text-ww-gray-800 truncate">{u.name}</div>
-                                <div className="text-[10px] text-ww-gray-500 truncate">{c?.name} · {u.role}</div>
+                                <div className="text-[13px] font-medium text-ww-gray-800 truncate">{u.name}</div>
+                                <div className="text-[11px] text-ww-gray-500 truncate font-mono">{c?.name} · {u.role}</div>
                               </div>
                               {u.canRequestApi ? (
-                                <span className="text-[9px] px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700 font-medium shrink-0">Can Request</span>
+                                <span className="text-[9px] font-mono uppercase tracking-wider px-1.5 py-0.5 rounded border border-ww-teal/30 text-ww-teal font-medium shrink-0">API</span>
                               ) : (
-                                <span className="text-[9px] px-1.5 py-0.5 rounded bg-ww-gray-100 text-ww-gray-500 font-medium shrink-0">View Only</span>
+                                <span className="text-[9px] font-mono uppercase tracking-wider px-1.5 py-0.5 rounded border border-ww-gray-200 text-ww-gray-400 font-medium shrink-0">View</span>
                               )}
                             </button>
                           )
@@ -240,31 +228,30 @@ export default function App() {
                 </div>
               )}
 
-              {/* Reset */}
               <button
                 onClick={handleReset}
-                className="p-1.5 rounded-lg text-white/40 hover:text-white hover:bg-white/10 transition-colors"
+                className="p-1 rounded text-white/30 hover:text-white/60 transition-colors"
                 title="Reset demo data"
               >
-                <RotateCcw size={14} />
+                <RotateCcw size={12} />
               </button>
             </div>
           </div>
         </div>
 
         {/* Mobile nav */}
-        <div className="sm:hidden border-t border-white/10 px-4 py-2 flex gap-1">
+        <div className="sm:hidden border-t border-white/10 px-4 py-1.5 flex gap-0.5">
           {navItems.map(item => {
             const isActive = location.pathname === item.path
             return (
               <button
                 key={item.path}
                 onClick={() => navigate(item.path)}
-                className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
-                  isActive ? 'bg-white/15 text-white' : 'text-white/70'
+                className={`flex-1 flex items-center justify-center gap-1 px-2 py-1.5 rounded text-[11px] font-medium transition-colors ${
+                  isActive ? 'bg-white/12 text-white' : 'text-white/60'
                 }`}
               >
-                <item.icon size={12} />
+                <item.icon size={11} />
                 {item.label}
               </button>
             )
@@ -274,8 +261,8 @@ export default function App() {
 
       {/* Demo banner */}
       {viewMode === 'customer' && activeUser && !activeUser.canRequestApi && (
-        <div className="bg-amber-50 border-b border-amber-200 px-4 py-2.5 text-center">
-          <p className="text-xs text-amber-800">
+        <div className="bg-amber-50 border-b border-amber-200/60 px-4 py-2 text-center">
+          <p className="text-[12px] text-amber-800">
             <strong>{activeUser.name}</strong> does not have API request permissions. Contact your administrator to request access.
           </p>
         </div>
@@ -300,17 +287,17 @@ export default function App() {
         </div>
       </main>
 
-      {/* Footer */}
-      <footer className="bg-ww-navy text-white/50 py-6 mt-auto">
+      {/* Footer — mono treatment */}
+      <footer className="border-t border-ww-gray-200 py-5 mt-auto">
         <div className="w-full max-w-[1200px] mx-auto px-8 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Shield size={14} />
-            <span className="text-xs font-display">WorkWave API Access Portal</span>
+          <div className="flex items-center gap-2 text-ww-gray-400">
+            <Shield size={12} />
+            <span className="text-[11px] font-mono uppercase tracking-[0.06em]">WorkWave API Access Portal</span>
           </div>
-          <div className="flex items-center gap-4 text-xs">
-            <span>POC Demo</span>
-            <button onClick={handleReset} className="flex items-center gap-1 hover:text-white/70 transition-colors">
-              <RotateCcw size={10} /> Reset Data
+          <div className="flex items-center gap-4 text-[11px] font-mono text-ww-gray-400">
+            <span className="uppercase tracking-[0.06em]">POC</span>
+            <button onClick={handleReset} className="flex items-center gap-1 hover:text-ww-gray-600 transition-colors uppercase tracking-[0.06em]">
+              <RotateCcw size={10} /> Reset
             </button>
           </div>
         </div>

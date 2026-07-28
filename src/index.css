@@ -1,27 +1,42 @@
-@import url('https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;500;600;700&family=Titillium+Web:wght@300;400;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 @import "tailwindcss";
 
 @theme {
+  /* ── Brand colors from workwave.com ── */
   --color-ww-navy: #002D5C;
   --color-ww-navy-light: #003d7a;
-  --color-ww-blue: #4d65ff;
-  --color-ww-blue-light: #6b7fff;
-  --color-ww-sky: #e8ecff;
-  --color-ww-green: #22c55e;
-  --color-ww-amber: #f59e0b;
-  --color-ww-red: #ef4444;
-  --color-ww-gray-50: #f8fafc;
-  --color-ww-gray-100: #f1f5f9;
-  --color-ww-gray-200: #e2e8f0;
-  --color-ww-gray-300: #cbd5e1;
-  --color-ww-gray-400: #94a3b8;
-  --color-ww-gray-500: #64748b;
-  --color-ww-gray-600: #475569;
-  --color-ww-gray-700: #334155;
-  --color-ww-gray-800: #1e293b;
-  --color-ww-gray-900: #0f172a;
-  --font-display: 'Exo 2', sans-serif;
-  --font-body: 'Titillium Web', sans-serif;
+  --color-ww-primary: #055291;
+  --color-ww-primary-light: #0a6bb5;
+  --color-ww-teal: #0F95A4;
+  --color-ww-teal-light: #14b8c9;
+
+  /* ── Neutrals derived from navy/teal family ── */
+  --color-ww-body: #001C23;
+  --color-ww-gray-50: #f7f8f9;
+  --color-ww-gray-100: #eef0f2;
+  --color-ww-gray-200: #dde1e6;
+  --color-ww-gray-300: #c1c7cd;
+  --color-ww-gray-400: #8d95a0;
+  --color-ww-gray-500: #5f6b7a;
+  --color-ww-gray-600: #3e4a5a;
+  --color-ww-gray-700: #283545;
+  --color-ww-gray-800: #1a2636;
+  --color-ww-gray-900: #0d1520;
+
+  /* ── Semantic ── */
+  --color-ww-green: #0f8a5f;
+  --color-ww-amber: #c47d0a;
+  --color-ww-red: #c53030;
+
+  /* ── Legacy aliases (used in some views) ── */
+  --color-ww-blue: #055291;
+  --color-ww-blue-light: #0a6bb5;
+  --color-ww-sky: #e6f0f8;
+
+  /* ── Typography ── */
+  --font-display: 'Inter', -apple-system, system-ui, sans-serif;
+  --font-body: 'Inter', -apple-system, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
 }
 
 *, *::before, *::after {
@@ -36,12 +51,15 @@ html {
 
 body {
   background: var(--color-ww-gray-50);
-  color: var(--color-ww-gray-800);
+  color: var(--color-ww-body);
   min-height: 100vh;
+  font-size: 14px;
+  line-height: 1.5;
 }
 
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-display);
+  letter-spacing: -0.02em;
 }
 
 #root {

@@ -54,7 +54,7 @@ export function MyRequests({ activeUser, onRefresh }: MyRequestsProps) {
     return (
       <div className="max-w-4xl mx-auto py-16">
         <div className="text-center">
-          <div className="w-16 h-16 rounded-2xl bg-ww-gray-100 flex items-center justify-center mx-auto mb-4">
+          <div className="w-16 h-16 rounded-md bg-ww-gray-100 flex items-center justify-center mx-auto mb-4">
             <ClipboardList size={28} className="text-ww-gray-400" />
           </div>
           <h2 className="font-display text-lg font-semibold text-ww-gray-800 mb-2">
@@ -89,8 +89,8 @@ export function MyRequests({ activeUser, onRefresh }: MyRequestsProps) {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-ww-sky flex items-center justify-center">
-            <ClipboardList size={20} className="text-ww-blue" />
+          <div className="w-10 h-10 rounded-md bg-ww-sky flex items-center justify-center">
+            <ClipboardList size={20} className="text-ww-primary" />
           </div>
           <div>
             <h1 className="font-display text-xl font-bold text-ww-gray-900">
@@ -105,8 +105,8 @@ export function MyRequests({ activeUser, onRefresh }: MyRequestsProps) {
 
       {/* Request list */}
       {requests.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-ww-gray-200 p-12 text-center">
-          <div className="w-16 h-16 rounded-2xl bg-ww-gray-50 flex items-center justify-center mx-auto mb-4">
+        <div className="bg-white rounded-md border border-ww-gray-200 p-12 text-center">
+          <div className="w-16 h-16 rounded-md bg-ww-gray-50 flex items-center justify-center mx-auto mb-4">
             <PackageOpen size={28} className="text-ww-gray-300" />
           </div>
           <h3 className="font-display text-base font-semibold text-ww-gray-800 mb-2">
@@ -118,7 +118,7 @@ export function MyRequests({ activeUser, onRefresh }: MyRequestsProps) {
           </p>
           <button
             onClick={() => navigate('/')}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-ww-blue text-white text-sm font-medium hover:bg-ww-blue-light transition-colors"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-ww-primary text-white text-sm font-medium hover:bg-ww-primary-light transition-colors"
           >
             <Globe size={14} />
             Browse Partner Directory
@@ -138,7 +138,7 @@ export function MyRequests({ activeUser, onRefresh }: MyRequestsProps) {
               <div
                 key={request.id}
                 onClick={() => navigate(`/my-requests/${request.id}`)}
-                className="bg-white rounded-xl border border-ww-gray-200 p-5 hover:border-ww-blue/30 hover:shadow-md transition-all cursor-pointer group"
+                className="bg-white rounded-md border border-ww-gray-200 p-5 hover:border-ww-primary/30 transition-all cursor-pointer group"
               >
                 <div className="flex items-start justify-between gap-4">
                   {/* Left content */}
@@ -150,13 +150,13 @@ export function MyRequests({ activeUser, onRefresh }: MyRequestsProps) {
                       </h3>
                       {tierBadge && (
                         <span
-                          className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${tierBadge.className}`}
+                          className={`text-[10px] font-medium font-mono px-2 py-0.5 rounded ${tierBadge.className}`}
                         >
                           {tierBadge.label}
                         </span>
                       )}
                       {!request.partnerId && (
-                        <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-ww-gray-100 text-ww-gray-500">
+                        <span className="text-[10px] font-medium font-mono px-2 py-0.5 rounded bg-ww-gray-100 text-ww-gray-500">
                           Unlisted
                         </span>
                       )}
@@ -165,7 +165,7 @@ export function MyRequests({ activeUser, onRefresh }: MyRequestsProps) {
                     {/* Badges row */}
                     <div className="flex items-center gap-2 flex-wrap mb-2">
                       {/* Product */}
-                      <span className="text-[11px] font-medium px-2 py-0.5 rounded bg-ww-sky text-ww-blue">
+                      <span className="text-[11px] font-medium font-mono px-2 py-0.5 rounded bg-ww-sky text-ww-primary">
                         {PRODUCT_LABELS[request.product] ?? request.product}
                       </span>
 
@@ -179,7 +179,7 @@ export function MyRequests({ activeUser, onRefresh }: MyRequestsProps) {
 
                       {/* Environment */}
                       <span
-                        className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${
+                        className={`text-[10px] font-medium font-mono px-2 py-0.5 rounded ${
                           request.environment === 'production'
                             ? 'bg-purple-100 text-purple-700'
                             : 'bg-ww-gray-100 text-ww-gray-600'
@@ -190,7 +190,7 @@ export function MyRequests({ activeUser, onRefresh }: MyRequestsProps) {
 
                       {/* Status */}
                       <span
-                        className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${status.color}`}
+                        className={`text-[10px] font-medium font-mono px-2 py-0.5 rounded ${status.color}`}
                       >
                         {status.label}
                       </span>
@@ -218,7 +218,7 @@ export function MyRequests({ activeUser, onRefresh }: MyRequestsProps) {
                     {request.status === 'sandbox_approved' && (
                       <button
                         onClick={(e) => handleRequestProduction(e, request.id)}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-ww-blue text-white text-xs font-medium hover:bg-ww-blue-light transition-colors"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-ww-primary text-white text-xs font-medium hover:bg-ww-primary-light transition-colors"
                       >
                         <Rocket size={12} />
                         Request Production Access
@@ -227,7 +227,7 @@ export function MyRequests({ activeUser, onRefresh }: MyRequestsProps) {
 
                     <ArrowRight
                       size={16}
-                      className="text-ww-gray-300 group-hover:text-ww-blue transition-colors"
+                      className="text-ww-gray-300 group-hover:text-ww-primary transition-colors"
                     />
                   </div>
                 </div>

@@ -92,13 +92,13 @@ export function ReviewerQueue() {
     <div className="mx-auto py-8">
       {/* Header */}
       <div className="flex items-center gap-3 mb-6">
-        <div className="w-10 h-10 rounded-xl bg-ww-navy flex items-center justify-center">
+        <div className="w-10 h-10 rounded-md bg-ww-navy flex items-center justify-center">
           <ClipboardList size={20} className="text-white" />
         </div>
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-2xl font-display font-bold text-ww-gray-900">Review Queue</h1>
-            <span className="inline-flex items-center justify-center min-w-[24px] h-6 px-2 rounded-full bg-ww-blue text-white text-xs font-bold">
+            <span className="inline-flex items-center justify-center min-w-[24px] h-6 px-2 rounded-full bg-ww-primary text-white text-xs font-bold">
               {stats.total}
             </span>
           </div>
@@ -108,31 +108,31 @@ export function ReviewerQueue() {
 
       {/* Stats Row */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-        <div className="bg-white rounded-xl border border-ww-gray-200 p-4">
+        <div className="bg-white rounded-md border border-ww-gray-200 p-4">
           <div className="flex items-center gap-2 mb-1">
             <Clock size={14} className="text-ww-gray-400" />
-            <span className="text-xs font-medium text-ww-gray-500 uppercase tracking-wide">Total Pending</span>
+            <span className="text-xs font-mono font-medium text-ww-gray-500 uppercase tracking-[0.06em]">Total Pending</span>
           </div>
           <p className="text-2xl font-display font-bold text-ww-gray-900">{stats.total}</p>
         </div>
-        <div className="bg-white rounded-xl border border-ww-gray-200 p-4">
+        <div className="bg-white rounded-md border border-ww-gray-200 p-4">
           <div className="flex items-center gap-2 mb-1">
-            <FlaskConical size={14} className="text-ww-blue" />
-            <span className="text-xs font-medium text-ww-gray-500 uppercase tracking-wide">Sandbox</span>
+            <FlaskConical size={14} className="text-ww-primary" />
+            <span className="text-xs font-mono font-medium text-ww-gray-500 uppercase tracking-[0.06em]">Sandbox</span>
           </div>
-          <p className="text-2xl font-display font-bold text-ww-blue">{stats.sandbox}</p>
+          <p className="text-2xl font-display font-bold text-ww-primary">{stats.sandbox}</p>
         </div>
-        <div className="bg-white rounded-xl border border-ww-gray-200 p-4">
+        <div className="bg-white rounded-md border border-ww-gray-200 p-4">
           <div className="flex items-center gap-2 mb-1">
             <Server size={14} className="text-purple-600" />
-            <span className="text-xs font-medium text-ww-gray-500 uppercase tracking-wide">Production</span>
+            <span className="text-xs font-mono font-medium text-ww-gray-500 uppercase tracking-[0.06em]">Production</span>
           </div>
           <p className="text-2xl font-display font-bold text-purple-600">{stats.production}</p>
         </div>
-        <div className="bg-white rounded-xl border border-ww-gray-200 p-4">
+        <div className="bg-white rounded-md border border-ww-gray-200 p-4">
           <div className="flex items-center gap-2 mb-1">
             <Flag size={14} className="text-ww-amber" />
-            <span className="text-xs font-medium text-ww-gray-500 uppercase tracking-wide">Flagged</span>
+            <span className="text-xs font-mono font-medium text-ww-gray-500 uppercase tracking-[0.06em]">Flagged</span>
           </div>
           <p className="text-2xl font-display font-bold text-ww-amber">{stats.flagged}</p>
         </div>
@@ -147,7 +147,7 @@ export function ReviewerQueue() {
               onClick={() => setActiveTab(tab.key)}
               className={`flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                 activeTab === tab.key
-                  ? 'bg-white text-ww-navy shadow-sm'
+                  ? 'bg-white text-ww-navy'
                   : 'text-ww-gray-500 hover:text-ww-gray-700'
               }`}
             >
@@ -176,7 +176,7 @@ export function ReviewerQueue() {
 
       {/* Request List */}
       {filteredRequests.length === 0 ? (
-        <div className="bg-white rounded-xl border border-ww-gray-200 p-12 text-center">
+        <div className="bg-white rounded-md border border-ww-gray-200 p-12 text-center">
           <ClipboardList size={40} className="mx-auto text-ww-gray-300 mb-3" />
           <p className="text-ww-gray-500 font-medium">No requests match the current filter</p>
           <p className="text-sm text-ww-gray-400 mt-1">Try selecting a different tab above</p>
@@ -195,7 +195,7 @@ export function ReviewerQueue() {
               <button
                 key={req.id}
                 onClick={() => navigate(`/reviewer/request/${req.id}`)}
-                className={`w-full text-left bg-white rounded-xl border transition-all hover:shadow-md hover:border-ww-blue/30 group ${
+                className={`w-full text-left bg-white rounded-md border transition-all hover:border-ww-primary group ${
                   flagged ? 'border-ww-amber/40' : 'border-ww-gray-200'
                 }`}
               >
@@ -208,7 +208,7 @@ export function ReviewerQueue() {
                         <h3 className="text-sm font-semibold text-ww-gray-900 truncate">
                           {customer?.name ?? 'Unknown Customer'}
                         </h3>
-                        <span className="inline-flex px-2 py-0.5 rounded text-[10px] font-semibold bg-ww-sky text-ww-navy uppercase tracking-wide">
+                        <span className="inline-flex px-2 py-0.5 rounded text-[10px] font-mono font-semibold bg-ww-sky text-ww-navy uppercase tracking-wide">
                           {PRODUCT_LABELS[req.product] ?? req.product}
                         </span>
                         <span className={`inline-flex px-2 py-0.5 rounded text-[10px] font-semibold ${status.color}`}>
@@ -237,7 +237,7 @@ export function ReviewerQueue() {
                       {/* Details row */}
                       <div className="flex items-center gap-4 text-xs text-ww-gray-500 flex-wrap">
                         <span>{USE_CASE_LABELS[req.useCase] ?? req.useCase}</span>
-                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded font-medium ${
+                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded font-mono font-medium ${
                           req.environment === 'production'
                             ? 'bg-purple-100 text-purple-700'
                             : 'bg-blue-100 text-blue-700'
@@ -249,7 +249,7 @@ export function ReviewerQueue() {
                           )}
                           {req.environment === 'production' ? 'Production' : 'Sandbox'}
                         </span>
-                        <span>Submitted {formatDate(req.createdAt)}</span>
+                        <span className="font-mono">Submitted {formatDate(req.createdAt)}</span>
                       </div>
 
                       {/* Flags */}
@@ -271,7 +271,7 @@ export function ReviewerQueue() {
 
                     {/* Right arrow */}
                     <div className="flex items-center self-center">
-                      <ChevronRight size={18} className="text-ww-gray-300 group-hover:text-ww-blue transition-colors" />
+                      <ChevronRight size={18} className="text-ww-gray-300 group-hover:text-ww-primary transition-colors" />
                     </div>
                   </div>
                 </div>

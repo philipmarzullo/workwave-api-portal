@@ -172,8 +172,8 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
   if (!activeUser || !activeUser.canRequestApi) {
     return (
       <div className="max-w-[720px] mx-auto py-10">
-        <div className="bg-white rounded-2xl border border-ww-gray-200 shadow-sm p-12 text-center">
-          <div className="w-16 h-16 rounded-2xl bg-ww-gray-100 flex items-center justify-center mx-auto mb-6">
+        <div className="bg-white rounded-md border border-ww-gray-200 p-12 text-center">
+          <div className="w-16 h-16 rounded-md bg-ww-gray-100 flex items-center justify-center mx-auto mb-6">
             <Lock size={28} className="text-ww-gray-400" />
           </div>
           <h2 className="font-display text-xl font-semibold text-ww-gray-800 mb-3">
@@ -336,10 +336,10 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
     return (
       <div
         className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 ${
-          selected ? 'border-ww-blue' : 'border-ww-gray-300'
+          selected ? 'border-ww-primary' : 'border-ww-gray-300'
         }`}
       >
-        {selected && <div className="w-2 h-2 rounded-full bg-ww-blue" />}
+        {selected && <div className="w-2 h-2 rounded-full bg-ww-primary" />}
       </div>
     )
   }
@@ -350,7 +350,7 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
     return (
       <div
         className={`w-4 h-4 rounded border-2 flex items-center justify-center shrink-0 transition-colors ${
-          checked ? 'bg-ww-blue border-ww-blue' : 'border-ww-gray-300 bg-white'
+          checked ? 'bg-ww-primary border-ww-primary' : 'border-ww-gray-300 bg-white'
         }`}
       >
         {checked && (
@@ -393,7 +393,7 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
                 <div
                   className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${
                     isActive
-                      ? 'bg-ww-blue text-white'
+                      ? 'bg-ww-primary text-white'
                       : isComplete
                         ? 'bg-ww-green text-white'
                         : 'bg-ww-gray-200 text-ww-gray-400'
@@ -408,7 +408,7 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
                 <span
                   className={`text-[11px] font-medium whitespace-nowrap ${
                     isActive
-                      ? 'text-ww-blue'
+                      ? 'text-ww-primary'
                       : isComplete
                         ? 'text-ww-green'
                         : 'text-ww-gray-400'
@@ -435,9 +435,9 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
             <label className="block text-sm font-semibold text-ww-gray-700 mb-3">
               Integration Partner
             </label>
-            <div className="bg-ww-gray-50 rounded-xl border border-ww-gray-200 p-5">
+            <div className="bg-ww-gray-50 rounded-md border border-ww-gray-200 p-5">
               <div className="flex items-start gap-4">
-                <div className="w-12 h-12 rounded-xl bg-white border border-ww-gray-200 flex items-center justify-center text-2xl shrink-0">
+                <div className="w-12 h-12 rounded-md bg-white border border-ww-gray-200 flex items-center justify-center text-2xl shrink-0">
                   {partner.logo}
                 </div>
                 <div className="flex-1 min-w-0">
@@ -446,7 +446,7 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
                       {partner.name}
                     </h3>
                     <span
-                      className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${
+                      className={`text-[10px] px-2 py-0.5 rounded font-semibold font-mono ${
                         TIER_LABELS[partner.tier]?.color ?? 'bg-gray-100 text-gray-600'
                       }`}
                     >
@@ -461,7 +461,7 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
                       href={partner.website}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 text-xs text-ww-blue hover:underline mt-2"
+                      className="inline-flex items-center gap-1 text-xs text-ww-primary hover:underline mt-2"
                     >
                       <ExternalLink size={11} />
                       {partner.website}
@@ -501,7 +501,7 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
                   onChange={e => setPartnerName(e.target.value)}
                   onBlur={() => touch('partnerName')}
                   placeholder="e.g. Acme Software Inc."
-                  className="w-full px-4 py-2.5 rounded-lg border border-ww-gray-300 text-sm text-ww-gray-800 placeholder:text-ww-gray-400 focus:outline-none focus:ring-2 focus:ring-ww-blue focus:border-transparent transition-shadow"
+                  className="w-full px-4 py-2.5 rounded-lg border border-ww-gray-300 text-sm text-ww-gray-800 placeholder:text-ww-gray-400 focus:outline-none focus:ring-2 focus:ring-ww-primary focus:border-transparent transition-shadow"
                 />
                 {renderError(fieldError('partnerName', !!partnerName.trim()))}
               </div>
@@ -518,7 +518,7 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
                   onChange={e => setPartnerWebsite(e.target.value)}
                   onBlur={() => touch('partnerWebsite')}
                   placeholder="https://www.example.com"
-                  className="w-full px-4 py-2.5 rounded-lg border border-ww-gray-300 text-sm text-ww-gray-800 placeholder:text-ww-gray-400 focus:outline-none focus:ring-2 focus:ring-ww-blue focus:border-transparent transition-shadow"
+                  className="w-full px-4 py-2.5 rounded-lg border border-ww-gray-300 text-sm text-ww-gray-800 placeholder:text-ww-gray-400 focus:outline-none focus:ring-2 focus:ring-ww-primary focus:border-transparent transition-shadow"
                 />
                 {renderError(fieldError('partnerWebsite', !!partnerWebsite.trim()))}
               </div>
@@ -532,7 +532,7 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
                   onChange={e => setPartnerContactName(e.target.value)}
                   onBlur={() => touch('partnerContactName')}
                   placeholder="e.g. Jane Smith"
-                  className="w-full px-4 py-2.5 rounded-lg border border-ww-gray-300 text-sm text-ww-gray-800 placeholder:text-ww-gray-400 focus:outline-none focus:ring-2 focus:ring-ww-blue focus:border-transparent transition-shadow"
+                  className="w-full px-4 py-2.5 rounded-lg border border-ww-gray-300 text-sm text-ww-gray-800 placeholder:text-ww-gray-400 focus:outline-none focus:ring-2 focus:ring-ww-primary focus:border-transparent transition-shadow"
                 />
                 {renderError(fieldError('partnerContactName', !!partnerContactName.trim()))}
               </div>
@@ -549,7 +549,7 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
                   onChange={e => setPartnerContact(e.target.value)}
                   onBlur={() => touch('partnerContact')}
                   placeholder="contact@example.com"
-                  className="w-full px-4 py-2.5 rounded-lg border border-ww-gray-300 text-sm text-ww-gray-800 placeholder:text-ww-gray-400 focus:outline-none focus:ring-2 focus:ring-ww-blue focus:border-transparent transition-shadow"
+                  className="w-full px-4 py-2.5 rounded-lg border border-ww-gray-300 text-sm text-ww-gray-800 placeholder:text-ww-gray-400 focus:outline-none focus:ring-2 focus:ring-ww-primary focus:border-transparent transition-shadow"
                 />
                 {renderError(fieldError('partnerContact', !!partnerContact.trim()))}
               </div>
@@ -568,7 +568,7 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
 
           {customerProducts.length === 1 ? (
             /* Single product: read-only confirmed value */
-            <div className="flex items-center gap-3 px-4 py-3.5 rounded-xl border-2 border-ww-green/40 bg-emerald-50/50">
+            <div className="flex items-center gap-3 px-4 py-3.5 rounded-md border-2 border-ww-green/40 bg-emerald-50/50">
               <CheckCircle2 size={18} className="text-ww-green shrink-0" />
               <div>
                 <span className="text-sm font-medium text-ww-gray-800">
@@ -584,9 +584,9 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
               {customerProducts.map(product => (
                 <label
                   key={product}
-                  className={`relative flex items-center gap-3 px-4 py-3.5 rounded-xl border-2 cursor-pointer transition-all ${
+                  className={`relative flex items-center gap-3 px-4 py-3.5 rounded-md border-2 cursor-pointer transition-all ${
                     selectedProduct === product
-                      ? 'border-ww-blue bg-ww-sky/30'
+                      ? 'border-ww-primary bg-ww-sky/30'
                       : 'border-ww-gray-200 bg-white hover:border-ww-gray-300'
                   }`}
                 >
@@ -632,9 +632,9 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
             {ALL_BUILDER_TYPES.map(bt => (
               <label
                 key={bt}
-                className={`relative flex items-center gap-3 px-4 py-3.5 rounded-xl border-2 cursor-pointer transition-all ${
+                className={`relative flex items-center gap-3 px-4 py-3.5 rounded-md border-2 cursor-pointer transition-all ${
                   builderType === bt
-                    ? 'border-ww-blue bg-ww-sky/30'
+                    ? 'border-ww-primary bg-ww-sky/30'
                     : 'border-ww-gray-200 bg-white hover:border-ww-gray-300'
                 }`}
               >
@@ -685,7 +685,7 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
             onChange={e => setConnectingSystem(e.target.value)}
             onBlur={() => touch('connectingSystem')}
             placeholder="e.g. Salesforce, QuickBooks, Custom CRM"
-            className="w-full px-4 py-2.5 rounded-lg border border-ww-gray-300 text-sm text-ww-gray-800 placeholder:text-ww-gray-400 focus:outline-none focus:ring-2 focus:ring-ww-blue focus:border-transparent transition-shadow"
+            className="w-full px-4 py-2.5 rounded-lg border border-ww-gray-300 text-sm text-ww-gray-800 placeholder:text-ww-gray-400 focus:outline-none focus:ring-2 focus:ring-ww-primary focus:border-transparent transition-shadow"
           />
           {renderError(fieldError('connectingSystem', !!connectingSystem.trim()))}
         </div>
@@ -699,9 +699,9 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
             {ALL_USE_CASES.map(uc => (
               <label
                 key={uc}
-                className={`relative flex items-center gap-3 px-4 py-3.5 rounded-xl border-2 cursor-pointer transition-all ${
+                className={`relative flex items-center gap-3 px-4 py-3.5 rounded-md border-2 cursor-pointer transition-all ${
                   useCase === uc
-                    ? 'border-ww-blue bg-ww-sky/30'
+                    ? 'border-ww-primary bg-ww-sky/30'
                     : 'border-ww-gray-200 bg-white hover:border-ww-gray-300'
                 }`}
               >
@@ -744,7 +744,7 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
             onBlur={() => touch('useCaseDetail')}
             placeholder="Describe how you plan to use the API, what data flows you need, and the business problem you are solving..."
             rows={4}
-            className="w-full px-4 py-2.5 rounded-lg border border-ww-gray-300 text-sm text-ww-gray-800 placeholder:text-ww-gray-400 focus:outline-none focus:ring-2 focus:ring-ww-blue focus:border-transparent transition-shadow resize-none"
+            className="w-full px-4 py-2.5 rounded-lg border border-ww-gray-300 text-sm text-ww-gray-800 placeholder:text-ww-gray-400 focus:outline-none focus:ring-2 focus:ring-ww-primary focus:border-transparent transition-shadow resize-none"
           />
           {renderError(fieldError('useCaseDetail', !!useCaseDetail.trim()))}
         </div>
@@ -763,7 +763,7 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
                 key={`read-${cat}`}
                 className={`flex items-center gap-2.5 px-3.5 py-2.5 rounded-lg border cursor-pointer transition-all ${
                   dataRead.includes(cat)
-                    ? 'border-ww-blue bg-ww-sky/30'
+                    ? 'border-ww-primary bg-ww-sky/30'
                     : 'border-ww-gray-200 bg-white hover:border-ww-gray-300'
                 }`}
               >
@@ -801,7 +801,7 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
                 key={`write-${cat}`}
                 className={`flex items-center gap-2.5 px-3.5 py-2.5 rounded-lg border cursor-pointer transition-all ${
                   dataWrite.includes(cat)
-                    ? 'border-ww-blue bg-ww-sky/30'
+                    ? 'border-ww-primary bg-ww-sky/30'
                     : 'border-ww-gray-200 bg-white hover:border-ww-gray-300'
                 }`}
               >
@@ -839,9 +839,9 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
             ].map(opt => (
               <label
                 key={String(opt.value)}
-                className={`flex items-center gap-3 px-5 py-3.5 rounded-xl border-2 cursor-pointer transition-all ${
+                className={`flex items-center gap-3 px-5 py-3.5 rounded-md border-2 cursor-pointer transition-all ${
                   dataLeavesEnvironment === opt.value
-                    ? 'border-ww-blue bg-ww-sky/30'
+                    ? 'border-ww-primary bg-ww-sky/30'
                     : 'border-ww-gray-200 bg-white hover:border-ww-gray-300'
                 }`}
               >
@@ -908,7 +908,7 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
                     onChange={e => setTechContactName(e.target.value)}
                     onBlur={() => touch('techContactName')}
                     placeholder="Technical contact name"
-                    className="w-full px-4 py-2.5 rounded-lg border border-ww-gray-300 text-sm text-ww-gray-800 placeholder:text-ww-gray-400 focus:outline-none focus:ring-2 focus:ring-ww-blue focus:border-transparent transition-shadow"
+                    className="w-full px-4 py-2.5 rounded-lg border border-ww-gray-300 text-sm text-ww-gray-800 placeholder:text-ww-gray-400 focus:outline-none focus:ring-2 focus:ring-ww-primary focus:border-transparent transition-shadow"
                   />
                   {renderError(fieldError('techContactName', !!techContactName.trim()))}
                 </div>
@@ -925,7 +925,7 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
                     onChange={e => setTechContactEmail(e.target.value)}
                     onBlur={() => touch('techContactEmail')}
                     placeholder="tech@example.com"
-                    className="w-full px-4 py-2.5 rounded-lg border border-ww-gray-300 text-sm text-ww-gray-800 placeholder:text-ww-gray-400 focus:outline-none focus:ring-2 focus:ring-ww-blue focus:border-transparent transition-shadow"
+                    className="w-full px-4 py-2.5 rounded-lg border border-ww-gray-300 text-sm text-ww-gray-800 placeholder:text-ww-gray-400 focus:outline-none focus:ring-2 focus:ring-ww-primary focus:border-transparent transition-shadow"
                   />
                   {renderError(fieldError('techContactEmail', !!techContactEmail.trim()))}
                 </div>
@@ -942,7 +942,7 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
                     onChange={e => setTechContactPhone(e.target.value)}
                     onBlur={() => touch('techContactPhone')}
                     placeholder="+1 (555) 123-4567"
-                    className="w-full px-4 py-2.5 rounded-lg border border-ww-gray-300 text-sm text-ww-gray-800 placeholder:text-ww-gray-400 focus:outline-none focus:ring-2 focus:ring-ww-blue focus:border-transparent transition-shadow"
+                    className="w-full px-4 py-2.5 rounded-lg border border-ww-gray-300 text-sm text-ww-gray-800 placeholder:text-ww-gray-400 focus:outline-none focus:ring-2 focus:ring-ww-primary focus:border-transparent transition-shadow"
                   />
                 </div>
               </div>
@@ -966,7 +966,7 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
                     onChange={e => setListedPartnerContactName(e.target.value)}
                     onBlur={() => touch('listedPartnerContactName')}
                     placeholder="Partner contact name"
-                    className="w-full px-4 py-2.5 rounded-lg border border-ww-gray-300 text-sm text-ww-gray-800 placeholder:text-ww-gray-400 focus:outline-none focus:ring-2 focus:ring-ww-blue focus:border-transparent transition-shadow"
+                    className="w-full px-4 py-2.5 rounded-lg border border-ww-gray-300 text-sm text-ww-gray-800 placeholder:text-ww-gray-400 focus:outline-none focus:ring-2 focus:ring-ww-primary focus:border-transparent transition-shadow"
                   />
                 </div>
                 <div>
@@ -982,7 +982,7 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
                     onChange={e => setListedPartnerContactEmail(e.target.value)}
                     onBlur={() => touch('listedPartnerContactEmail')}
                     placeholder="partner@example.com"
-                    className="w-full px-4 py-2.5 rounded-lg border border-ww-gray-300 text-sm text-ww-gray-800 placeholder:text-ww-gray-400 focus:outline-none focus:ring-2 focus:ring-ww-blue focus:border-transparent transition-shadow"
+                    className="w-full px-4 py-2.5 rounded-lg border border-ww-gray-300 text-sm text-ww-gray-800 placeholder:text-ww-gray-400 focus:outline-none focus:ring-2 focus:ring-ww-primary focus:border-transparent transition-shadow"
                   />
                 </div>
               </div>
@@ -1002,7 +1002,7 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
               touch('targetTimeline')
             }}
             onBlur={() => touch('targetTimeline')}
-            className="w-full px-4 py-2.5 rounded-lg border border-ww-gray-300 text-sm text-ww-gray-800 focus:outline-none focus:ring-2 focus:ring-ww-blue focus:border-transparent transition-shadow bg-white"
+            className="w-full px-4 py-2.5 rounded-lg border border-ww-gray-300 text-sm text-ww-gray-800 focus:outline-none focus:ring-2 focus:ring-ww-primary focus:border-transparent transition-shadow bg-white"
           >
             <option value="">Select a timeline...</option>
             {TIMELINE_OPTIONS.map(opt => (
@@ -1030,7 +1030,7 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
 
           {/* Info callout */}
           <div className="flex items-start gap-2.5 mb-5 bg-blue-50 border border-blue-200 rounded-lg px-4 py-3">
-            <Info size={16} className="text-ww-blue mt-0.5 shrink-0" />
+            <Info size={16} className="text-ww-primary mt-0.5 shrink-0" />
             <p className="text-xs text-blue-800 leading-relaxed">
               Sandbox approval is required before production access can be granted. We recommend
               starting with Sandbox to validate your integration.
@@ -1052,9 +1052,9 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
             ].map(env => (
               <label
                 key={env.value}
-                className={`relative flex flex-col gap-1 px-5 py-4 rounded-xl border-2 cursor-pointer transition-all ${
+                className={`relative flex flex-col gap-1 px-5 py-4 rounded-md border-2 cursor-pointer transition-all ${
                   environment === env.value
-                    ? 'border-ww-blue bg-ww-sky/30'
+                    ? 'border-ww-primary bg-ww-sky/30'
                     : 'border-ww-gray-200 bg-white hover:border-ww-gray-300'
                 }`}
               >
@@ -1103,7 +1103,7 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
             <button
               type="button"
               onClick={() => setCurrentStep(0)}
-              className="text-xs text-ww-blue hover:underline cursor-pointer"
+              className="text-xs text-ww-primary hover:underline cursor-pointer"
             >
               Edit
             </button>
@@ -1115,7 +1115,7 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
             </div>
             <div className="flex py-2">
               <span className="text-[13px] text-ww-gray-500 w-44 shrink-0">Product</span>
-              <span className="text-sm text-ww-gray-800">{selectedProduct ? (PRODUCT_LABELS[selectedProduct] ?? selectedProduct) : '--'}</span>
+              <span className="text-sm text-ww-gray-800 font-mono">{selectedProduct ? (PRODUCT_LABELS[selectedProduct] ?? selectedProduct) : '--'}</span>
             </div>
             <div className="flex py-2">
               <span className="text-[13px] text-ww-gray-500 w-44 shrink-0">Builder Type</span>
@@ -1131,7 +1131,7 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
             <button
               type="button"
               onClick={() => setCurrentStep(1)}
-              className="text-xs text-ww-blue hover:underline cursor-pointer"
+              className="text-xs text-ww-primary hover:underline cursor-pointer"
             >
               Edit
             </button>
@@ -1169,7 +1169,7 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
                     ? dataRead.map(cat => (
                         <span
                           key={cat}
-                          className="bg-ww-gray-100 text-ww-gray-700 text-xs px-2 py-0.5 rounded"
+                          className="bg-ww-gray-100 text-ww-gray-700 text-xs px-2 py-0.5 rounded font-mono"
                         >
                           {DATA_CATEGORY_LABELS[cat] ?? cat}
                         </span>
@@ -1186,7 +1186,7 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
                     ? dataWrite.map(cat => (
                         <span
                           key={cat}
-                          className="bg-ww-gray-100 text-ww-gray-700 text-xs px-2 py-0.5 rounded"
+                          className="bg-ww-gray-100 text-ww-gray-700 text-xs px-2 py-0.5 rounded font-mono"
                         >
                           {DATA_CATEGORY_LABELS[cat] ?? cat}
                         </span>
@@ -1202,7 +1202,7 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
                   Yes — data leaves environment
                 </span>
               ) : dataLeavesEnvironment === false ? (
-                <span className="bg-ww-gray-100 text-ww-gray-700 text-xs px-2 py-0.5 rounded">No</span>
+                <span className="bg-ww-gray-100 text-ww-gray-700 text-xs px-2 py-0.5 rounded font-mono">No</span>
               ) : (
                 <span className="text-sm text-ww-gray-400">--</span>
               )}
@@ -1217,7 +1217,7 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
             <button
               type="button"
               onClick={() => setCurrentStep(1)}
-              className="text-xs text-ww-blue hover:underline cursor-pointer"
+              className="text-xs text-ww-primary hover:underline cursor-pointer"
             >
               Edit
             </button>
@@ -1269,7 +1269,7 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
             <button
               type="button"
               onClick={() => setCurrentStep(2)}
-              className="text-xs text-ww-blue hover:underline cursor-pointer"
+              className="text-xs text-ww-primary hover:underline cursor-pointer"
             >
               Edit
             </button>
@@ -1277,7 +1277,7 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
           <div className="space-y-0">
             <div className="flex py-2">
               <span className="text-[13px] text-ww-gray-500 w-44 shrink-0">Environment</span>
-              <span className="text-sm text-ww-gray-800">
+              <span className="text-sm text-ww-gray-800 font-mono">
                 {environment === 'sandbox'
                   ? 'Sandbox'
                   : environment === 'production'
@@ -1289,7 +1289,7 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
         </div>
 
         {/* ── Terms checkbox ─────────────────────────────────── */}
-        <div className="bg-ww-gray-50 border border-ww-gray-200 rounded-xl p-5">
+        <div className="bg-ww-gray-50 border border-ww-gray-200 rounded-md p-5">
           <label className="flex items-start gap-3 cursor-pointer">
             <input
               type="checkbox"
@@ -1303,7 +1303,7 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
             <div
               className={`w-[18px] h-[18px] rounded border-2 flex items-center justify-center shrink-0 mt-0.5 transition-colors ${
                 termsAccepted
-                  ? 'bg-ww-blue border-ww-blue'
+                  ? 'bg-ww-primary border-ww-primary'
                   : 'border-ww-gray-300 bg-white'
               }`}
             >
@@ -1363,7 +1363,7 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
             onClick={handleSubmit}
             disabled={!canProceed() || isSubmitting}
             title={!termsAccepted ? 'Accept the terms to submit' : undefined}
-            className="flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-semibold text-white bg-ww-blue hover:bg-ww-blue-light disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-semibold text-white bg-ww-primary hover:bg-ww-primary-light disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             <Send size={16} />
             {isSubmitting ? 'Submitting...' : 'Submit Request'}
@@ -1373,7 +1373,7 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
             type="button"
             onClick={() => setCurrentStep(s => s + 1)}
             disabled={!canProceed()}
-            className="flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-semibold text-white bg-ww-blue hover:bg-ww-blue-light disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-semibold text-white bg-ww-primary hover:bg-ww-primary-light disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             Next
             <ChevronRight size={16} />
@@ -1402,7 +1402,7 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
       {renderStepIndicator()}
 
       {/* Form card */}
-      <div className="bg-white rounded-2xl border border-ww-gray-200 shadow-sm overflow-hidden">
+      <div className="bg-white rounded-md border border-ww-gray-200 overflow-hidden">
         {/* Form content area */}
         <div className="px-8 py-6">
           {/* Step title */}

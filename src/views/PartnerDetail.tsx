@@ -75,7 +75,7 @@ export function PartnerDetail() {
         <p className="text-sm text-ww-gray-500 mb-4">The partner you are looking for does not exist.</p>
         <button
           onClick={() => navigate('/reviewer')}
-          className="px-4 py-2 rounded-lg bg-ww-navy text-white text-sm font-medium hover:bg-ww-navy-light transition-colors"
+          className="px-4 py-2 rounded-md bg-ww-navy text-white text-sm font-medium hover:bg-ww-navy-light transition-colors"
         >
           Back to Queue
         </button>
@@ -97,16 +97,16 @@ export function PartnerDetail() {
       </button>
 
       {/* Partner Header */}
-      <div className="bg-white rounded-xl border border-ww-gray-200 p-6 mb-6">
+      <div className="bg-white rounded-md border border-ww-gray-200 p-6 mb-6">
         <div className="flex items-start gap-5">
-          <div className="w-16 h-16 rounded-xl bg-ww-gray-50 border border-ww-gray-200 flex items-center justify-center text-3xl shrink-0">
+          <div className="w-16 h-16 rounded-md bg-ww-gray-50 border border-ww-gray-200 flex items-center justify-center text-3xl shrink-0">
             {partner.logo}
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-3 flex-wrap mb-2">
               <h1 className="text-2xl font-display font-bold text-ww-gray-900">{partner.name}</h1>
               {tierInfo && (
-                <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-semibold ${tierInfo.color}`}>
+                <span className={`inline-flex px-2.5 py-1 rounded text-xs font-semibold ${tierInfo.color}`}>
                   {tierInfo.label}
                 </span>
               )}
@@ -117,7 +117,7 @@ export function PartnerDetail() {
                 href={partner.website}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-1 text-ww-blue hover:underline"
+                className="flex items-center gap-1 text-ww-primary hover:underline"
               >
                 <Globe size={14} />
                 {partner.website}
@@ -131,7 +131,7 @@ export function PartnerDetail() {
                 <Package size={14} className="text-ww-gray-400" />
                 <div className="flex items-center gap-1">
                   {partner.productsSupported.map(p => (
-                    <span key={p} className="inline-flex px-2 py-0.5 rounded text-[10px] font-semibold bg-ww-sky text-ww-navy">
+                    <span key={p} className="inline-flex px-2 py-0.5 rounded text-[10px] font-mono font-semibold bg-ww-sky text-ww-navy">
                       {PRODUCT_LABELS[p] ?? p}
                     </span>
                   ))}
@@ -149,47 +149,47 @@ export function PartnerDetail() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
-        <div className="bg-white rounded-xl border border-ww-gray-200 p-4">
+        <div className="bg-white rounded-md border border-ww-gray-200 p-4">
           <div className="flex items-center gap-2 mb-1">
             <Users size={14} className="text-ww-gray-400" />
-            <span className="text-xs font-medium text-ww-gray-500 uppercase tracking-wide">Linked Customers</span>
+            <span className="text-xs font-mono font-medium text-ww-gray-500 uppercase tracking-[0.06em]">Linked Customers</span>
           </div>
           <p className="text-2xl font-display font-bold text-ww-gray-900">{stats.totalLinked}</p>
         </div>
-        <div className="bg-white rounded-xl border border-ww-gray-200 p-4">
+        <div className="bg-white rounded-md border border-ww-gray-200 p-4">
           <div className="flex items-center gap-2 mb-1">
             <Link2 size={14} className="text-ww-green" />
-            <span className="text-xs font-medium text-ww-gray-500 uppercase tracking-wide">Active</span>
+            <span className="text-xs font-mono font-medium text-ww-gray-500 uppercase tracking-[0.06em]">Active</span>
           </div>
           <p className="text-2xl font-display font-bold text-ww-green">{stats.active}</p>
         </div>
-        <div className="bg-white rounded-xl border border-ww-gray-200 p-4">
+        <div className="bg-white rounded-md border border-ww-gray-200 p-4">
           <div className="flex items-center gap-2 mb-1">
-            <FlaskConical size={14} className="text-ww-blue" />
-            <span className="text-xs font-medium text-ww-gray-500 uppercase tracking-wide">Sandbox</span>
+            <FlaskConical size={14} className="text-ww-primary" />
+            <span className="text-xs font-mono font-medium text-ww-gray-500 uppercase tracking-[0.06em]">Sandbox</span>
           </div>
-          <p className="text-2xl font-display font-bold text-ww-blue">{stats.sandbox}</p>
+          <p className="text-2xl font-display font-bold text-ww-primary">{stats.sandbox}</p>
         </div>
-        <div className="bg-white rounded-xl border border-ww-gray-200 p-4">
+        <div className="bg-white rounded-md border border-ww-gray-200 p-4">
           <div className="flex items-center gap-2 mb-1">
             <Server size={14} className="text-purple-600" />
-            <span className="text-xs font-medium text-ww-gray-500 uppercase tracking-wide">Production</span>
+            <span className="text-xs font-mono font-medium text-ww-gray-500 uppercase tracking-[0.06em]">Production</span>
           </div>
           <p className="text-2xl font-display font-bold text-purple-600">{stats.production}</p>
         </div>
-        <div className="bg-white rounded-xl border border-ww-gray-200 p-4">
+        <div className="bg-white rounded-md border border-ww-gray-200 p-4">
           <div className="flex items-center gap-2 mb-1">
             <FileText size={14} className="text-ww-gray-400" />
-            <span className="text-xs font-medium text-ww-gray-500 uppercase tracking-wide">Requests</span>
+            <span className="text-xs font-mono font-medium text-ww-gray-500 uppercase tracking-[0.06em]">Requests</span>
           </div>
           <p className="text-2xl font-display font-bold text-ww-gray-900">{stats.totalRequests}</p>
         </div>
       </div>
 
       {/* Linked Customers Table */}
-      <div className="bg-white rounded-xl border border-ww-gray-200 mb-6 overflow-hidden">
+      <div className="bg-white rounded-md border border-ww-gray-200 mb-6 overflow-hidden">
         <div className="px-6 py-4 border-b border-ww-gray-200">
-          <h2 className="text-sm font-display font-semibold text-ww-gray-900 uppercase tracking-wide flex items-center gap-2">
+          <h2 className="text-sm font-mono font-semibold text-ww-gray-900 uppercase tracking-[0.06em] flex items-center gap-2">
             <Users size={16} className="text-ww-gray-400" />
             Linked Customers
           </h2>
@@ -215,7 +215,7 @@ export function PartnerDetail() {
                         <p className="text-sm font-medium text-ww-gray-900">{linkCustomer?.name ?? 'Unknown'}</p>
                       </td>
                       <td className="px-6 py-3">
-                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium ${
+                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono font-medium ${
                           link.environment === 'production'
                             ? 'bg-purple-100 text-purple-700'
                             : 'bg-blue-100 text-blue-700'
@@ -235,8 +235,8 @@ export function PartnerDetail() {
                           {link.status.charAt(0).toUpperCase() + link.status.slice(1)}
                         </span>
                       </td>
-                      <td className="px-6 py-3 text-xs text-ww-gray-600">{formatDate(link.linkedAt)}</td>
-                      <td className="px-6 py-3 text-xs text-ww-gray-600">
+                      <td className="px-6 py-3 text-xs font-mono text-ww-gray-600">{formatDate(link.linkedAt)}</td>
+                      <td className="px-6 py-3 text-xs font-mono text-ww-gray-600">
                         {link.revokedAt ? formatDate(link.revokedAt) : <span className="text-ww-gray-300">&mdash;</span>}
                       </td>
                     </tr>
@@ -254,9 +254,9 @@ export function PartnerDetail() {
       </div>
 
       {/* Request History */}
-      <div className="bg-white rounded-xl border border-ww-gray-200 mb-6 overflow-hidden">
+      <div className="bg-white rounded-md border border-ww-gray-200 mb-6 overflow-hidden">
         <div className="px-6 py-4 border-b border-ww-gray-200">
-          <h2 className="text-sm font-display font-semibold text-ww-gray-900 uppercase tracking-wide flex items-center gap-2">
+          <h2 className="text-sm font-mono font-semibold text-ww-gray-900 uppercase tracking-[0.06em] flex items-center gap-2">
             <Clock size={16} className="text-ww-gray-400" />
             Request History
           </h2>
@@ -281,19 +281,19 @@ export function PartnerDetail() {
                           <span className={`inline-flex px-2 py-0.5 rounded text-[10px] font-semibold ${reqStatus.color}`}>
                             {reqStatus.label}
                           </span>
-                          <span className="inline-flex px-2 py-0.5 rounded text-[10px] font-semibold bg-ww-sky text-ww-navy">
+                          <span className="inline-flex px-2 py-0.5 rounded text-[10px] font-mono font-semibold bg-ww-sky text-ww-navy">
                             {PRODUCT_LABELS[req.product] ?? req.product}
                           </span>
                         </div>
                         <div className="flex items-center gap-3 text-xs text-ww-gray-500">
                           <span>{USE_CASE_LABELS[req.useCase] ?? req.useCase}</span>
                           <span className="text-ww-gray-300">|</span>
-                          <span>Created {formatDate(req.createdAt)}</span>
+                          <span className="font-mono">Created {formatDate(req.createdAt)}</span>
                           <span className="text-ww-gray-300">|</span>
-                          <span>Updated {formatDate(req.updatedAt)}</span>
+                          <span className="font-mono">Updated {formatDate(req.updatedAt)}</span>
                         </div>
                       </div>
-                      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium shrink-0 ${
+                      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono font-medium shrink-0 ${
                         req.environment === 'production'
                           ? 'bg-purple-100 text-purple-700'
                           : 'bg-blue-100 text-blue-700'
@@ -315,14 +315,14 @@ export function PartnerDetail() {
       </div>
 
       {/* Impact Analysis */}
-      <div className="bg-white rounded-xl border border-ww-gray-200 p-6">
-        <h2 className="text-sm font-display font-semibold text-ww-gray-900 uppercase tracking-wide mb-4 flex items-center gap-2">
+      <div className="bg-white rounded-md border border-ww-gray-200 p-6">
+        <h2 className="text-sm font-mono font-semibold text-ww-gray-900 uppercase tracking-[0.06em] mb-4 flex items-center gap-2">
           <BarChart3 size={16} className="text-ww-gray-400" />
           Impact Analysis
         </h2>
         {stats.active > 0 ? (
           <>
-            <div className="flex items-start gap-2 p-4 rounded-lg bg-amber-50 border border-amber-200 mb-4">
+            <div className="flex items-start gap-2 p-4 rounded-md bg-amber-50 border border-amber-200 mb-4">
               <AlertTriangle size={16} className="text-ww-amber shrink-0 mt-0.5" />
               <div>
                 <p className="text-sm font-semibold text-amber-800">
@@ -335,7 +335,7 @@ export function PartnerDetail() {
             </div>
             <div className="space-y-2">
               {activeCustomerNames.map((name, idx) => (
-                <div key={idx} className="flex items-center gap-2 p-3 rounded-lg bg-ww-gray-50 border border-ww-gray-100">
+                <div key={idx} className="flex items-center gap-2 p-3 rounded-md bg-ww-gray-50 border border-ww-gray-100">
                   <Users size={14} className="text-ww-gray-400 shrink-0" />
                   <p className="text-sm font-medium text-ww-gray-900">{name}</p>
                 </div>
@@ -343,7 +343,7 @@ export function PartnerDetail() {
             </div>
           </>
         ) : (
-          <div className="p-4 rounded-lg bg-ww-gray-50 border border-ww-gray-100 text-center">
+          <div className="p-4 rounded-md bg-ww-gray-50 border border-ww-gray-100 text-center">
             <p className="text-sm text-ww-gray-500">No active integrations. Removing this partner would have no impact on customers.</p>
           </div>
         )}

@@ -95,7 +95,7 @@ export function ReviewerRequestDetail({ onRefresh }: { onRefresh: () => void }) 
         <p className="text-sm text-ww-gray-500 mb-4">The request you are looking for does not exist.</p>
         <button
           onClick={() => navigate('/reviewer')}
-          className="px-4 py-2 rounded-lg bg-ww-navy text-white text-sm font-medium hover:bg-ww-navy-light transition-colors"
+          className="px-4 py-2 rounded-md bg-ww-navy text-white text-sm font-medium hover:bg-ww-navy-light transition-colors"
         >
           Back to Queue
         </button>
@@ -139,7 +139,7 @@ export function ReviewerRequestDetail({ onRefresh }: { onRefresh: () => void }) 
         {/* Left column: Request Details */}
         <div className="lg:col-span-2 space-y-6">
           {/* Request Header */}
-          <div className="bg-white rounded-xl border border-ww-gray-200 p-6">
+          <div className="bg-white rounded-md border border-ww-gray-200 p-6">
             <div className="flex items-start justify-between gap-4 mb-4">
               <div>
                 <h1 className="text-xl font-display font-bold text-ww-gray-900 mb-1">
@@ -147,26 +147,26 @@ export function ReviewerRequestDetail({ onRefresh }: { onRefresh: () => void }) 
                 </h1>
                 <p className="text-xs text-ww-gray-400 font-mono">{request.id}</p>
               </div>
-              <span className={`inline-flex px-3 py-1 rounded-full text-xs font-semibold ${status.color}`}>
+              <span className={`inline-flex px-3 py-1 rounded text-xs font-semibold ${status.color}`}>
                 {status.label}
               </span>
             </div>
-            <div className="flex items-center gap-3 text-xs text-ww-gray-500 flex-wrap">
+            <div className="flex items-center gap-3 text-xs text-ww-gray-500 flex-wrap font-mono">
               <span>Created {formatDate(request.createdAt)}</span>
               <span className="text-ww-gray-300">|</span>
               <span>Updated {formatDate(request.updatedAt)}</span>
               {request.agreementSignedAt && (
                 <>
                   <span className="text-ww-gray-300">|</span>
-                  <span className="text-ww-green">Agreement signed {formatDate(request.agreementSignedAt)}</span>
+                  <span className="text-ww-green font-mono">Agreement signed {formatDate(request.agreementSignedAt)}</span>
                 </>
               )}
             </div>
           </div>
 
           {/* Partner Info */}
-          <div className="bg-white rounded-xl border border-ww-gray-200 p-6">
-            <h2 className="text-sm font-display font-semibold text-ww-gray-900 uppercase tracking-wide mb-4 flex items-center gap-2">
+          <div className="bg-white rounded-md border border-ww-gray-200 p-6">
+            <h2 className="text-sm font-display font-mono font-semibold text-ww-gray-900 uppercase tracking-wide mb-4 flex items-center gap-2">
               <Building2 size={16} className="text-ww-gray-400" />
               Partner Information
             </h2>
@@ -187,7 +187,7 @@ export function ReviewerRequestDetail({ onRefresh }: { onRefresh: () => void }) 
                       href={partner.website}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-xs text-ww-blue hover:underline flex items-center gap-1"
+                      className="text-xs text-ww-primary hover:underline flex items-center gap-1"
                     >
                       {partner.website}
                       <ExternalLink size={10} />
@@ -212,7 +212,7 @@ export function ReviewerRequestDetail({ onRefresh }: { onRefresh: () => void }) 
                       href={request.partnerWebsite}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-ww-blue hover:underline flex items-center gap-1"
+                      className="text-ww-primary hover:underline flex items-center gap-1"
                     >
                       {request.partnerWebsite}
                       <ExternalLink size={10} />
@@ -230,59 +230,59 @@ export function ReviewerRequestDetail({ onRefresh }: { onRefresh: () => void }) 
           </div>
 
           {/* Customer Info */}
-          <div className="bg-white rounded-xl border border-ww-gray-200 p-6">
-            <h2 className="text-sm font-display font-semibold text-ww-gray-900 uppercase tracking-wide mb-4 flex items-center gap-2">
+          <div className="bg-white rounded-md border border-ww-gray-200 p-6">
+            <h2 className="text-sm font-display font-mono font-semibold text-ww-gray-900 uppercase tracking-wide mb-4 flex items-center gap-2">
               <User size={16} className="text-ww-gray-400" />
               Customer Information
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <p className="text-xs text-ww-gray-400 font-medium uppercase tracking-wide mb-1">Company</p>
+                <p className="text-xs text-ww-gray-400 font-medium font-mono uppercase tracking-wide mb-1">Company</p>
                 <p className="text-sm font-semibold text-ww-gray-900">{customer?.name ?? 'Unknown'}</p>
               </div>
               <div>
-                <p className="text-xs text-ww-gray-400 font-medium uppercase tracking-wide mb-1">Plan</p>
+                <p className="text-xs text-ww-gray-400 font-medium font-mono uppercase tracking-wide mb-1">Plan</p>
                 <p className="text-sm font-semibold text-ww-gray-900 capitalize">{customer?.plan ?? 'Unknown'}</p>
               </div>
               <div>
-                <p className="text-xs text-ww-gray-400 font-medium uppercase tracking-wide mb-1">Requested By</p>
+                <p className="text-xs text-ww-gray-400 font-medium font-mono uppercase tracking-wide mb-1">Requested By</p>
                 <p className="text-sm font-semibold text-ww-gray-900">{requestingUser?.name ?? 'Unknown'}</p>
               </div>
               <div>
-                <p className="text-xs text-ww-gray-400 font-medium uppercase tracking-wide mb-1">Email</p>
+                <p className="text-xs text-ww-gray-400 font-medium font-mono uppercase tracking-wide mb-1">Email</p>
                 <p className="text-sm text-ww-gray-700">{requestingUser?.email ?? 'Unknown'}</p>
               </div>
             </div>
           </div>
 
           {/* Integration Details */}
-          <div className="bg-white rounded-xl border border-ww-gray-200 p-6">
-            <h2 className="text-sm font-display font-semibold text-ww-gray-900 uppercase tracking-wide mb-4 flex items-center gap-2">
+          <div className="bg-white rounded-md border border-ww-gray-200 p-6">
+            <h2 className="text-sm font-display font-mono font-semibold text-ww-gray-900 uppercase tracking-wide mb-4 flex items-center gap-2">
               <BookOpen size={16} className="text-ww-gray-400" />
               Integration Details
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
               <div>
-                <p className="text-xs text-ww-gray-400 font-medium uppercase tracking-wide mb-1">Product</p>
-                <span className="inline-flex px-2 py-0.5 rounded text-xs font-semibold bg-ww-sky text-ww-navy">
+                <p className="text-xs text-ww-gray-400 font-medium font-mono uppercase tracking-wide mb-1">Product</p>
+                <span className="inline-flex px-2 py-0.5 rounded text-xs font-mono font-semibold bg-ww-sky text-ww-navy">
                   {PRODUCT_LABELS[request.product] ?? request.product}
                 </span>
               </div>
               <div>
-                <p className="text-xs text-ww-gray-400 font-medium uppercase tracking-wide mb-1">Builder Type</p>
+                <p className="text-xs text-ww-gray-400 font-medium font-mono uppercase tracking-wide mb-1">Builder Type</p>
                 <p className="text-sm font-semibold text-ww-gray-900">{BUILDER_TYPE_LABELS[request.builderType] ?? request.builderType}</p>
               </div>
               <div>
-                <p className="text-xs text-ww-gray-400 font-medium uppercase tracking-wide mb-1">Connecting System</p>
+                <p className="text-xs text-ww-gray-400 font-medium font-mono uppercase tracking-wide mb-1">Connecting System</p>
                 <p className="text-sm font-semibold text-ww-gray-900">{request.connectingSystem}</p>
               </div>
               <div>
-                <p className="text-xs text-ww-gray-400 font-medium uppercase tracking-wide mb-1">Use Case</p>
+                <p className="text-xs text-ww-gray-400 font-medium font-mono uppercase tracking-wide mb-1">Use Case</p>
                 <p className="text-sm font-semibold text-ww-gray-900">{USE_CASE_LABELS[request.useCase] ?? request.useCase}</p>
               </div>
               <div className="sm:col-span-2">
-                <p className="text-xs text-ww-gray-400 font-medium uppercase tracking-wide mb-1">Environment</p>
-                <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium ${
+                <p className="text-xs text-ww-gray-400 font-medium font-mono uppercase tracking-wide mb-1">Environment</p>
+                <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-mono font-medium ${
                   request.environment === 'production'
                     ? 'bg-purple-100 text-purple-700'
                     : 'bg-blue-100 text-blue-700'
@@ -293,20 +293,20 @@ export function ReviewerRequestDetail({ onRefresh }: { onRefresh: () => void }) 
               </div>
             </div>
             <div>
-              <p className="text-xs text-ww-gray-400 font-medium uppercase tracking-wide mb-1">Use Case Detail</p>
+              <p className="text-xs text-ww-gray-400 font-medium font-mono uppercase tracking-wide mb-1">Use Case Detail</p>
               <p className="text-sm text-ww-gray-700 leading-relaxed">{request.useCaseDetail}</p>
             </div>
           </div>
 
           {/* Data Access */}
-          <div className="bg-white rounded-xl border border-ww-gray-200 p-6">
-            <h2 className="text-sm font-display font-semibold text-ww-gray-900 uppercase tracking-wide mb-4 flex items-center gap-2">
+          <div className="bg-white rounded-md border border-ww-gray-200 p-6">
+            <h2 className="text-sm font-display font-mono font-semibold text-ww-gray-900 uppercase tracking-wide mb-4 flex items-center gap-2">
               <Database size={16} className="text-ww-gray-400" />
               Data Access
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-4">
               <div>
-                <p className="text-xs text-ww-gray-400 font-medium uppercase tracking-wide mb-2">Read Access</p>
+                <p className="text-xs text-ww-gray-400 font-medium font-mono uppercase tracking-wide mb-2">Read Access</p>
                 {request.dataRead.length > 0 ? (
                   <div className="flex flex-wrap gap-1.5">
                     {request.dataRead.map(cat => (
@@ -320,7 +320,7 @@ export function ReviewerRequestDetail({ onRefresh }: { onRefresh: () => void }) 
                 )}
               </div>
               <div>
-                <p className="text-xs text-ww-gray-400 font-medium uppercase tracking-wide mb-2">Write Access</p>
+                <p className="text-xs text-ww-gray-400 font-medium font-mono uppercase tracking-wide mb-2">Write Access</p>
                 {request.dataWrite.length > 0 ? (
                   <div className="flex flex-wrap gap-1.5">
                     {request.dataWrite.map(cat => (
@@ -335,7 +335,7 @@ export function ReviewerRequestDetail({ onRefresh }: { onRefresh: () => void }) 
               </div>
             </div>
             {request.dataLeavesEnvironment && (
-              <div className="flex items-center gap-2 p-3 rounded-lg bg-red-50 border border-red-200">
+              <div className="flex items-center gap-2 p-3 rounded-md bg-red-50 border border-red-200">
                 <ShieldAlert size={16} className="text-ww-red shrink-0" />
                 <span className="text-sm font-medium text-red-700">Data will leave the customer environment</span>
               </div>
@@ -343,8 +343,8 @@ export function ReviewerRequestDetail({ onRefresh }: { onRefresh: () => void }) 
           </div>
 
           {/* Previous Approvals Timeline */}
-          <div className="bg-white rounded-xl border border-ww-gray-200 p-6">
-            <h2 className="text-sm font-display font-semibold text-ww-gray-900 uppercase tracking-wide mb-4 flex items-center gap-2">
+          <div className="bg-white rounded-md border border-ww-gray-200 p-6">
+            <h2 className="text-sm font-display font-mono font-semibold text-ww-gray-900 uppercase tracking-wide mb-4 flex items-center gap-2">
               <Clock size={16} className="text-ww-gray-400" />
               Approval Timeline
             </h2>
@@ -383,7 +383,7 @@ export function ReviewerRequestDetail({ onRefresh }: { onRefresh: () => void }) 
                             {decisionInfo.label}
                           </span>
                         </div>
-                        <p className="text-xs text-ww-gray-400 mt-0.5">
+                        <p className="text-xs text-ww-gray-400 mt-0.5 font-mono">
                           {appr.reviewer} &middot; {formatDateTime(appr.decidedAt)}
                         </p>
                         <p className="text-sm text-ww-gray-600 mt-1 leading-relaxed">{appr.rationale}</p>
@@ -399,8 +399,8 @@ export function ReviewerRequestDetail({ onRefresh }: { onRefresh: () => void }) 
 
           {/* Other Customers Using This Partner */}
           {request.partnerId && partnerLinks.length > 0 && (
-            <div className="bg-white rounded-xl border border-ww-gray-200 p-6">
-              <h2 className="text-sm font-display font-semibold text-ww-gray-900 uppercase tracking-wide mb-4 flex items-center gap-2">
+            <div className="bg-white rounded-md border border-ww-gray-200 p-6">
+              <h2 className="text-sm font-display font-mono font-semibold text-ww-gray-900 uppercase tracking-wide mb-4 flex items-center gap-2">
                 <Users size={16} className="text-ww-gray-400" />
                 Other Customers Using This Partner
               </h2>
@@ -408,13 +408,13 @@ export function ReviewerRequestDetail({ onRefresh }: { onRefresh: () => void }) 
                 {partnerLinks.map(link => {
                   const linkCustomer = store.getCustomer(link.customerId)
                   return (
-                    <div key={link.id} className="flex items-center justify-between p-3 rounded-lg bg-ww-gray-50 border border-ww-gray-100">
+                    <div key={link.id} className="flex items-center justify-between p-3 rounded-md bg-ww-gray-50 border border-ww-gray-100">
                       <div>
                         <p className="text-sm font-medium text-ww-gray-900">{linkCustomer?.name ?? 'Unknown'}</p>
-                        <p className="text-xs text-ww-gray-500">Linked {formatDate(link.linkedAt)}</p>
+                        <p className="text-xs text-ww-gray-500 font-mono">Linked {formatDate(link.linkedAt)}</p>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium ${
+                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono font-medium ${
                           link.environment === 'production'
                             ? 'bg-purple-100 text-purple-700'
                             : 'bg-blue-100 text-blue-700'
@@ -444,13 +444,13 @@ export function ReviewerRequestDetail({ onRefresh }: { onRefresh: () => void }) 
           <div className="sticky top-24 space-y-6">
             {/* Flags Section */}
             {(isUnlisted || isUnapproved || request.dataLeavesEnvironment) && (
-              <div className="bg-white rounded-xl border border-ww-gray-200 p-5 space-y-3">
-                <h3 className="text-sm font-display font-semibold text-ww-gray-900 uppercase tracking-wide flex items-center gap-2">
+              <div className="bg-white rounded-md border border-ww-gray-200 p-5 space-y-3">
+                <h3 className="text-sm font-display font-mono font-semibold text-ww-gray-900 uppercase tracking-wide flex items-center gap-2">
                   <Flag size={14} className="text-ww-amber" />
                   Review Flags
                 </h3>
                 {isUnlisted && (
-                  <div className="flex items-start gap-2 p-3 rounded-lg bg-amber-50 border border-amber-200">
+                  <div className="flex items-start gap-2 p-3 rounded-md bg-amber-50 border border-amber-200">
                     <AlertTriangle size={16} className="text-ww-amber shrink-0 mt-0.5" />
                     <div>
                       <p className="text-sm font-semibold text-amber-800">Unlisted Partner</p>
@@ -459,7 +459,7 @@ export function ReviewerRequestDetail({ onRefresh }: { onRefresh: () => void }) 
                   </div>
                 )}
                 {isUnapproved && (
-                  <div className="flex items-start gap-2 p-3 rounded-lg bg-red-50 border border-red-200">
+                  <div className="flex items-start gap-2 p-3 rounded-md bg-red-50 border border-red-200">
                     <XCircle size={16} className="text-ww-red shrink-0 mt-0.5" />
                     <div>
                       <p className="text-sm font-semibold text-red-800">Unapproved Partner</p>
@@ -468,7 +468,7 @@ export function ReviewerRequestDetail({ onRefresh }: { onRefresh: () => void }) 
                   </div>
                 )}
                 {request.dataLeavesEnvironment && (
-                  <div className="flex items-start gap-2 p-3 rounded-lg bg-red-50 border border-red-200">
+                  <div className="flex items-start gap-2 p-3 rounded-md bg-red-50 border border-red-200">
                     <ShieldAlert size={16} className="text-ww-red shrink-0 mt-0.5" />
                     <div>
                       <p className="text-sm font-semibold text-red-800">Data Leaves Environment</p>
@@ -480,8 +480,8 @@ export function ReviewerRequestDetail({ onRefresh }: { onRefresh: () => void }) 
             )}
 
             {/* Decision Panel */}
-            <div className="bg-white rounded-xl border border-ww-gray-200 p-5">
-              <h3 className="text-sm font-display font-semibold text-ww-gray-900 uppercase tracking-wide mb-4 flex items-center gap-2">
+            <div className="bg-white rounded-md border border-ww-gray-200 p-5">
+              <h3 className="text-sm font-display font-mono font-semibold text-ww-gray-900 uppercase tracking-wide mb-4 flex items-center gap-2">
                 <Shield size={14} className="text-ww-navy" />
                 Submit Decision
               </h3>
@@ -493,7 +493,7 @@ export function ReviewerRequestDetail({ onRefresh }: { onRefresh: () => void }) 
                   <p className="text-xs text-ww-gray-500 mt-1">Your review decision has been recorded.</p>
                   <button
                     onClick={() => navigate('/reviewer')}
-                    className="mt-4 px-4 py-2 rounded-lg bg-ww-navy text-white text-sm font-medium hover:bg-ww-navy-light transition-colors"
+                    className="mt-4 px-4 py-2 rounded-md bg-ww-navy text-white text-sm font-medium hover:bg-ww-navy-light transition-colors"
                   >
                     Return to Queue
                   </button>
@@ -506,7 +506,7 @@ export function ReviewerRequestDetail({ onRefresh }: { onRefresh: () => void }) 
                     <div className="relative">
                       <button
                         onClick={() => setStageDropdownOpen(!stageDropdownOpen)}
-                        className="w-full flex items-center justify-between px-3 py-2 rounded-lg border border-ww-gray-200 bg-white text-sm text-ww-gray-900 hover:border-ww-gray-300 transition-colors"
+                        className="w-full flex items-center justify-between px-3 py-2 rounded-md border border-ww-gray-200 bg-white text-sm text-ww-gray-900 hover:border-ww-gray-300 transition-colors"
                       >
                         <span>{STAGE_LABELS[stage]}</span>
                         <ChevronDown size={14} className="text-ww-gray-400" />
@@ -514,7 +514,7 @@ export function ReviewerRequestDetail({ onRefresh }: { onRefresh: () => void }) 
                       {stageDropdownOpen && (
                         <>
                           <div className="fixed inset-0 z-10" onClick={() => setStageDropdownOpen(false)} />
-                          <div className="absolute z-20 top-full mt-1 left-0 right-0 bg-white border border-ww-gray-200 rounded-lg shadow-lg py-1">
+                          <div className="absolute z-20 top-full mt-1 left-0 right-0 bg-white border border-ww-gray-200 rounded-md py-1">
                             {stageOptions.map(opt => (
                               <button
                                 key={opt.value}
@@ -541,7 +541,7 @@ export function ReviewerRequestDetail({ onRefresh }: { onRefresh: () => void }) 
                     <div className="grid grid-cols-3 gap-2">
                       <button
                         onClick={() => setDecision('approved')}
-                        className={`flex flex-col items-center gap-1 px-3 py-3 rounded-lg border-2 text-xs font-medium transition-all ${
+                        className={`flex flex-col items-center gap-1 px-3 py-3 rounded-md border-2 text-xs font-medium transition-all ${
                           decision === 'approved'
                             ? 'border-ww-green bg-emerald-50 text-emerald-700'
                             : 'border-ww-gray-200 text-ww-gray-500 hover:border-ww-gray-300'
@@ -552,7 +552,7 @@ export function ReviewerRequestDetail({ onRefresh }: { onRefresh: () => void }) 
                       </button>
                       <button
                         onClick={() => setDecision('denied')}
-                        className={`flex flex-col items-center gap-1 px-3 py-3 rounded-lg border-2 text-xs font-medium transition-all ${
+                        className={`flex flex-col items-center gap-1 px-3 py-3 rounded-md border-2 text-xs font-medium transition-all ${
                           decision === 'denied'
                             ? 'border-ww-red bg-red-50 text-red-700'
                             : 'border-ww-gray-200 text-ww-gray-500 hover:border-ww-gray-300'
@@ -563,7 +563,7 @@ export function ReviewerRequestDetail({ onRefresh }: { onRefresh: () => void }) 
                       </button>
                       <button
                         onClick={() => setDecision('needs_info')}
-                        className={`flex flex-col items-center gap-1 px-3 py-3 rounded-lg border-2 text-xs font-medium transition-all ${
+                        className={`flex flex-col items-center gap-1 px-3 py-3 rounded-md border-2 text-xs font-medium transition-all ${
                           decision === 'needs_info'
                             ? 'border-ww-amber bg-amber-50 text-amber-700'
                             : 'border-ww-gray-200 text-ww-gray-500 hover:border-ww-gray-300'
@@ -585,7 +585,7 @@ export function ReviewerRequestDetail({ onRefresh }: { onRefresh: () => void }) 
                       onChange={e => setRationale(e.target.value)}
                       placeholder="Provide your review rationale..."
                       rows={4}
-                      className="w-full px-3 py-2 rounded-lg border border-ww-gray-200 text-sm text-ww-gray-900 placeholder:text-ww-gray-400 focus:outline-none focus:ring-2 focus:ring-ww-blue/30 focus:border-ww-blue resize-none"
+                      className="w-full px-3 py-2 rounded-md border border-ww-gray-200 text-sm text-ww-gray-900 placeholder:text-ww-gray-400 focus:outline-none focus:ring-2 focus:ring-ww-primary/30 focus:border-ww-primary resize-none"
                     />
                   </div>
 
@@ -593,7 +593,7 @@ export function ReviewerRequestDetail({ onRefresh }: { onRefresh: () => void }) 
                   <button
                     onClick={handleSubmit}
                     disabled={!decision || !rationale.trim()}
-                    className={`w-full py-2.5 rounded-lg text-sm font-semibold transition-colors ${
+                    className={`w-full py-2.5 rounded-md text-sm font-semibold transition-colors ${
                       decision && rationale.trim()
                         ? 'bg-ww-navy text-white hover:bg-ww-navy-light'
                         : 'bg-ww-gray-200 text-ww-gray-400 cursor-not-allowed'

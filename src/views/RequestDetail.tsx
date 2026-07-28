@@ -109,7 +109,7 @@ export function RequestDetail({ onRefresh }: RequestDetailProps) {
           </p>
           <button
             onClick={() => navigate('/my-requests')}
-            className="inline-flex items-center gap-2 text-sm text-ww-blue hover:text-ww-blue-light transition-colors"
+            className="inline-flex items-center gap-2 text-sm text-ww-primary hover:text-ww-primary-light transition-colors"
           >
             <ArrowLeft size={14} />
             Back to My Requests
@@ -146,7 +146,7 @@ export function RequestDetail({ onRefresh }: RequestDetailProps) {
       {/* Back button */}
       <button
         onClick={() => navigate('/my-requests')}
-        className="inline-flex items-center gap-1.5 text-sm text-ww-gray-500 hover:text-ww-blue transition-colors mb-6"
+        className="inline-flex items-center gap-1.5 text-sm text-ww-gray-500 hover:text-ww-primary transition-colors mb-6"
       >
         <ArrowLeft size={14} />
         Back to My Requests
@@ -160,13 +160,13 @@ export function RequestDetail({ onRefresh }: RequestDetailProps) {
               {partnerName}
             </h1>
             <span
-              className={`text-xs font-medium px-2.5 py-0.5 rounded-full ${status.color}`}
+              className={`text-xs font-medium px-2.5 py-0.5 rounded ${status.color}`}
             >
               {status.label}
             </span>
           </div>
           <p className="text-sm text-ww-gray-500">
-            Request ID: {request.id}
+            Request ID: <span className="font-mono">{request.id}</span>
           </p>
         </div>
 
@@ -175,7 +175,7 @@ export function RequestDetail({ onRefresh }: RequestDetailProps) {
           {request.status === 'pending_agreement' && (
             <button
               onClick={handleSignAgreement}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-amber-500 text-white text-sm font-medium hover:bg-amber-600 transition-colors"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-amber-500 text-white text-sm font-medium hover:bg-amber-600 transition-colors"
             >
               <FileSignature size={14} />
               Sign Agreement
@@ -184,7 +184,7 @@ export function RequestDetail({ onRefresh }: RequestDetailProps) {
           {request.status === 'sandbox_approved' && (
             <button
               onClick={handleRequestProduction}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-ww-blue text-white text-sm font-medium hover:bg-ww-blue-light transition-colors"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-ww-primary text-white text-sm font-medium hover:bg-ww-primary-light transition-colors"
             >
               <Rocket size={14} />
               Request Production Access
@@ -196,12 +196,12 @@ export function RequestDetail({ onRefresh }: RequestDetailProps) {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Detail card */}
         <div className="lg:col-span-2">
-          <div className="bg-white rounded-2xl border border-ww-gray-200 divide-y divide-ww-gray-100">
+          <div className="bg-white rounded-md border border-ww-gray-200 divide-y divide-ww-gray-100">
             {/* Partner info */}
             <div className="p-5">
               <div className="flex items-center gap-2 mb-3">
                 <Briefcase size={14} className="text-ww-gray-400" />
-                <h3 className="text-xs font-semibold text-ww-gray-400 uppercase tracking-wider">
+                <h3 className="text-xs font-mono font-semibold text-ww-gray-400 uppercase tracking-wider">
                   Partner Information
                 </h3>
               </div>
@@ -213,13 +213,13 @@ export function RequestDetail({ onRefresh }: RequestDetailProps) {
                       {partnerName}
                       {tierInfo && (
                         <span
-                          className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${tierInfo.color}`}
+                          className={`text-[10px] font-medium px-2 py-0.5 rounded ${tierInfo.color}`}
                         >
                           {tierInfo.label}
                         </span>
                       )}
                       {!request.partnerId && (
-                        <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-ww-gray-100 text-ww-gray-500">
+                        <span className="text-[10px] font-medium px-2 py-0.5 rounded bg-ww-gray-100 text-ww-gray-500">
                           Unlisted
                         </span>
                       )}
@@ -234,7 +234,7 @@ export function RequestDetail({ onRefresh }: RequestDetailProps) {
                       href={request.partnerWebsite}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-sm text-ww-blue hover:text-ww-blue-light inline-flex items-center gap-1"
+                      className="text-sm text-ww-primary hover:text-ww-primary-light inline-flex items-center gap-1"
                     >
                       {request.partnerWebsite}
                       <ExternalLink size={11} />
@@ -248,14 +248,14 @@ export function RequestDetail({ onRefresh }: RequestDetailProps) {
             <div className="p-5">
               <div className="flex items-center gap-2 mb-3">
                 <Link2 size={14} className="text-ww-gray-400" />
-                <h3 className="text-xs font-semibold text-ww-gray-400 uppercase tracking-wider">
+                <h3 className="text-xs font-mono font-semibold text-ww-gray-400 uppercase tracking-wider">
                   Integration Details
                 </h3>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
                   <div className="text-xs text-ww-gray-500 mb-0.5">Product</div>
-                  <span className="inline-block text-xs font-medium px-2 py-0.5 rounded bg-ww-sky text-ww-blue">
+                  <span className="inline-block text-xs font-mono font-medium px-2 py-0.5 rounded bg-ww-sky text-ww-primary">
                     {PRODUCT_LABELS[request.product] ?? request.product}
                   </span>
                 </div>
@@ -276,7 +276,7 @@ export function RequestDetail({ onRefresh }: RequestDetailProps) {
             <div className="p-5">
               <div className="flex items-center gap-2 mb-3">
                 <BookOpen size={14} className="text-ww-gray-400" />
-                <h3 className="text-xs font-semibold text-ww-gray-400 uppercase tracking-wider">
+                <h3 className="text-xs font-mono font-semibold text-ww-gray-400 uppercase tracking-wider">
                   Use Case
                 </h3>
               </div>
@@ -294,7 +294,7 @@ export function RequestDetail({ onRefresh }: RequestDetailProps) {
             <div className="p-5">
               <div className="flex items-center gap-2 mb-3">
                 <Database size={14} className="text-ww-gray-400" />
-                <h3 className="text-xs font-semibold text-ww-gray-400 uppercase tracking-wider">
+                <h3 className="text-xs font-mono font-semibold text-ww-gray-400 uppercase tracking-wider">
                   Data Access
                 </h3>
               </div>
@@ -306,7 +306,7 @@ export function RequestDetail({ onRefresh }: RequestDetailProps) {
                       {request.dataRead.map((cat) => (
                         <span
                           key={cat}
-                          className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-blue-50 text-blue-700"
+                          className="text-[11px] font-medium px-2 py-0.5 rounded bg-blue-50 text-blue-700"
                         >
                           {DATA_CATEGORY_LABELS[cat] ?? cat}
                         </span>
@@ -321,7 +321,7 @@ export function RequestDetail({ onRefresh }: RequestDetailProps) {
                       {request.dataWrite.map((cat) => (
                         <span
                           key={cat}
-                          className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-orange-50 text-orange-700"
+                          className="text-[11px] font-medium px-2 py-0.5 rounded bg-orange-50 text-orange-700"
                         >
                           {DATA_CATEGORY_LABELS[cat] ?? cat}
                         </span>
@@ -347,7 +347,7 @@ export function RequestDetail({ onRefresh }: RequestDetailProps) {
             <div className="p-5">
               <div className="flex items-center gap-2 mb-3">
                 <Server size={14} className="text-ww-gray-400" />
-                <h3 className="text-xs font-semibold text-ww-gray-400 uppercase tracking-wider">
+                <h3 className="text-xs font-mono font-semibold text-ww-gray-400 uppercase tracking-wider">
                   Environment & Agreement
                 </h3>
               </div>
@@ -355,7 +355,7 @@ export function RequestDetail({ onRefresh }: RequestDetailProps) {
                 <div>
                   <div className="text-xs text-ww-gray-500 mb-0.5">Environment</div>
                   <span
-                    className={`inline-block text-xs font-medium px-2 py-0.5 rounded-full ${
+                    className={`inline-block text-xs font-mono font-medium px-2 py-0.5 rounded ${
                       request.environment === 'production'
                         ? 'bg-purple-100 text-purple-700'
                         : 'bg-ww-gray-100 text-ww-gray-600'
@@ -379,10 +379,10 @@ export function RequestDetail({ onRefresh }: RequestDetailProps) {
 
         {/* Approval timeline */}
         <div className="lg:col-span-1">
-          <div className="bg-white rounded-2xl border border-ww-gray-200 p-5">
+          <div className="bg-white rounded-md border border-ww-gray-200 p-5">
             <div className="flex items-center gap-2 mb-4">
               <ShieldCheck size={14} className="text-ww-gray-400" />
-              <h3 className="text-xs font-semibold text-ww-gray-400 uppercase tracking-wider">
+              <h3 className="text-xs font-mono font-semibold text-ww-gray-400 uppercase tracking-wider">
                 Approval Timeline
               </h3>
             </div>
@@ -452,7 +452,7 @@ export function RequestDetail({ onRefresh }: RequestDetailProps) {
 
           {/* Prominent CTA below timeline */}
           {request.status === 'sandbox_approved' && (
-            <div className="mt-4 bg-emerald-50 rounded-2xl border border-emerald-200 p-5 text-center">
+            <div className="mt-4 bg-emerald-50 rounded-md border border-emerald-200 p-5 text-center">
               <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-3">
                 <Rocket size={18} className="text-emerald-600" />
               </div>
@@ -464,7 +464,7 @@ export function RequestDetail({ onRefresh }: RequestDetailProps) {
               </p>
               <button
                 onClick={handleRequestProduction}
-                className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-ww-blue text-white text-sm font-medium hover:bg-ww-blue-light transition-colors"
+                className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-md bg-ww-primary text-white text-sm font-medium hover:bg-ww-primary-light transition-colors"
               >
                 <Rocket size={14} />
                 Request Production Access
@@ -473,7 +473,7 @@ export function RequestDetail({ onRefresh }: RequestDetailProps) {
           )}
 
           {request.status === 'pending_agreement' && (
-            <div className="mt-4 bg-amber-50 rounded-2xl border border-amber-200 p-5 text-center">
+            <div className="mt-4 bg-amber-50 rounded-md border border-amber-200 p-5 text-center">
               <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center mx-auto mb-3">
                 <FileSignature size={18} className="text-amber-600" />
               </div>
@@ -485,7 +485,7 @@ export function RequestDetail({ onRefresh }: RequestDetailProps) {
               </p>
               <button
                 onClick={handleSignAgreement}
-                className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-amber-500 text-white text-sm font-medium hover:bg-amber-600 transition-colors"
+                className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-md bg-amber-500 text-white text-sm font-medium hover:bg-amber-600 transition-colors"
               >
                 <FileSignature size={14} />
                 Sign Agreement
