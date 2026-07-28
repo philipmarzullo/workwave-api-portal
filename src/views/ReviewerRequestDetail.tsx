@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import {
   ArrowLeft,
@@ -21,8 +21,9 @@ import {
   Database,
   Users,
   ChevronDown,
+  DollarSign,
 } from 'lucide-react'
-import type { ApprovalStage, ApprovalDecision } from '@/data/types'
+import type { ApprovalStage, ApprovalDecision, ApiPricing } from '@/data/types'
 import { store } from '@/data/store'
 import {
   PRODUCT_LABELS,
@@ -80,7 +81,16 @@ export function ReviewerRequestDetail({ onRefresh }: { onRefresh: () => void }) 
   const [submitted, setSubmitted] = useState(false)
   const [stageDropdownOpen, setStageDropdownOpen] = useState(false)
 
-  const request = useMemo(() => (requestId ? store.getRequest(requestId) : undefined), [requestId])
+  // Pricing state
+  const [pricingMonthly, setPricingMonthly] = useState('')
+  const [pricingPerCall, setPricingPerCall] = useState('')
+  const [pricingCallsIncluded, setPricingCallsIncluded] = useState('')
+  const [pricingTier, setPricingTier] = useState<ApiPricing['rateTier']>('standard')
+  const [pricingNotes, setPricingNotes] = useState('')
+  const [pricingSaved, setPricingSaved] = useState(false)
+  const [pricingTierOpen, setPricingTierOpen] = useState(false)
+
+  const request = useMemo(() => (requestId ? store.getRequest(requestId) : undefined), [requestId, pricingSaved])
   const customer = useMemo(() => (request ? store.getCustomer(request.customerId) : undefined), [request])
   const requestingUser = useMemo(() => (request ? store.getCustomerUser(request.requestedBy) : undefined), [request])
   const partner = useMemo(() => (request?.partnerId ? store.getPartner(request.partnerId) : undefined), [request])
@@ -112,6 +122,46 @@ export function ReviewerRequestDetail({ onRefresh }: { onRefresh: () => void }) 
     if (!decision || !rationale.trim() || !requestId) return
     store.addApproval(requestId, 'Reviewer', stage, decision, rationale.trim())
     setSubmitted(true)
+    onRefresh()
+  }
+
+  // Pre-fill pricing form if pricing already exists
+  const initPricing = useCallback(() => {
+    if (request?.pricing) {
+      setPricingMonthly(String(request.pricing.monthlyRate))
+      setPricingPerCall(String(request.pricing.perCallRate))
+      setPricingCallsIncluded(String(request.pricing.callsIncluded))
+      setPricingTier(request.pricing.rateTier)
+      setPricingNotes(request.pricing.notes)
+    }
+  }, [request?.pricing])
+
+  // Initialize on first render when pricing exists
+  useMemo(() => {
+    initPricing()
+  }, [initPricing])
+
+  const isApproved = request?.status === 'sandbox_approved' || request?.status === 'production_approved' || request?.status === 'pending_production_review'
+
+  const handleSavePricing = () => {
+    if (!requestId) return
+    const monthly = parseFloat(pricingMonthly)
+    const perCall = parseFloat(pricingPerCall)
+    const callsIncluded = parseInt(pricingCallsIncluded, 10)
+    if (isNaN(monthly) || isNaN(perCall) || isNaN(callsIncluded)) return
+
+    const pricing: ApiPricing = {
+      monthlyRate: monthly,
+      perCallRate: perCall,
+      callsIncluded,
+      rateTier: pricingTier,
+      notes: pricingNotes.trim(),
+      setBy: 'Reviewer',
+      setAt: new Date().toISOString(),
+    }
+    store.setPricing(requestId, pricing)
+    setPricingSaved(true)
+    setTimeout(() => setPricingSaved(false), 2000)
     onRefresh()
   }
 
@@ -604,6 +654,155 @@ export function ReviewerRequestDetail({ onRefresh }: { onRefresh: () => void }) 
                 </div>
               )}
             </div>
+
+            {/* Pricing Panel — visible for approved requests */}
+            {isApproved && (
+              <div className="bg-white rounded-md border border-ww-gray-200 p-5">
+                <h3 className="text-sm font-display font-mono font-semibold text-ww-gray-900 uppercase tracking-wide mb-4 flex items-center gap-2">
+                  <DollarSign size={14} className="text-ww-navy" />
+                  API Pricing
+                </h3>
+
+                {request.pricing && !pricingSaved ? (
+                  <div className="space-y-3 mb-4">
+                    <div className="p-3 rounded-md bg-emerald-50 border border-emerald-200">
+                      <div className="flex items-center gap-1.5 mb-2">
+                        <CheckCircle2 size={12} className="text-emerald-600" />
+                        <span className="text-xs font-semibold text-emerald-700">Pricing Set</span>
+                      </div>
+                      <dl className="grid grid-cols-2 gap-2 text-xs">
+                        <div>
+                          <dt className="text-ww-gray-400 font-mono">Monthly</dt>
+                          <dd className="font-semibold text-ww-gray-900">${request.pricing.monthlyRate.toLocaleString()}</dd>
+                        </div>
+                        <div>
+                          <dt className="text-ww-gray-400 font-mono">Per Call</dt>
+                          <dd className="font-semibold text-ww-gray-900">${request.pricing.perCallRate}</dd>
+                        </div>
+                        <div>
+                          <dt className="text-ww-gray-400 font-mono">Included Calls</dt>
+                          <dd className="font-semibold text-ww-gray-900">{request.pricing.callsIncluded.toLocaleString()}</dd>
+                        </div>
+                        <div>
+                          <dt className="text-ww-gray-400 font-mono">Rate Tier</dt>
+                          <dd className="font-semibold text-ww-gray-900 capitalize">{request.pricing.rateTier}</dd>
+                        </div>
+                      </dl>
+                      {request.pricing.notes && (
+                        <p className="text-xs text-ww-gray-500 mt-2 border-t border-emerald-200 pt-2">{request.pricing.notes}</p>
+                      )}
+                      <p className="text-[10px] font-mono text-ww-gray-400 mt-2">
+                        Set by {request.pricing.setBy} on {formatDate(request.pricing.setAt)}
+                      </p>
+                    </div>
+                  </div>
+                ) : null}
+
+                <div className="space-y-3">
+                  <p className="text-xs text-ww-gray-500">
+                    {request.pricing ? 'Update pricing for this API access request.' : 'Set pricing for this approved API access request. This will be communicated to the client.'}
+                  </p>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs font-medium text-ww-gray-600 mb-1">Monthly Rate ($)</label>
+                      <input
+                        type="number"
+                        value={pricingMonthly}
+                        onChange={e => setPricingMonthly(e.target.value)}
+                        placeholder="500"
+                        min="0"
+                        step="1"
+                        className="w-full px-2.5 py-1.5 rounded-md border border-ww-gray-200 text-sm text-ww-gray-900 placeholder:text-ww-gray-400 focus:outline-none focus:ring-2 focus:ring-ww-primary/30 focus:border-ww-primary"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-ww-gray-600 mb-1">Per-Call Rate ($)</label>
+                      <input
+                        type="number"
+                        value={pricingPerCall}
+                        onChange={e => setPricingPerCall(e.target.value)}
+                        placeholder="0.005"
+                        min="0"
+                        step="0.001"
+                        className="w-full px-2.5 py-1.5 rounded-md border border-ww-gray-200 text-sm text-ww-gray-900 placeholder:text-ww-gray-400 focus:outline-none focus:ring-2 focus:ring-ww-primary/30 focus:border-ww-primary"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs font-medium text-ww-gray-600 mb-1">Calls Included</label>
+                      <input
+                        type="number"
+                        value={pricingCallsIncluded}
+                        onChange={e => setPricingCallsIncluded(e.target.value)}
+                        placeholder="10000"
+                        min="0"
+                        step="1000"
+                        className="w-full px-2.5 py-1.5 rounded-md border border-ww-gray-200 text-sm text-ww-gray-900 placeholder:text-ww-gray-400 focus:outline-none focus:ring-2 focus:ring-ww-primary/30 focus:border-ww-primary"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-ww-gray-600 mb-1">Rate Tier</label>
+                      <div className="relative">
+                        <button
+                          onClick={() => setPricingTierOpen(!pricingTierOpen)}
+                          className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-md border border-ww-gray-200 bg-white text-sm text-ww-gray-900 hover:border-ww-gray-300 transition-colors"
+                        >
+                          <span className="capitalize">{pricingTier}</span>
+                          <ChevronDown size={12} className="text-ww-gray-400" />
+                        </button>
+                        {pricingTierOpen && (
+                          <>
+                            <div className="fixed inset-0 z-10" onClick={() => setPricingTierOpen(false)} />
+                            <div className="absolute z-20 top-full mt-1 left-0 right-0 bg-white border border-ww-gray-200 rounded-md py-1">
+                              {(['standard', 'professional', 'enterprise'] as const).map(tier => (
+                                <button
+                                  key={tier}
+                                  onClick={() => {
+                                    setPricingTier(tier)
+                                    setPricingTierOpen(false)
+                                  }}
+                                  className={`w-full text-left px-3 py-1.5 text-sm capitalize hover:bg-ww-gray-50 transition-colors ${
+                                    pricingTier === tier ? 'bg-ww-sky text-ww-navy font-medium' : 'text-ww-gray-700'
+                                  }`}
+                                >
+                                  {tier}
+                                </button>
+                              ))}
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium text-ww-gray-600 mb-1">Notes</label>
+                    <textarea
+                      value={pricingNotes}
+                      onChange={e => setPricingNotes(e.target.value)}
+                      placeholder="Pricing notes, special terms, etc."
+                      rows={2}
+                      className="w-full px-2.5 py-1.5 rounded-md border border-ww-gray-200 text-sm text-ww-gray-900 placeholder:text-ww-gray-400 focus:outline-none focus:ring-2 focus:ring-ww-primary/30 focus:border-ww-primary resize-none"
+                    />
+                  </div>
+
+                  <button
+                    onClick={handleSavePricing}
+                    disabled={!pricingMonthly || !pricingPerCall || !pricingCallsIncluded}
+                    className={`w-full py-2 rounded-md text-sm font-semibold transition-colors ${
+                      pricingMonthly && pricingPerCall && pricingCallsIncluded
+                        ? 'bg-ww-navy text-white hover:bg-ww-navy-light'
+                        : 'bg-ww-gray-200 text-ww-gray-400 cursor-not-allowed'
+                    }`}
+                  >
+                    {pricingSaved ? 'Saved!' : request.pricing ? 'Update Pricing' : 'Set Pricing'}
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

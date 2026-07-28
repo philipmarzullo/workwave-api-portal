@@ -86,6 +86,16 @@ export interface PartnerCustomer {
   revokedAt: string | null
 }
 
+export interface ApiPricing {
+  monthlyRate: number       // e.g. 500
+  perCallRate: number       // e.g. 0.005
+  callsIncluded: number     // e.g. 10000 calls included in monthly rate
+  rateTier: 'standard' | 'professional' | 'enterprise'
+  notes: string
+  setBy: string             // reviewer name
+  setAt: string             // ISO date
+}
+
 export interface ApiRequest {
   id: string
   caseNumber: string  // human-readable case number, e.g. WW-API-0042
@@ -106,6 +116,7 @@ export interface ApiRequest {
   environment: Environment
   status: RequestStatus
   agreementSignedAt: string | null
+  pricing: ApiPricing | null  // set by reviewer after approval
   createdAt: string
   updatedAt: string
 }

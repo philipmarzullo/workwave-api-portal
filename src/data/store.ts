@@ -9,6 +9,7 @@ import type {
   CustomerUser,
   PartnerCustomer,
   ApiRequest,
+  ApiPricing,
   Approval,
   ViewMode,
   RequestStatus,
@@ -28,7 +29,7 @@ import {
 
 // ── Storage helpers ──────────────────────────────────────────────
 
-const SEED_VERSION = '2'
+const SEED_VERSION = '3'
 const PREFIX = 'ww-api-portal:'
 
 function key(name: string): string {
@@ -167,7 +168,7 @@ export const store = {
     return `WW-API-${String(max + 1).padStart(4, '0')}`
   },
 
-  createRequest(req: Omit<ApiRequest, 'id' | 'caseNumber' | 'createdAt' | 'updatedAt' | 'status' | 'agreementSignedAt'>): ApiRequest {
+  createRequest(req: Omit<ApiRequest, 'id' | 'caseNumber' | 'createdAt' | 'updatedAt' | 'status' | 'agreementSignedAt' | 'pricing'>): ApiRequest {
     const requests = this.getRequests()
     const newReq: ApiRequest = {
       ...req,
@@ -175,6 +176,7 @@ export const store = {
       caseNumber: this.nextCaseNumber(),
       status: 'pending_agreement',
       agreementSignedAt: null,
+      pricing: null,
       createdAt: now(),
       updatedAt: now(),
     }
@@ -231,6 +233,17 @@ export const store = {
       }
     }
 
+    return requests[idx]
+  },
+
+  // ── Pricing ─────────────────────────────────────────────────
+
+  setPricing(requestId: string, pricing: ApiPricing): ApiRequest | undefined {
+    const requests = this.getRequests()
+    const idx = requests.findIndex(r => r.id === requestId)
+    if (idx === -1) return undefined
+    requests[idx] = { ...requests[idx], pricing, updatedAt: now() }
+    save('requests', requests)
     return requests[idx]
   },
 

@@ -188,34 +188,19 @@ export const seedPartners: Partner[] = [
 ]
 
 // ---------------------------------------------------------------------------
-// Customers (20)
+// Customers (5)
 // ---------------------------------------------------------------------------
 
 export const seedCustomers: Customer[] = [
   { id: 'cust-001', name: 'Greenleaf Pest Solutions', products: ['pestpac', 'route_manager'], plan: 'professional' },
   { id: 'cust-002', name: 'Summit Facility Services', products: ['winteam', 'timegate_plus', 'lighthouse'], plan: 'enterprise' },
-  { id: 'cust-003', name: 'TruGreen Lawn Care of Tampa', products: ['realgreen', 'route_manager'], plan: 'professional' },
-  { id: 'cust-004', name: 'Patriot Pest Management', products: ['pestpac', 'realgreen', 'route_manager'], plan: 'enterprise' },
-  { id: 'cust-005', name: 'Crystal Clean Janitorial', products: ['winteam'], plan: 'starter' },
-  { id: 'cust-006', name: 'Evergreen Landscapes LLC', products: ['realgreen', 'hire'], plan: 'starter' },
-  { id: 'cust-007', name: 'Metro Guard Pest Control', products: ['pestpac', 'route_manager'], plan: 'enterprise' },
-  { id: 'cust-008', name: 'AllStar Building Maintenance', products: ['winteam', 'timegate_plus', 'lighthouse'], plan: 'enterprise' },
-  { id: 'cust-009', name: 'Sunshine Lawn & Garden', products: ['realgreen'], plan: 'professional' },
-  { id: 'cust-010', name: 'EcoShield Exterminators', products: ['pestpac'], plan: 'professional' },
-  { id: 'cust-011', name: 'Premier Facility Group', products: ['winteam', 'timegate_plus', 'hire'], plan: 'professional' },
-  { id: 'cust-012', name: 'BlueWave Pool & Lawn', products: ['realgreen'], plan: 'professional' },
-  { id: 'cust-013', name: 'Orion Commercial Cleaning', products: ['winteam', 'lighthouse', 'hire'], plan: 'enterprise' },
-  { id: 'cust-014', name: 'BugOut Pest Services', products: ['pestpac'], plan: 'starter' },
-  { id: 'cust-015', name: 'FreshCut Landscaping', products: ['realgreen', 'hire'], plan: 'professional' },
-  { id: 'cust-016', name: 'Guardian Pest & Termite', products: ['pestpac', 'realgreen', 'route_manager'], plan: 'enterprise' },
-  { id: 'cust-017', name: 'NorthStar Janitorial Services', products: ['winteam', 'lighthouse'], plan: 'professional' },
-  { id: 'cust-018', name: 'Apex Lawn Management', products: ['realgreen', 'route_manager', 'hire'], plan: 'enterprise' },
-  { id: 'cust-019', name: 'Reliable Pest Defense', products: ['pestpac'], plan: 'professional' },
-  { id: 'cust-020', name: 'CleanSlate Commercial Services', products: ['winteam', 'timegate_plus'], plan: 'starter' },
+  { id: 'cust-003', name: 'Patriot Pest Management', products: ['pestpac', 'realgreen', 'route_manager'], plan: 'enterprise' },
+  { id: 'cust-004', name: 'Guardian Pest & Termite', products: ['pestpac', 'realgreen', 'route_manager'], plan: 'enterprise' },
+  { id: 'cust-005', name: 'Apex Lawn Management', products: ['realgreen', 'route_manager', 'hire'], plan: 'enterprise' },
 ]
 
 // ---------------------------------------------------------------------------
-// Customer Users (~2 per customer = 40)
+// Customer Users (8)
 // ---------------------------------------------------------------------------
 
 export const seedCustomerUsers: CustomerUser[] = [
@@ -227,119 +212,47 @@ export const seedCustomerUsers: CustomerUser[] = [
   { id: 'user-003', customerId: 'cust-002', name: 'James Whitfield', email: 'jwhitfield@summitfacility.com', canRequestApi: true, role: 'IT Director' },
   { id: 'user-004', customerId: 'cust-002', name: 'Priya Sharma', email: 'psharma@summitfacility.com', canRequestApi: false, role: 'Account Manager' },
 
-  // cust-003: TruGreen Lawn Care of Tampa
-  { id: 'user-005', customerId: 'cust-003', name: 'Kevin O\'Brien', email: 'kobrien@trugreentampa.com', canRequestApi: true, role: 'General Manager' },
-  { id: 'user-006', customerId: 'cust-003', name: 'Ashley Rodriguez', email: 'arodriguez@trugreentampa.com', canRequestApi: false, role: 'Office Coordinator' },
+  // cust-003: Patriot Pest Management
+  { id: 'user-005', customerId: 'cust-003', name: 'Robert Chen', email: 'rchen@patriotpest.com', canRequestApi: true, role: 'CTO' },
 
-  // cust-004: Patriot Pest Management
-  { id: 'user-007', customerId: 'cust-004', name: 'Robert Chen', email: 'rchen@patriotpest.com', canRequestApi: true, role: 'CTO' },
-  { id: 'user-008', customerId: 'cust-004', name: 'Laura Mitchell', email: 'lmitchell@patriotpest.com', canRequestApi: true, role: 'VP of Operations' },
+  // cust-004: Guardian Pest & Termite
+  { id: 'user-006', customerId: 'cust-004', name: 'Andrew Thompson', email: 'athompson@guardianpt.com', canRequestApi: true, role: 'CIO' },
+  { id: 'user-007', customerId: 'cust-004', name: 'Natalie Price', email: 'nprice@guardianpt.com', canRequestApi: true, role: 'Integration Specialist' },
 
-  // cust-005: Crystal Clean Janitorial
-  { id: 'user-009', customerId: 'cust-005', name: 'Tamika Johnson', email: 'tjohnson@crystalclean.com', canRequestApi: true, role: 'Owner' },
-  { id: 'user-010', customerId: 'cust-005', name: 'Carlos Rivera', email: 'crivera@crystalclean.com', canRequestApi: false, role: 'Supervisor' },
-
-  // cust-006: Evergreen Landscapes LLC
-  { id: 'user-011', customerId: 'cust-006', name: 'Nathan Brooks', email: 'nbrooks@evergreenlandscapes.com', canRequestApi: true, role: 'Owner' },
-  { id: 'user-012', customerId: 'cust-006', name: 'Samantha Lee', email: 'slee@evergreenlandscapes.com', canRequestApi: false, role: 'Office Manager' },
-
-  // cust-007: Metro Guard Pest Control
-  { id: 'user-013', customerId: 'cust-007', name: 'Victor Ramirez', email: 'vramirez@metroguard.com', canRequestApi: true, role: 'Director of Technology' },
-  { id: 'user-014', customerId: 'cust-007', name: 'Diane Foster', email: 'dfoster@metroguard.com', canRequestApi: false, role: 'Service Manager' },
-
-  // cust-008: AllStar Building Maintenance
-  { id: 'user-015', customerId: 'cust-008', name: 'Gregory Patel', email: 'gpatel@allstarbm.com', canRequestApi: true, role: 'VP of Technology' },
-  { id: 'user-016', customerId: 'cust-008', name: 'Monica Adams', email: 'madams@allstarbm.com', canRequestApi: false, role: 'Regional Manager' },
-
-  // cust-009: Sunshine Lawn & Garden
-  { id: 'user-017', customerId: 'cust-009', name: 'Brian Kowalski', email: 'bkowalski@sunshinelawn.com', canRequestApi: true, role: 'Owner' },
-  { id: 'user-018', customerId: 'cust-009', name: 'Jennifer Park', email: 'jpark@sunshinelawn.com', canRequestApi: false, role: 'Bookkeeper' },
-
-  // cust-010: EcoShield Exterminators
-  { id: 'user-019', customerId: 'cust-010', name: 'Daniel Washington', email: 'dwashington@ecoshield.com', canRequestApi: true, role: 'Operations Director' },
-  { id: 'user-020', customerId: 'cust-010', name: 'Rachel Kim', email: 'rkim@ecoshield.com', canRequestApi: false, role: 'Customer Service Lead' },
-
-  // cust-011: Premier Facility Group
-  { id: 'user-021', customerId: 'cust-011', name: 'Steven Harper', email: 'sharper@premierfg.com', canRequestApi: true, role: 'IT Manager' },
-  { id: 'user-022', customerId: 'cust-011', name: 'Amanda Torres', email: 'atorres@premierfg.com', canRequestApi: false, role: 'HR Director' },
-
-  // cust-012: BlueWave Pool & Lawn
-  { id: 'user-023', customerId: 'cust-012', name: 'Michael Dunn', email: 'mdunn@bluewavepl.com', canRequestApi: true, role: 'General Manager' },
-  { id: 'user-024', customerId: 'cust-012', name: 'Christina Vargas', email: 'cvargas@bluewavepl.com', canRequestApi: false, role: 'Dispatcher' },
-
-  // cust-013: Orion Commercial Cleaning
-  { id: 'user-025', customerId: 'cust-013', name: 'William Zhang', email: 'wzhang@orioncleaning.com', canRequestApi: true, role: 'CEO' },
-  { id: 'user-026', customerId: 'cust-013', name: 'Heather Murray', email: 'hmurray@orioncleaning.com', canRequestApi: false, role: 'Finance Manager' },
-
-  // cust-014: BugOut Pest Services
-  { id: 'user-027', customerId: 'cust-014', name: 'Tyler Bennett', email: 'tbennett@bugoutpest.com', canRequestApi: true, role: 'Owner' },
-  { id: 'user-028', customerId: 'cust-014', name: 'Megan Gray', email: 'mgray@bugoutpest.com', canRequestApi: false, role: 'Office Assistant' },
-
-  // cust-015: FreshCut Landscaping
-  { id: 'user-029', customerId: 'cust-015', name: 'Jason Nguyen', email: 'jnguyen@freshcutlandscaping.com', canRequestApi: true, role: 'Operations Manager' },
-  { id: 'user-030', customerId: 'cust-015', name: 'Brittany Cole', email: 'bcole@freshcutlandscaping.com', canRequestApi: false, role: 'Crew Lead' },
-
-  // cust-016: Guardian Pest & Termite
-  { id: 'user-031', customerId: 'cust-016', name: 'Andrew Thompson', email: 'athompson@guardianpt.com', canRequestApi: true, role: 'CIO' },
-  { id: 'user-032', customerId: 'cust-016', name: 'Natalie Price', email: 'nprice@guardianpt.com', canRequestApi: true, role: 'Integration Specialist' },
-
-  // cust-017: NorthStar Janitorial Services
-  { id: 'user-033', customerId: 'cust-017', name: 'Keith Robinson', email: 'krobinson@northstarjan.com', canRequestApi: true, role: 'Director of Operations' },
-  { id: 'user-034', customerId: 'cust-017', name: 'Vanessa Morales', email: 'vmorales@northstarjan.com', canRequestApi: false, role: 'Payroll Coordinator' },
-
-  // cust-018: Apex Lawn Management
-  { id: 'user-035', customerId: 'cust-018', name: 'Christopher Bell', email: 'cbell@apexlawn.com', canRequestApi: true, role: 'VP of Technology' },
-  { id: 'user-036', customerId: 'cust-018', name: 'Stephanie Hayes', email: 'shayes@apexlawn.com', canRequestApi: false, role: 'Marketing Director' },
-
-  // cust-019: Reliable Pest Defense
-  { id: 'user-037', customerId: 'cust-019', name: 'Marcus Turner', email: 'mturner@reliablepest.com', canRequestApi: true, role: 'Owner' },
-  { id: 'user-038', customerId: 'cust-019', name: 'Angela Reed', email: 'areed@reliablepest.com', canRequestApi: false, role: 'Scheduling Coordinator' },
-
-  // cust-020: CleanSlate Commercial Services
-  { id: 'user-039', customerId: 'cust-020', name: 'Patrick Sullivan', email: 'psullivan@cleanslatecs.com', canRequestApi: true, role: 'Owner' },
-  { id: 'user-040', customerId: 'cust-020', name: 'Emily Wright', email: 'ewright@cleanslatecs.com', canRequestApi: false, role: 'Administrative Assistant' },
+  // cust-005: Apex Lawn Management
+  { id: 'user-008', customerId: 'cust-005', name: 'Christopher Bell', email: 'cbell@apexlawn.com', canRequestApi: true, role: 'VP of Technology' },
 ]
 
 // ---------------------------------------------------------------------------
-// Partner-Customer Links (12)
+// Partner-Customer Links (6)
 // ---------------------------------------------------------------------------
 
 export const seedPartnerCustomers: PartnerCustomer[] = [
-  // QuickBooks Online links
+  // QuickBooks Online + Greenleaf Pest (production)
   { id: 'pc-001', partnerId: 'partner-001', customerId: 'cust-001', status: 'active', environment: 'production', linkedAt: '2026-01-20T08:00:00Z', revokedAt: null },
-  { id: 'pc-002', partnerId: 'partner-001', customerId: 'cust-017', status: 'active', environment: 'sandbox', linkedAt: '2026-06-05T13:20:00Z', revokedAt: null },
 
-  // Sage Intacct links
-  { id: 'pc-003', partnerId: 'partner-002', customerId: 'cust-002', status: 'active', environment: 'production', linkedAt: '2026-01-15T11:00:00Z', revokedAt: null },
-  { id: 'pc-004', partnerId: 'partner-002', customerId: 'cust-008', status: 'active', environment: 'production', linkedAt: '2026-03-01T16:45:00Z', revokedAt: null },
+  // Sage Intacct + Summit Facility (production)
+  { id: 'pc-002', partnerId: 'partner-002', customerId: 'cust-002', status: 'active', environment: 'production', linkedAt: '2026-01-15T11:00:00Z', revokedAt: null },
 
-  // Salesforce links
-  { id: 'pc-005', partnerId: 'partner-003', customerId: 'cust-013', status: 'active', environment: 'production', linkedAt: '2026-03-12T09:00:00Z', revokedAt: null },
-  { id: 'pc-006', partnerId: 'partner-003', customerId: 'cust-016', status: 'pending', environment: 'sandbox', linkedAt: '2026-07-01T14:30:00Z', revokedAt: null },
+  // Stripe + Patriot Pest (sandbox)
+  { id: 'pc-003', partnerId: 'partner-004', customerId: 'cust-003', status: 'active', environment: 'sandbox', linkedAt: '2026-04-10T14:00:00Z', revokedAt: null },
 
-  // Stripe links
-  { id: 'pc-007', partnerId: 'partner-004', customerId: 'cust-004', status: 'active', environment: 'production', linkedAt: '2026-02-10T14:00:00Z', revokedAt: null },
-  { id: 'pc-008', partnerId: 'partner-004', customerId: 'cust-010', status: 'active', environment: 'sandbox', linkedAt: '2026-05-18T09:30:00Z', revokedAt: null },
+  // Salesforce + Guardian Pest (sandbox, pending)
+  { id: 'pc-004', partnerId: 'partner-003', customerId: 'cust-004', status: 'pending', environment: 'sandbox', linkedAt: '2026-07-01T14:30:00Z', revokedAt: null },
 
-  // ADP Workforce Now links
-  { id: 'pc-009', partnerId: 'partner-005', customerId: 'cust-011', status: 'active', environment: 'sandbox', linkedAt: '2026-06-20T15:45:00Z', revokedAt: null },
+  // DataHarvest AI + Patriot Pest (revoked)
+  { id: 'pc-005', partnerId: 'partner-011', customerId: 'cust-003', status: 'revoked', environment: 'sandbox', linkedAt: '2026-03-15T10:00:00Z', revokedAt: '2026-04-02T16:30:00Z' },
 
-  // Google Maps Platform links
-  { id: 'pc-010', partnerId: 'partner-006', customerId: 'cust-016', status: 'active', environment: 'production', linkedAt: '2026-04-08T11:10:00Z', revokedAt: null },
-
-  // DataHarvest AI - revoked
-  { id: 'pc-011', partnerId: 'partner-011', customerId: 'cust-004', status: 'revoked', environment: 'sandbox', linkedAt: '2026-03-15T10:00:00Z', revokedAt: '2026-04-02T16:30:00Z' },
-
-  // Zapier link
-  { id: 'pc-012', partnerId: 'partner-007', customerId: 'cust-007', status: 'active', environment: 'production', linkedAt: '2026-02-22T10:15:00Z', revokedAt: null },
+  // Google Maps Platform + Guardian Pest (production)
+  { id: 'pc-006', partnerId: 'partner-006', customerId: 'cust-004', status: 'active', environment: 'production', linkedAt: '2026-04-08T11:10:00Z', revokedAt: null },
 ]
 
 // ---------------------------------------------------------------------------
-// API Requests (18)
+// API Requests (10)
 // ---------------------------------------------------------------------------
 
 export const seedRequests: ApiRequest[] = [
-  // ---- Production Approved (3) ----
+  // ---- Production Approved (2) ----
   {
     id: 'req-001',
     caseNumber: 'WW-API-0001',
@@ -360,6 +273,7 @@ export const seedRequests: ApiRequest[] = [
     environment: 'production',
     status: 'production_approved',
     agreementSignedAt: '2026-01-12T09:00:00Z',
+    pricing: null,
     createdAt: '2026-01-08T14:22:00Z',
     updatedAt: '2026-02-01T11:30:00Z',
   },
@@ -383,39 +297,17 @@ export const seedRequests: ApiRequest[] = [
     environment: 'production',
     status: 'production_approved',
     agreementSignedAt: '2026-01-18T10:30:00Z',
+    pricing: null,
     createdAt: '2026-01-15T16:40:00Z',
     updatedAt: '2026-02-10T09:15:00Z',
   },
+
+  // ---- Sandbox Approved (2) ----
   {
     id: 'req-003',
     caseNumber: 'WW-API-0003',
-    customerId: 'cust-013',
-    requestedBy: 'user-025',
-    partnerId: 'partner-003',
-    partnerNameFreetext: null,
-    partnerWebsite: null,
-    partnerContact: null,
-    product: 'winteam',
-    builderType: 'partner',
-    connectingSystem: 'Salesforce Sales Cloud',
-    useCase: 'sync_customer_data',
-    useCaseDetail: 'Bidirectional sync of customer accounts and service contracts between WinTeam and Salesforce to maintain a single source of truth for the sales team.',
-    dataRead: ['customers', 'service_history', 'estimates'],
-    dataWrite: ['customers'],
-    dataLeavesEnvironment: true,
-    environment: 'production',
-    status: 'production_approved',
-    agreementSignedAt: '2026-03-05T14:00:00Z',
-    createdAt: '2026-02-28T11:15:00Z',
-    updatedAt: '2026-03-20T16:45:00Z',
-  },
-
-  // ---- Sandbox Approved (3) ----
-  {
-    id: 'req-004',
-    caseNumber: 'WW-API-0004',
-    customerId: 'cust-004',
-    requestedBy: 'user-007',
+    customerId: 'cust-003',
+    requestedBy: 'user-005',
     partnerId: 'partner-004',
     partnerNameFreetext: null,
     partnerWebsite: null,
@@ -424,69 +316,22 @@ export const seedRequests: ApiRequest[] = [
     builderType: 'partner',
     connectingSystem: 'Stripe Payments API',
     useCase: 'payment_processing',
-    useCaseDetail: 'Process customer payments through Stripe and write payment confirmations back to PestPac. Supports credit cards, ACH, and digital wallets for pest control service invoices.',
+    useCaseDetail: 'Process customer payments through Stripe from PestPac. Supports credit cards, ACH, and digital wallets for pest control service invoices.',
     dataRead: ['invoices', 'payments', 'customers'],
     dataWrite: ['payments'],
     dataLeavesEnvironment: true,
     environment: 'sandbox',
     status: 'sandbox_approved',
     agreementSignedAt: '2026-04-10T08:00:00Z',
+    pricing: null,
     createdAt: '2026-04-05T13:30:00Z',
     updatedAt: '2026-04-22T10:00:00Z',
   },
   {
-    id: 'req-005',
-    caseNumber: 'WW-API-0005',
-    customerId: 'cust-007',
-    requestedBy: 'user-013',
-    partnerId: 'partner-007',
-    partnerNameFreetext: null,
-    partnerWebsite: null,
-    partnerContact: null,
-    product: 'pestpac',
-    builderType: 'partner',
-    connectingSystem: 'Zapier Automation Platform',
-    useCase: 'sync_customer_data',
-    useCaseDetail: 'Automate customer data flows from PestPac into downstream tools via Zapier. Triggers on new customers, completed services, and payment receipts to update marketing and project management apps.',
-    dataRead: ['customers', 'service_history', 'appointments', 'payments'],
-    dataWrite: [],
-    dataLeavesEnvironment: true,
-    environment: 'sandbox',
-    status: 'sandbox_approved',
-    agreementSignedAt: '2026-05-02T11:00:00Z',
-    createdAt: '2026-04-28T09:45:00Z',
-    updatedAt: '2026-05-15T14:20:00Z',
-  },
-  {
-    id: 'req-006',
-    caseNumber: 'WW-API-0006',
-    customerId: 'cust-017',
-    requestedBy: 'user-033',
-    partnerId: 'partner-001',
-    partnerNameFreetext: null,
-    partnerWebsite: null,
-    partnerContact: null,
-    product: 'winteam',
-    builderType: 'partner',
-    connectingSystem: 'QuickBooks Online',
-    useCase: 'financial_reporting',
-    useCaseDetail: 'Real-time invoice sync from WinTeam to QuickBooks for accounts receivable tracking and automated payment reconciliation.',
-    dataRead: ['invoices', 'payments'],
-    dataWrite: [],
-    dataLeavesEnvironment: true,
-    environment: 'sandbox',
-    status: 'sandbox_approved',
-    agreementSignedAt: '2026-06-01T09:00:00Z',
-    createdAt: '2026-05-25T15:10:00Z',
-    updatedAt: '2026-06-10T12:30:00Z',
-  },
-
-  // ---- Pending Review (4) ----
-  {
-    id: 'req-007',
-    caseNumber: 'WW-API-0007',
-    customerId: 'cust-016',
-    requestedBy: 'user-031',
+    id: 'req-004',
+    caseNumber: 'WW-API-0004',
+    customerId: 'cust-004',
+    requestedBy: 'user-006',
     partnerId: 'partner-003',
     partnerNameFreetext: null,
     partnerWebsite: null,
@@ -500,16 +345,19 @@ export const seedRequests: ApiRequest[] = [
     dataWrite: ['customers'],
     dataLeavesEnvironment: true,
     environment: 'sandbox',
-    status: 'pending_review',
+    status: 'sandbox_approved',
     agreementSignedAt: '2026-06-28T10:00:00Z',
+    pricing: null,
     createdAt: '2026-06-25T11:30:00Z',
-    updatedAt: '2026-06-28T10:00:00Z',
+    updatedAt: '2026-07-10T14:00:00Z',
   },
+
+  // ---- Pending Review (3) ----
   {
-    id: 'req-008',
-    caseNumber: 'WW-API-0008',
-    customerId: 'cust-011',
-    requestedBy: 'user-021',
+    id: 'req-005',
+    caseNumber: 'WW-API-0005',
+    customerId: 'cust-002',
+    requestedBy: 'user-003',
     partnerId: 'partner-005',
     partnerNameFreetext: null,
     partnerWebsite: null,
@@ -525,14 +373,15 @@ export const seedRequests: ApiRequest[] = [
     environment: 'sandbox',
     status: 'pending_review',
     agreementSignedAt: '2026-07-05T14:00:00Z',
+    pricing: null,
     createdAt: '2026-07-01T08:45:00Z',
     updatedAt: '2026-07-05T14:00:00Z',
   },
   {
-    id: 'req-009',
-    caseNumber: 'WW-API-0009',
-    customerId: 'cust-018',
-    requestedBy: 'user-035',
+    id: 'req-006',
+    caseNumber: 'WW-API-0006',
+    customerId: 'cust-005',
+    requestedBy: 'user-008',
     partnerId: 'partner-008',
     partnerNameFreetext: null,
     partnerWebsite: null,
@@ -548,181 +397,15 @@ export const seedRequests: ApiRequest[] = [
     environment: 'sandbox',
     status: 'pending_review',
     agreementSignedAt: '2026-07-10T09:30:00Z',
+    pricing: null,
     createdAt: '2026-07-08T16:20:00Z',
     updatedAt: '2026-07-10T09:30:00Z',
   },
   {
-    id: 'req-010',
-    caseNumber: 'WW-API-0010',
-    customerId: 'cust-008',
-    requestedBy: 'user-015',
-    partnerId: 'partner-002',
-    partnerNameFreetext: null,
-    partnerWebsite: null,
-    partnerContact: null,
-    product: 'winteam',
-    builderType: 'partner',
-    connectingSystem: 'Sage Intacct Multi-Entity',
-    useCase: 'financial_reporting',
-    useCaseDetail: 'Export WinTeam revenue and cost center data into Sage Intacct for multi-entity consolidation across 8 subsidiaries.',
-    dataRead: ['invoices', 'payments', 'employees', 'customers'],
-    dataWrite: [],
-    dataLeavesEnvironment: true,
-    environment: 'sandbox',
-    status: 'pending_review',
-    agreementSignedAt: '2026-07-15T11:00:00Z',
-    createdAt: '2026-07-12T10:00:00Z',
-    updatedAt: '2026-07-15T11:00:00Z',
-  },
-
-  // ---- Denied (2) ----
-  {
-    id: 'req-011',
-    caseNumber: 'WW-API-0011',
-    customerId: 'cust-004',
-    requestedBy: 'user-008',
-    partnerId: 'partner-011',
-    partnerNameFreetext: null,
-    partnerWebsite: null,
-    partnerContact: null,
-    product: 'pestpac',
-    builderType: 'partner',
-    connectingSystem: 'DataHarvest AI Platform',
-    useCase: 'other',
-    useCaseDetail: 'Aggregate operational metrics, customer lifetime value data, and service pricing across all accounts for AI-driven benchmarking and industry analysis.',
-    dataRead: ['customers', 'invoices', 'payments', 'service_history', 'appointments', 'employees', 'estimates'],
-    dataWrite: [],
-    dataLeavesEnvironment: true,
-    environment: 'sandbox',
-    status: 'sandbox_denied',
-    agreementSignedAt: '2026-03-18T09:00:00Z',
-    createdAt: '2026-03-10T14:30:00Z',
-    updatedAt: '2026-04-02T16:30:00Z',
-  },
-  {
-    id: 'req-012',
-    caseNumber: 'WW-API-0012',
-    customerId: 'cust-014',
-    requestedBy: 'user-027',
-    partnerId: 'partner-012',
-    partnerNameFreetext: null,
-    partnerWebsite: null,
-    partnerContact: null,
-    product: 'pestpac',
-    builderType: 'partner',
-    connectingSystem: 'SecurePayNow Gateway',
-    useCase: 'payment_processing',
-    useCaseDetail: 'Process customer payments through SecurePayNow gateway and write payment confirmations back to PestPac.',
-    dataRead: ['customers', 'invoices', 'payments'],
-    dataWrite: ['payments'],
-    dataLeavesEnvironment: true,
-    environment: 'sandbox',
-    status: 'sandbox_denied',
-    agreementSignedAt: '2026-05-08T10:00:00Z',
-    createdAt: '2026-05-05T09:15:00Z',
-    updatedAt: '2026-05-22T14:45:00Z',
-  },
-
-  // ---- Pending Agreement (2) ----
-  {
-    id: 'req-013',
-    caseNumber: 'WW-API-0013',
-    customerId: 'cust-009',
-    requestedBy: 'user-017',
-    partnerId: 'partner-009',
-    partnerNameFreetext: null,
-    partnerWebsite: null,
-    partnerContact: null,
-    product: 'realgreen',
-    builderType: 'partner',
-    connectingSystem: 'Twilio Messaging API',
-    useCase: 'marketing_automation',
-    useCaseDetail: 'Send automated appointment reminders and service follow-up SMS messages to lawn care customers using Twilio, triggered by RealGreen scheduling events.',
-    dataRead: ['customers', 'appointments'],
-    dataWrite: [],
-    dataLeavesEnvironment: true,
-    environment: 'sandbox',
-    status: 'pending_agreement',
-    agreementSignedAt: null,
-    createdAt: '2026-07-18T13:00:00Z',
-    updatedAt: '2026-07-18T13:00:00Z',
-  },
-  {
-    id: 'req-014',
-    caseNumber: 'WW-API-0014',
-    customerId: 'cust-012',
-    requestedBy: 'user-023',
-    partnerId: 'partner-006',
-    partnerNameFreetext: null,
-    partnerWebsite: null,
-    partnerContact: null,
-    product: 'realgreen',
-    builderType: 'partner',
-    connectingSystem: 'Google Maps Platform',
-    useCase: 'fleet_tracking',
-    useCaseDetail: 'Geocode customer addresses and visualize technician routes on Google Maps for daily dispatch planning and customer-facing appointment tracking.',
-    dataRead: ['customers', 'appointments', 'routes'],
-    dataWrite: [],
-    dataLeavesEnvironment: true,
-    environment: 'sandbox',
-    status: 'pending_agreement',
-    agreementSignedAt: null,
-    createdAt: '2026-07-20T10:30:00Z',
-    updatedAt: '2026-07-20T10:30:00Z',
-  },
-
-  // ---- Unlisted Partner Requests (3) ----
-  {
-    id: 'req-015',
-    caseNumber: 'WW-API-0015',
+    id: 'req-007',
+    caseNumber: 'WW-API-0007',
     customerId: 'cust-003',
     requestedBy: 'user-005',
-    partnerId: null,
-    partnerNameFreetext: 'TurfMetrics Pro',
-    partnerWebsite: 'https://www.turfmetricspro.com',
-    partnerContact: 'partnerships@turfmetricspro.com',
-    product: 'realgreen',
-    builderType: 'partner',
-    connectingSystem: 'TurfMetrics Pro Analytics',
-    useCase: 'custom_reporting',
-    useCaseDetail: 'Export lawn treatment data and customer satisfaction scores to TurfMetrics Pro for benchmarking against regional competitors.',
-    dataRead: ['customers', 'service_history', 'appointments'],
-    dataWrite: [],
-    dataLeavesEnvironment: true,
-    environment: 'sandbox',
-    status: 'pending_review',
-    agreementSignedAt: '2026-07-14T11:00:00Z',
-    createdAt: '2026-07-12T15:45:00Z',
-    updatedAt: '2026-07-14T11:00:00Z',
-  },
-  {
-    id: 'req-016',
-    caseNumber: 'WW-API-0016',
-    customerId: 'cust-019',
-    requestedBy: 'user-037',
-    partnerId: null,
-    partnerNameFreetext: 'BugTracker360',
-    partnerWebsite: 'https://www.bugtracker360.com',
-    partnerContact: 'api@bugtracker360.com',
-    product: 'pestpac',
-    builderType: 'contractor',
-    connectingSystem: 'BugTracker360 Mobile App',
-    useCase: 'mobile_app',
-    useCaseDetail: 'Contractor is building a custom mobile app for field technicians that needs to pull appointment data and push service completion notes.',
-    dataRead: ['appointments', 'customers', 'routes'],
-    dataWrite: ['service_history'],
-    dataLeavesEnvironment: true,
-    environment: 'sandbox',
-    status: 'pending_review',
-    agreementSignedAt: '2026-07-22T09:00:00Z',
-    createdAt: '2026-07-19T14:20:00Z',
-    updatedAt: '2026-07-22T09:00:00Z',
-  },
-  {
-    id: 'req-017',
-    caseNumber: 'WW-API-0017',
-    customerId: 'cust-015',
-    requestedBy: 'user-029',
     partnerId: null,
     partnerNameFreetext: 'CrewClock',
     partnerWebsite: 'https://www.crewclock.io',
@@ -738,16 +421,69 @@ export const seedRequests: ApiRequest[] = [
     environment: 'sandbox',
     status: 'pending_review',
     agreementSignedAt: '2026-07-24T10:00:00Z',
+    pricing: null,
     createdAt: '2026-07-21T11:30:00Z',
     updatedAt: '2026-07-24T10:00:00Z',
   },
 
+  // ---- Sandbox Denied (1) ----
+  {
+    id: 'req-008',
+    caseNumber: 'WW-API-0008',
+    customerId: 'cust-003',
+    requestedBy: 'user-005',
+    partnerId: 'partner-011',
+    partnerNameFreetext: null,
+    partnerWebsite: null,
+    partnerContact: null,
+    product: 'pestpac',
+    builderType: 'partner',
+    connectingSystem: 'DataHarvest AI Platform',
+    useCase: 'other',
+    useCaseDetail: 'Aggregate operational metrics, customer lifetime value data, and service pricing across all accounts for AI-driven benchmarking and industry analysis.',
+    dataRead: ['customers', 'invoices', 'payments', 'service_history', 'appointments', 'employees', 'estimates'],
+    dataWrite: [],
+    dataLeavesEnvironment: true,
+    environment: 'sandbox',
+    status: 'sandbox_denied',
+    agreementSignedAt: '2026-03-18T09:00:00Z',
+    pricing: null,
+    createdAt: '2026-03-10T14:30:00Z',
+    updatedAt: '2026-04-02T16:30:00Z',
+  },
+
+  // ---- Pending Agreement (1) ----
+  {
+    id: 'req-009',
+    caseNumber: 'WW-API-0009',
+    customerId: 'cust-004',
+    requestedBy: 'user-007',
+    partnerId: 'partner-006',
+    partnerNameFreetext: null,
+    partnerWebsite: null,
+    partnerContact: null,
+    product: 'realgreen',
+    builderType: 'partner',
+    connectingSystem: 'Google Maps Platform',
+    useCase: 'fleet_tracking',
+    useCaseDetail: 'Geocode customer addresses and visualize technician routes on Google Maps for daily dispatch planning and customer-facing appointment tracking.',
+    dataRead: ['customers', 'appointments', 'routes'],
+    dataWrite: [],
+    dataLeavesEnvironment: true,
+    environment: 'sandbox',
+    status: 'pending_agreement',
+    agreementSignedAt: null,
+    pricing: null,
+    createdAt: '2026-07-20T10:30:00Z',
+    updatedAt: '2026-07-20T10:30:00Z',
+  },
+
   // ---- Pending Production Review (1) ----
   {
-    id: 'req-018',
-    caseNumber: 'WW-API-0018',
-    customerId: 'cust-016',
-    requestedBy: 'user-032',
+    id: 'req-010',
+    caseNumber: 'WW-API-0010',
+    customerId: 'cust-004',
+    requestedBy: 'user-007',
     partnerId: 'partner-006',
     partnerNameFreetext: null,
     partnerWebsite: null,
@@ -763,6 +499,7 @@ export const seedRequests: ApiRequest[] = [
     environment: 'production',
     status: 'pending_production_review',
     agreementSignedAt: '2026-04-05T08:00:00Z',
+    pricing: null,
     createdAt: '2026-06-15T09:00:00Z',
     updatedAt: '2026-07-01T14:00:00Z',
   },
@@ -773,7 +510,7 @@ export const seedRequests: ApiRequest[] = [
 // ---------------------------------------------------------------------------
 
 export const seedApprovals: Approval[] = [
-  // req-001: Sage Intacct + Summit Facility (production approved)
+  // req-001: Sage Intacct + Summit Facility (production approved) — 4 approvals
   {
     id: 'appr-001',
     requestId: 'req-001',
@@ -811,7 +548,7 @@ export const seedApprovals: Approval[] = [
     decidedAt: '2026-02-01T11:30:00Z',
   },
 
-  // req-002: QuickBooks + Greenleaf Pest (production approved)
+  // req-002: QuickBooks + Greenleaf Pest (production approved) — 4 approvals
   {
     id: 'appr-005',
     requestId: 'req-002',
@@ -849,48 +586,10 @@ export const seedApprovals: Approval[] = [
     decidedAt: '2026-02-10T09:15:00Z',
   },
 
-  // req-003: Salesforce + Orion Commercial (production approved)
+  // req-003: Stripe + Patriot Pest (sandbox approved) — 3 approvals
   {
     id: 'appr-009',
     requestId: 'req-003',
-    reviewer: 'Sarah Mitchell',
-    stage: 'initial_review',
-    decision: 'approved',
-    rationale: 'Salesforce is Tier 1 approved. Bidirectional sync requires additional security review for write access.',
-    decidedAt: '2026-03-04T09:00:00Z',
-  },
-  {
-    id: 'appr-010',
-    requestId: 'req-003',
-    reviewer: 'David Kim',
-    stage: 'security_review',
-    decision: 'approved',
-    rationale: 'Write access limited to customer records only. Conflict resolution strategy documented. Audit logging enabled.',
-    decidedAt: '2026-03-08T14:20:00Z',
-  },
-  {
-    id: 'appr-011',
-    requestId: 'req-003',
-    reviewer: 'Jennifer Liu',
-    stage: 'sandbox_approval',
-    decision: 'approved',
-    rationale: 'Bidirectional sync tested with 500 records. Conflict resolution working as designed.',
-    decidedAt: '2026-03-14T11:45:00Z',
-  },
-  {
-    id: 'appr-012',
-    requestId: 'req-003',
-    reviewer: 'Mark Anderson',
-    stage: 'production_approval',
-    decision: 'approved',
-    rationale: 'Production deployment approved. Real-time webhooks configured with retry policy.',
-    decidedAt: '2026-03-20T16:45:00Z',
-  },
-
-  // req-004: Stripe + Patriot Pest (sandbox approved)
-  {
-    id: 'appr-013',
-    requestId: 'req-004',
     reviewer: 'Sarah Mitchell',
     stage: 'initial_review',
     decision: 'approved',
@@ -898,8 +597,8 @@ export const seedApprovals: Approval[] = [
     decidedAt: '2026-04-12T10:00:00Z',
   },
   {
-    id: 'appr-014',
-    requestId: 'req-004',
+    id: 'appr-010',
+    requestId: 'req-003',
     reviewer: 'David Kim',
     stage: 'security_review',
     decision: 'approved',
@@ -907,8 +606,8 @@ export const seedApprovals: Approval[] = [
     decidedAt: '2026-04-16T13:30:00Z',
   },
   {
-    id: 'appr-015',
-    requestId: 'req-004',
+    id: 'appr-011',
+    requestId: 'req-003',
     reviewer: 'Jennifer Liu',
     stage: 'sandbox_approval',
     decision: 'approved',
@@ -916,108 +615,50 @@ export const seedApprovals: Approval[] = [
     decidedAt: '2026-04-22T10:00:00Z',
   },
 
-  // req-005: Zapier + Metro Guard (sandbox approved)
+  // req-004: Salesforce + Guardian Pest (sandbox approved) — 2 approvals
   {
-    id: 'appr-016',
-    requestId: 'req-005',
+    id: 'appr-012',
+    requestId: 'req-004',
     reviewer: 'Sarah Mitchell',
     stage: 'initial_review',
     decision: 'approved',
-    rationale: 'Zapier is an approved partner. Read-only data triggers for workflow automation are a standard use case.',
-    decidedAt: '2026-05-05T09:30:00Z',
+    rationale: 'Salesforce is a Tier 1 approved partner. Customer data sync into Service Cloud is a well-understood use case.',
+    decidedAt: '2026-07-02T09:00:00Z',
   },
   {
-    id: 'appr-017',
-    requestId: 'req-005',
+    id: 'appr-013',
+    requestId: 'req-004',
     reviewer: 'David Kim',
     stage: 'security_review',
     decision: 'approved',
-    rationale: 'Read-only access confirmed. Zapier SOC 2 Type II report current. Data encrypted in transit via TLS 1.3.',
-    decidedAt: '2026-05-09T14:00:00Z',
-  },
-  {
-    id: 'appr-018',
-    requestId: 'req-005',
-    reviewer: 'Jennifer Liu',
-    stage: 'sandbox_approval',
-    decision: 'approved',
-    rationale: 'Automation triggers tested for new customer, service completion, and payment receipt events. All firing correctly.',
-    decidedAt: '2026-05-15T14:20:00Z',
+    rationale: 'Salesforce maintains SOC 2 Type II and ISO 27001 certifications. Write access limited to customer records with field-level mapping reviewed.',
+    decidedAt: '2026-07-08T14:20:00Z',
   },
 
-  // req-006: QuickBooks + NorthStar Janitorial (sandbox approved)
+  // req-008: DataHarvest AI + Patriot Pest (DENIED) — 2 approvals
   {
-    id: 'appr-019',
-    requestId: 'req-006',
-    reviewer: 'Sarah Mitchell',
-    stage: 'initial_review',
-    decision: 'approved',
-    rationale: 'Standard QuickBooks integration. Read-only invoice and payment data. Fast-track eligible.',
-    decidedAt: '2026-05-28T10:00:00Z',
-  },
-  {
-    id: 'appr-020',
-    requestId: 'req-006',
-    reviewer: 'Jennifer Liu',
-    stage: 'sandbox_approval',
-    decision: 'approved',
-    rationale: 'Sandbox validation complete. Invoice format mapping confirmed for WinTeam chart of accounts.',
-    decidedAt: '2026-06-10T12:30:00Z',
-  },
-
-  // req-011: DataHarvest AI + Patriot Pest (DENIED)
-  {
-    id: 'appr-021',
-    requestId: 'req-011',
+    id: 'appr-014',
+    requestId: 'req-008',
     reviewer: 'Sarah Mitchell',
     stage: 'initial_review',
     decision: 'needs_info',
-    rationale: 'DataHarvest AI is not an approved partner. Requested data scope is unusually broad. Escalating to security review for risk assessment.',
+    rationale: 'DataHarvest AI is not an approved partner. Requested data scope is unusually broad covering pricing, customer LTV, and operational metrics. Escalating to security review for risk assessment.',
     decidedAt: '2026-03-20T11:00:00Z',
   },
   {
-    id: 'appr-022',
-    requestId: 'req-011',
+    id: 'appr-015',
+    requestId: 'req-008',
     reviewer: 'David Kim',
     stage: 'security_review',
     decision: 'denied',
-    rationale: 'DataHarvest AI is a known competitive intelligence aggregator. Requested access to pricing, customer LTV, and operational metrics across all data categories indicates data extraction for competitive benchmarking. No legitimate integration use case identified.',
-    decidedAt: '2026-03-28T15:00:00Z',
-  },
-  {
-    id: 'appr-023',
-    requestId: 'req-011',
-    reviewer: 'Mark Anderson',
-    stage: 'sandbox_approval',
-    decision: 'denied',
-    rationale: 'Competing product \u2014 data extraction risk identified. DataHarvest AI aggregates field service operational data and resells benchmarking reports to competitors. Access denied. Partner-customer link revoked.',
+    rationale: 'DataHarvest AI is a competitive intelligence platform that aggregates field service operational data and resells benchmarking reports to competitors. No legitimate integration use case identified. Access denied and partner-customer link revoked.',
     decidedAt: '2026-04-02T16:30:00Z',
   },
 
-  // req-012: SecurePayNow + BugOut Pest (DENIED)
+  // req-010: Google Maps Platform + Guardian Pest (pending production review) — 3 approvals
   {
-    id: 'appr-024',
-    requestId: 'req-012',
-    reviewer: 'Sarah Mitchell',
-    stage: 'initial_review',
-    decision: 'needs_info',
-    rationale: 'SecurePayNow is not an approved partner. Payment processing requires PCI-DSS Level 1 compliance verification. Requesting documentation.',
-    decidedAt: '2026-05-10T10:30:00Z',
-  },
-  {
-    id: 'appr-025',
-    requestId: 'req-012',
-    reviewer: 'David Kim',
-    stage: 'security_review',
-    decision: 'denied',
-    rationale: 'SecurePayNow failed to provide valid PCI-DSS Level 1 certification. Self-assessment questionnaire submitted instead of third-party audit report. Write access to payment data cannot be granted without proper compliance certification.',
-    decidedAt: '2026-05-22T14:45:00Z',
-  },
-
-  // req-018: Google Maps Platform + Guardian Pest (pending production review - has sandbox approvals)
-  {
-    id: 'appr-026',
-    requestId: 'req-018',
+    id: 'appr-016',
+    requestId: 'req-010',
     reviewer: 'Sarah Mitchell',
     stage: 'initial_review',
     decision: 'approved',
@@ -1025,8 +666,8 @@ export const seedApprovals: Approval[] = [
     decidedAt: '2026-06-18T09:30:00Z',
   },
   {
-    id: 'appr-027',
-    requestId: 'req-018',
+    id: 'appr-017',
+    requestId: 'req-010',
     reviewer: 'David Kim',
     stage: 'security_review',
     decision: 'approved',
@@ -1034,8 +675,8 @@ export const seedApprovals: Approval[] = [
     decidedAt: '2026-06-22T14:00:00Z',
   },
   {
-    id: 'appr-028',
-    requestId: 'req-018',
+    id: 'appr-018',
+    requestId: 'req-010',
     reviewer: 'Jennifer Liu',
     stage: 'sandbox_approval',
     decision: 'approved',
