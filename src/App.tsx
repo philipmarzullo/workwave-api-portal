@@ -1,8 +1,7 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom'
 import {
   Shield,
-  ChevronDown,
   RotateCcw,
   Globe,
   ClipboardList,
@@ -82,21 +81,20 @@ export default function App() {
   const navigate = useNavigate()
   const location = useLocation()
   const [viewMode, setViewMode] = useState<ViewMode>(store.getViewMode())
-  const [activeUser, setActiveUser] = useState<CustomerUser | undefined>(store.getActiveUser())
-  const [userPickerOpen, setUserPickerOpen] = useState(false)
   const [refreshKey, setRefreshKey] = useState(0)
 
-  // Set default user on first load
-  useEffect(() => {
-    if (!activeUser) {
-      const users = store.getCustomerUsers()
-      const firstAdmin = users.find(u => u.canRequestApi)
-      if (firstAdmin) {
-        store.setActiveUserId(firstAdmin.id)
-        setActiveUser(firstAdmin)
-      }
+  // Set a default demo user silently (needed for RequestForm internals)
+  const [activeUser] = useState<CustomerUser | undefined>(() => {
+    const existing = store.getActiveUser()
+    if (existing) return existing
+    const users = store.getCustomerUsers()
+    const firstAdmin = users.find(u => u.canRequestApi)
+    if (firstAdmin) {
+      store.setActiveUserId(firstAdmin.id)
+      return firstAdmin
     }
-  }, [activeUser])
+    return undefined
+  })
 
   const toggleViewMode = () => {
     const next: ViewMode = viewMode === 'customer' ? 'reviewer' : 'customer'
@@ -107,13 +105,6 @@ export default function App() {
     } else {
       navigate('/')
     }
-  }
-
-  const selectUser = (user: CustomerUser) => {
-    store.setActiveUserId(user.id)
-    setActiveUser(user)
-    setUserPickerOpen(false)
-    setRefreshKey(k => k + 1)
   }
 
   const handleReset = () => {
@@ -136,8 +127,6 @@ export default function App() {
   ]
 
   const navItems = viewMode === 'customer' ? customerNav : reviewerNav
-
-  const allUsers = store.getCustomerUsers()
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -183,55 +172,6 @@ export default function App() {
                 {viewMode === 'customer' ? 'Customer' : 'Reviewer'}
               </button>
 
-              {viewMode === 'customer' && activeUser && (
-                <div className="relative">
-                  <button
-                    onClick={() => setUserPickerOpen(!userPickerOpen)}
-                    className="flex items-center gap-1.5 px-2.5 py-1 rounded text-[11px] bg-white/8 hover:bg-white/15 transition-colors"
-                  >
-                    <div className="w-4 h-4 rounded bg-ww-primary flex items-center justify-center text-[9px] font-bold font-mono">
-                      {activeUser.name.charAt(0)}
-                    </div>
-                    <span className="hidden md:inline text-white/80">{activeUser.name.split(' ')[0]}</span>
-                    <ChevronDown size={10} className="text-white/40" />
-                  </button>
-
-                  {userPickerOpen && (
-                    <>
-                      <div className="fixed inset-0 z-40" onClick={() => setUserPickerOpen(false)} />
-                      <div className="absolute right-0 top-full mt-1 w-72 bg-white rounded-md border border-ww-gray-200 z-50 py-1 max-h-96 overflow-y-auto">
-                        <div className="px-3 py-1.5 text-[10px] font-mono font-medium text-ww-gray-400 uppercase tracking-[0.08em]">Switch Demo User</div>
-                        {allUsers.map(u => {
-                          const c = store.getCustomer(u.customerId)
-                          return (
-                            <button
-                              key={u.id}
-                              onClick={() => selectUser(u)}
-                              className={`w-full text-left px-3 py-2 hover:bg-ww-gray-50 transition-colors flex items-center gap-2.5 ${
-                                u.id === activeUser?.id ? 'bg-ww-sky' : ''
-                              }`}
-                            >
-                              <div className={`w-5 h-5 rounded flex items-center justify-center text-[9px] font-bold font-mono text-white ${u.canRequestApi ? 'bg-ww-primary' : 'bg-ww-gray-400'}`}>
-                                {u.name.charAt(0)}
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <div className="text-[13px] font-medium text-ww-gray-800 truncate">{u.name}</div>
-                                <div className="text-[11px] text-ww-gray-500 truncate font-mono">{c?.name} · {u.role}</div>
-                              </div>
-                              {u.canRequestApi ? (
-                                <span className="text-[9px] font-mono uppercase tracking-wider px-1.5 py-0.5 rounded border border-ww-teal/30 text-ww-teal font-medium shrink-0">API</span>
-                              ) : (
-                                <span className="text-[9px] font-mono uppercase tracking-wider px-1.5 py-0.5 rounded border border-ww-gray-200 text-ww-gray-400 font-medium shrink-0">View</span>
-                              )}
-                            </button>
-                          )
-                        })}
-                      </div>
-                    </>
-                  )}
-                </div>
-              )}
-
               <button
                 onClick={handleReset}
                 className="p-1 rounded text-white/30 hover:text-white/60 transition-colors"
@@ -262,15 +202,6 @@ export default function App() {
           })}
         </div>
       </header>
-
-      {/* Demo banner */}
-      {viewMode === 'customer' && activeUser && !activeUser.canRequestApi && (
-        <div className="bg-amber-50 border-b border-amber-200/60 px-4 py-2 text-center">
-          <p className="text-[12px] text-amber-800">
-            <strong>{activeUser.name}</strong> does not have API request permissions. Contact your administrator to request access.
-          </p>
-        </div>
-      )}
 
       {/* Main content */}
       <main className="flex-1" key={refreshKey}>
