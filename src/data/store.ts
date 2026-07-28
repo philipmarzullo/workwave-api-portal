@@ -17,6 +17,12 @@ import type {
   ApprovalStage,
   ApprovalDecision,
   Environment,
+  ProvisioningStep,
+  WorkWaveProduct,
+  GatewayPlatform,
+  VolumeTier,
+  VolumeTierDefinition,
+  ApiCategory,
 } from './types'
 
 import {
@@ -30,7 +36,7 @@ import {
 
 // ── Storage helpers ──────────────────────────────────────────────
 
-const SEED_VERSION = '5'
+const SEED_VERSION = '7'
 const PREFIX = 'ww-api-portal:'
 
 function key(name: string): string {
@@ -67,6 +73,25 @@ function ensureSeed(): void {
 
 ensureSeed()
 
+// ── Volume Tier Pricing ─────────────────────────────────────────
+
+export const VOLUME_TIERS: VolumeTierDefinition[] = [
+  { tier: 1, label: 'Tier 1', callsPerMonth: 100_000,     monthlyRate: 345,     perCallRate: 0.00345, overageRate: 0.008625 },
+  { tier: 2, label: 'Tier 2', callsPerMonth: 500_000,     monthlyRate: 1_560,   perCallRate: 0.00312, overageRate: 0.0078 },
+  { tier: 3, label: 'Tier 3', callsPerMonth: 2_000_000,   monthlyRate: 5_220,   perCallRate: 0.00261, overageRate: 0.006525 },
+  { tier: 4, label: 'Tier 4', callsPerMonth: 5_000_000,   monthlyRate: 12_083,  perCallRate: 0.00242, overageRate: 0.00605 },
+  { tier: 5, label: 'Tier 5', callsPerMonth: 10_000_000,  monthlyRate: 22_530,  perCallRate: 0.00225, overageRate: 0.005625 },
+  { tier: 6, label: 'Tier 6', callsPerMonth: 50_000_000,  monthlyRate: 70_950,  perCallRate: 0.00142, overageRate: 0.00355 },
+  { tier: 7, label: 'Tier 7', callsPerMonth: 100_000_000, monthlyRate: 105_600, perCallRate: 0.00106, overageRate: 0.00265 },
+]
+
+export function suggestTier(volume: number): VolumeTier {
+  for (const t of VOLUME_TIERS) {
+    if (t.callsPerMonth >= volume) return t.tier
+  }
+  return 7
+}
+
 // ── UID helper ───────────────────────────────────────────────────
 
 let counter = 0
@@ -76,6 +101,31 @@ function uid(): string {
 
 function now(): string {
   return new Date().toISOString()
+}
+
+// ── Provisioning helpers ─────────────────────────────────────────
+
+function getGatewayForProduct(product: WorkWaveProduct): GatewayPlatform {
+  if (product === 'pestpac' || product === 'realgreen') return 'apigee'
+  if (product === 'winteam' || product === 'timegate_plus' || product === 'lighthouse') return 'concourse'
+  return 'manual'
+}
+
+function getGatewayLabel(product: WorkWaveProduct): string {
+  if (product === 'pestpac' || product === 'realgreen') return 'Apigee'
+  if (product === 'winteam' || product === 'timegate_plus' || product === 'lighthouse') return 'Concourse (Azure APIM)'
+  return 'API Gateway'
+}
+
+function getDefaultProvisioningChecklist(product: WorkWaveProduct, _environment: Environment): ProvisioningStep[] {
+  const gateway = getGatewayLabel(product)
+  return [
+    { id: 'prov-1', label: 'Create API Credentials', description: `Generate client ID and secret for ${gateway}`, completed: false, completedAt: null, completedBy: null },
+    { id: 'prov-2', label: `Configure ${gateway}`, description: `Set up API proxy/product in ${gateway}`, completed: false, completedAt: null, completedBy: null },
+    { id: 'prov-3', label: 'Set Rate Limits', description: `Configure rate limits and quotas in ${gateway}`, completed: false, completedAt: null, completedBy: null },
+    { id: 'prov-4', label: 'Deliver Credentials', description: 'Send credentials package to technical contact via secure channel', completed: false, completedAt: null, completedBy: null },
+    { id: 'prov-5', label: 'Update Billing', description: 'Configure billing and usage tracking for this integration', completed: false, completedAt: null, completedBy: null },
+  ]
 }
 
 // ── Store ────────────────────────────────────────────────────────
@@ -169,7 +219,7 @@ export const store = {
     return `WW-API-${String(max + 1).padStart(4, '0')}`
   },
 
-  createRequest(req: Omit<ApiRequest, 'id' | 'caseNumber' | 'createdAt' | 'updatedAt' | 'status' | 'agreementSignedAt' | 'pricing' | 'endpointsApproved' | 'reviewerNotes'>): ApiRequest {
+  createRequest(req: Omit<ApiRequest, 'id' | 'caseNumber' | 'createdAt' | 'updatedAt' | 'status' | 'agreementSignedAt' | 'pricing' | 'endpointsApproved' | 'reviewerNotes' | 'provisioningChecklist' | 'gatewayPlatform' | 'estimatedMonthlyVolume' | 'apiCategories'>): ApiRequest {
     const requests = this.getRequests()
     const newReq: ApiRequest = {
       ...req,
@@ -180,6 +230,10 @@ export const store = {
       pricing: null,
       endpointsApproved: null,
       reviewerNotes: [],
+      provisioningChecklist: [],
+      gatewayPlatform: null,
+      estimatedMonthlyVolume: null,
+      apiCategories: null,
       createdAt: now(),
       updatedAt: now(),
     }
@@ -207,6 +261,14 @@ export const store = {
     const idx = requests.findIndex(r => r.id === requestId)
     if (idx === -1) return undefined
     requests[idx] = { ...requests[idx], status, updatedAt: now() }
+
+    // Auto-initialize provisioning checklist when status becomes approved
+    if ((status === 'sandbox_approved' || status === 'production_approved') && requests[idx].provisioningChecklist.length === 0) {
+      const checklist = getDefaultProvisioningChecklist(requests[idx].product, requests[idx].environment)
+      const gw = getGatewayForProduct(requests[idx].product)
+      requests[idx] = { ...requests[idx], provisioningChecklist: checklist, gatewayPlatform: gw }
+    }
+
     save('requests', requests)
 
     // If approved, create/update partner-customer link
@@ -248,6 +310,65 @@ export const store = {
     requests[idx] = { ...requests[idx], pricing, updatedAt: now() }
     save('requests', requests)
     return requests[idx]
+  },
+
+  setEstimatedVolume(requestId: string, volume: number | null): ApiRequest | undefined {
+    const requests = this.getRequests()
+    const idx = requests.findIndex(r => r.id === requestId)
+    if (idx === -1) return undefined
+    requests[idx] = { ...requests[idx], estimatedMonthlyVolume: volume, updatedAt: now() }
+    save('requests', requests)
+    return requests[idx]
+  },
+
+  setApiCategories(requestId: string, categories: ApiCategory[] | null): ApiRequest | undefined {
+    const requests = this.getRequests()
+    const idx = requests.findIndex(r => r.id === requestId)
+    if (idx === -1) return undefined
+    requests[idx] = { ...requests[idx], apiCategories: categories, updatedAt: now() }
+    save('requests', requests)
+    return requests[idx]
+  },
+
+  // ── Provisioning ──────────────────────────────────────────────
+
+  initializeProvisioningChecklist(requestId: string): ApiRequest | undefined {
+    const requests = this.getRequests()
+    const idx = requests.findIndex(r => r.id === requestId)
+    if (idx === -1) return undefined
+    const req = requests[idx]
+    const checklist = getDefaultProvisioningChecklist(req.product, req.environment)
+    const gw = getGatewayForProduct(req.product)
+    requests[idx] = { ...req, provisioningChecklist: checklist, gatewayPlatform: gw, updatedAt: now() }
+    save('requests', requests)
+    return requests[idx]
+  },
+
+  toggleProvisioningStep(requestId: string, stepId: string, completedBy: string): ApiRequest | undefined {
+    const requests = this.getRequests()
+    const idx = requests.findIndex(r => r.id === requestId)
+    if (idx === -1) return undefined
+    const checklist = requests[idx].provisioningChecklist.map(step => {
+      if (step.id !== stepId) return step
+      return step.completed
+        ? { ...step, completed: false, completedAt: null, completedBy: null }
+        : { ...step, completed: true, completedAt: now(), completedBy }
+    })
+    requests[idx] = { ...requests[idx], provisioningChecklist: checklist, updatedAt: now() }
+    save('requests', requests)
+    return requests[idx]
+  },
+
+  // ── Active Integration Queries ────────────────────────────────
+
+  getApprovedRequests(): ApiRequest[] {
+    const approvedStatuses: RequestStatus[] = ['sandbox_approved', 'production_approved']
+    return this.getRequests().filter(r => approvedStatuses.includes(r.status))
+  },
+
+  getActiveIntegrationsForCustomer(customerId: string): ApiRequest[] {
+    const approvedStatuses: RequestStatus[] = ['sandbox_approved', 'production_approved']
+    return this.getRequests().filter(r => r.customerId === customerId && approvedStatuses.includes(r.status))
   },
 
   // ── Endpoints Approved ──────────────────────────────────────

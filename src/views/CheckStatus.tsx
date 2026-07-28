@@ -15,7 +15,7 @@ import {
 } from 'lucide-react'
 import { store } from '@/data/store'
 import type { ApiRequest, Approval } from '@/data/types'
-import { PRODUCT_LABELS, STATUS_LABELS, USE_CASE_LABELS, STAGE_LABELS, STAGE_REVIEWER_ROLES } from '@/App'
+import { PRODUCT_LABELS, STATUS_LABELS, USE_CASE_LABELS, STAGE_LABELS, STAGE_REVIEWER_ROLES, GATEWAY_LABELS } from '@/App'
 
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString('en-US', {
@@ -275,47 +275,114 @@ export function CheckStatus() {
             </div>
           </div>
 
-          {/* Next Steps — shown for approved requests */}
+          {/* Provisioning Progress or Next Steps — shown for approved requests */}
           {(result.status === 'sandbox_approved' || result.status === 'production_approved') && (
-            <div className="bg-white rounded-md border border-emerald-200">
-              <div className="px-6 py-5">
-                <div className="flex items-center gap-2 mb-4">
-                  <CheckCircle2 size={13} className="text-emerald-600" />
-                  <span className="text-[10px] font-mono font-medium text-emerald-600 uppercase tracking-[0.08em]">
-                    Approved — Next Steps
-                  </span>
+            result.provisioningChecklist.length > 0 ? (
+              <div className="bg-white rounded-md border border-emerald-200">
+                <div className="px-6 py-5">
+                  <div className="flex items-center gap-2 mb-4">
+                    <CheckCircle2 size={13} className="text-emerald-600" />
+                    <span className="text-[10px] font-mono font-medium text-emerald-600 uppercase tracking-[0.08em]">
+                      Provisioning Progress
+                    </span>
+                    {result.gatewayPlatform && (
+                      <span className="inline-flex px-2 py-0.5 rounded text-[10px] font-medium bg-ww-gray-100 text-ww-gray-600 ml-auto">
+                        {GATEWAY_LABELS[result.gatewayPlatform] ?? result.gatewayPlatform}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Progress bar */}
+                  {(() => {
+                    const completed = result.provisioningChecklist.filter(s => s.completed).length
+                    const total = result.provisioningChecklist.length
+                    const pct = Math.round((completed / total) * 100)
+                    return (
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="flex-1 h-2 bg-ww-gray-100 rounded-full overflow-hidden">
+                          <div
+                            className={`h-full rounded-full transition-all ${completed === total ? 'bg-emerald-500' : 'bg-ww-primary'}`}
+                            style={{ width: `${pct}%` }}
+                          />
+                        </div>
+                        <span className={`text-xs font-semibold ${completed === total ? 'text-emerald-600' : 'text-ww-gray-600'}`}>
+                          {completed}/{total}
+                        </span>
+                      </div>
+                    )
+                  })()}
+
+                  <div className="space-y-2">
+                    {result.provisioningChecklist.map(step => (
+                      <div key={step.id} className="flex items-start gap-3 p-2.5 rounded-md bg-ww-gray-50 border border-ww-gray-100">
+                        <div className={`mt-0.5 w-4 h-4 rounded-full flex items-center justify-center shrink-0 ${
+                          step.completed ? 'bg-emerald-500' : 'bg-ww-gray-200'
+                        }`}>
+                          {step.completed && (
+                            <svg width="8" height="6" viewBox="0 0 10 8" fill="none" className="text-white">
+                              <path d="M1 4L3.5 6.5L9 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                            </svg>
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className={`text-xs font-medium ${step.completed ? 'text-ww-gray-500' : 'text-ww-gray-800'}`}>
+                            {step.label}
+                          </p>
+                          {step.completed && step.completedAt && (
+                            <p className="text-[10px] font-mono text-ww-gray-400 mt-0.5">
+                              Completed {formatDateTime(step.completedAt)}
+                            </p>
+                          )}
+                          {!step.completed && (
+                            <p className="text-[10px] text-ww-gray-400 mt-0.5">Pending</p>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-                <div className="space-y-3">
-                  <div className="flex items-start gap-3">
-                    <Key size={14} className="text-ww-gray-400 shrink-0 mt-0.5" />
-                    <div>
-                      <p className="text-sm font-medium text-ww-gray-800">Credential Delivery</p>
-                      <p className="text-xs text-ww-gray-500 leading-relaxed">
-                        API credentials and {result.status === 'production_approved' ? 'production' : 'sandbox'} access keys will be delivered to your technical contact via secure email.
-                      </p>
-                    </div>
+              </div>
+            ) : (
+              <div className="bg-white rounded-md border border-emerald-200">
+                <div className="px-6 py-5">
+                  <div className="flex items-center gap-2 mb-4">
+                    <CheckCircle2 size={13} className="text-emerald-600" />
+                    <span className="text-[10px] font-mono font-medium text-emerald-600 uppercase tracking-[0.08em]">
+                      Approved — Next Steps
+                    </span>
                   </div>
-                  <div className="flex items-start gap-3">
-                    <FileCode size={14} className="text-ww-gray-400 shrink-0 mt-0.5" />
-                    <div>
-                      <p className="text-sm font-medium text-ww-gray-800">Integration Setup</p>
-                      <p className="text-xs text-ww-gray-500 leading-relaxed">
-                        Your approved endpoints and rate limits are documented in the credentials package. Refer to the API documentation for integration guidance.
-                      </p>
+                  <div className="space-y-3">
+                    <div className="flex items-start gap-3">
+                      <Key size={14} className="text-ww-gray-400 shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-sm font-medium text-ww-gray-800">Credential Delivery</p>
+                        <p className="text-xs text-ww-gray-500 leading-relaxed">
+                          API credentials and {result.status === 'production_approved' ? 'production' : 'sandbox'} access keys will be delivered to your technical contact via secure email.
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <Headphones size={14} className="text-ww-gray-400 shrink-0 mt-0.5" />
-                    <div>
-                      <p className="text-sm font-medium text-ww-gray-800">Support</p>
-                      <p className="text-xs text-ww-gray-500 leading-relaxed">
-                        Contact your CSM or the API team for onboarding assistance. Reference your case number in all communications.
-                      </p>
+                    <div className="flex items-start gap-3">
+                      <FileCode size={14} className="text-ww-gray-400 shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-sm font-medium text-ww-gray-800">Integration Setup</p>
+                        <p className="text-xs text-ww-gray-500 leading-relaxed">
+                          Your approved endpoints and rate limits are documented in the credentials package. Refer to the API documentation for integration guidance.
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <Headphones size={14} className="text-ww-gray-400 shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-sm font-medium text-ww-gray-800">Support</p>
+                        <p className="text-xs text-ww-gray-500 leading-relaxed">
+                          Contact your CSM or the API team for onboarding assistance. Reference your case number in all communications.
+                        </p>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
+            )
           )}
         </div>
       )}

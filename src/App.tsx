@@ -8,6 +8,7 @@ import {
   Eye,
   Users,
   Search,
+  Layers,
 } from 'lucide-react'
 import { store } from '@/data/store'
 import type { ViewMode, CustomerUser } from '@/data/types'
@@ -18,6 +19,8 @@ import { CheckStatus } from '@/views/CheckStatus'
 import { ReviewerQueue } from '@/views/ReviewerQueue'
 import { ReviewerRequestDetail } from '@/views/ReviewerRequestDetail'
 import { PartnerDetail } from '@/views/PartnerDetail'
+import { MyIntegrations } from '@/views/MyIntegrations'
+import { ReviewerActiveAccess } from '@/views/ReviewerActiveAccess'
 
 // ── Product labels ──────────────────────────────────────────────
 
@@ -91,6 +94,52 @@ export const DATA_CATEGORY_LABELS: Record<string, string> = {
   documents: 'Documents',
 }
 
+export const REQUEST_TYPE_LABELS: Record<string, string> = {
+  new_access: 'New Access',
+  migration: 'Migration',
+  expand_access: 'Expand Access',
+}
+
+export const LEGACY_METHOD_LABELS: Record<string, string> = {
+  sap_bi: 'SAP BI',
+  vpn: 'VPN Direct Access',
+  sftp: 'SFTP',
+  createam: 'CreaTEAM',
+  insights: 'Insights',
+  query_scheduler: 'Query Scheduler',
+}
+
+export const GATEWAY_LABELS: Record<string, string> = {
+  apigee: 'Google Apigee',
+  concourse: 'Concourse (Azure APIM)',
+  manual: 'Manual Configuration',
+}
+
+export const VOLUME_TIER_LABELS: Record<number, string> = {
+  1: 'Tier 1 — 100K calls/mo',
+  2: 'Tier 2 — 500K calls/mo',
+  3: 'Tier 3 — 2M calls/mo',
+  4: 'Tier 4 — 5M calls/mo',
+  5: 'Tier 5 — 10M calls/mo',
+  6: 'Tier 6 — 50M calls/mo',
+  7: 'Tier 7 — 100M calls/mo',
+}
+
+export const API_CATEGORY_LABELS: Record<string, { label: string; color: string }> = {
+  standard: { label: 'Standard', color: 'bg-blue-100 text-blue-700' },
+  premium: { label: 'Premium', color: 'bg-purple-100 text-purple-700' },
+}
+
+export const API_SUB_CATEGORY_LABELS: Record<string, string> = {
+  employee_information: 'Employee Information',
+  jobs_work_orders: 'Jobs & Work Orders',
+  general: 'General',
+  payroll_information: 'Payroll Information',
+  financials: 'Financials',
+  schedules: 'Schedules',
+  timekeeping_calculations: 'Timekeeping & Calculations',
+}
+
 // ── App ─────────────────────────────────────────────────────────
 
 export default function App() {
@@ -133,12 +182,14 @@ export default function App() {
   // Customer nav items
   const customerNav = [
     { path: '/', label: 'Partner Directory', icon: Globe },
+    { path: '/my-integrations', label: 'My Integrations', icon: Layers },
     { path: '/check-status', label: 'Check Status', icon: Search },
   ]
 
   // Reviewer nav items
   const reviewerNav = [
     { path: '/reviewer', label: 'Review Queue', icon: ClipboardList },
+    { path: '/reviewer/active-access', label: 'Active Access', icon: Layers },
     { path: '/reviewer/partners', label: 'Partner Directory', icon: Globe },
   ]
 
@@ -227,10 +278,12 @@ export default function App() {
             <Route path="/" element={<Directory activeUser={activeUser} />} />
             <Route path="/request/:partnerId?" element={<RequestForm activeUser={activeUser} onSubmit={refresh} />} />
             <Route path="/confirmation/:requestId" element={<Confirmation />} />
+            <Route path="/my-integrations" element={<MyIntegrations activeUser={activeUser} />} />
             <Route path="/check-status" element={<CheckStatus />} />
 
             {/* Reviewer routes */}
             <Route path="/reviewer" element={<ReviewerQueue />} />
+            <Route path="/reviewer/active-access" element={<ReviewerActiveAccess />} />
             <Route path="/reviewer/request/:requestId" element={<ReviewerRequestDetail onRefresh={refresh} />} />
             <Route path="/reviewer/partners" element={<Directory activeUser={activeUser} isReviewerView />} />
             <Route path="/reviewer/partner/:partnerId" element={<PartnerDetail />} />

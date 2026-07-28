@@ -5,9 +5,9 @@ import {
   Building2, Settings2, Server, FileCheck,
   Send, Globe, Mail, AlertTriangle, ExternalLink, Info, Phone,
 } from 'lucide-react'
-import type { CustomerUser, WorkWaveProduct, BuilderType, UseCase, DataCategory, Environment } from '@/data/types'
+import type { CustomerUser, WorkWaveProduct, BuilderType, UseCase, DataCategory, Environment, RequestType, LegacyAccessMethod } from '@/data/types'
 import { store } from '@/data/store'
-import { PRODUCT_LABELS, TIER_LABELS, USE_CASE_LABELS, DATA_CATEGORY_LABELS } from '@/App'
+import { PRODUCT_LABELS, TIER_LABELS, USE_CASE_LABELS, DATA_CATEGORY_LABELS, REQUEST_TYPE_LABELS, LEGACY_METHOD_LABELS } from '@/App'
 
 interface RequestFormProps {
   activeUser?: CustomerUser
@@ -135,6 +135,8 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
   const [partnerContactName, setPartnerContactName] = useState('')
   const [selectedProduct, setSelectedProduct] = useState<WorkWaveProduct | ''>('')
   const [builderType, setBuilderType] = useState<BuilderType | ''>('')
+  const [requestType, setRequestType] = useState<RequestType | ''>('')
+  const [migratingFrom, setMigratingFrom] = useState<LegacyAccessMethod | ''>('')
 
   // Step 2: Integration Details
   const [connectingSystem, setConnectingSystem] = useState(partner?.name ?? '')
@@ -224,6 +226,8 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
       if (!partnerName.trim() || !partnerWebsite.trim() || !partnerContact.trim() || !partnerContactName.trim()) return false
     }
     if (!selectedProduct || !builderType) return false
+    if (!requestType) return false
+    if (requestType === 'migration' && !migratingFrom) return false
     return true
   }
 
@@ -314,6 +318,8 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
         technicalContactPhone: techContactPhone.trim() || null,
         targetTimeline: targetTimeline || null,
         environment: environment as Environment,
+        requestType: requestType as RequestType,
+        migratingFrom: requestType === 'migration' ? (migratingFrom as LegacyAccessMethod) : null,
       })
 
       store.signAgreement(newRequest.id)
@@ -647,6 +653,78 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
             ))}
           </div>
           {touched.builderType && !builderType && renderError('This field is required')}
+        </div>
+
+        {/* Request type */}
+        <div>
+          <label className="block text-sm font-semibold text-ww-gray-700 mb-3">
+            Request Type <span className="text-ww-red">*</span>
+          </label>
+          <div className="space-y-2.5">
+            {([
+              { value: 'new_access' as RequestType, label: 'New Access', desc: 'First-time API access for this integration' },
+              { value: 'migration' as RequestType, label: 'Migration', desc: 'Moving from a legacy data access method to API' },
+              { value: 'expand_access' as RequestType, label: 'Expand Access', desc: 'Adding endpoints or capabilities to existing API access' },
+            ]).map(rt => (
+              <div key={rt.value}>
+                <label
+                  className={`relative flex items-start gap-3 px-4 py-3.5 rounded-md border-2 cursor-pointer transition-all ${
+                    requestType === rt.value
+                      ? 'border-ww-primary bg-ww-sky/30'
+                      : 'border-ww-gray-200 bg-white hover:border-ww-gray-300'
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="requestType"
+                    value={rt.value}
+                    checked={requestType === rt.value}
+                    onChange={() => {
+                      setRequestType(rt.value)
+                      if (rt.value !== 'migration') setMigratingFrom('')
+                    }}
+                    className="sr-only"
+                  />
+                  <div className="mt-0.5">
+                    <RadioDot selected={requestType === rt.value} />
+                  </div>
+                  <div>
+                    <span className={`text-sm font-medium ${requestType === rt.value ? 'text-ww-gray-800' : 'text-ww-gray-700'}`}>
+                      {rt.label}
+                    </span>
+                    <p className="text-xs text-ww-gray-500 mt-0.5">{rt.desc}</p>
+                  </div>
+                </label>
+              </div>
+            ))}
+          </div>
+
+          {/* Migration dropdown */}
+          {requestType === 'migration' && (
+            <div className="mt-4 space-y-3">
+              <div>
+                <label className="block text-sm font-medium text-ww-gray-700 mb-1.5">
+                  Migrating from <span className="text-ww-red">*</span>
+                </label>
+                <select
+                  value={migratingFrom}
+                  onChange={e => setMigratingFrom(e.target.value as LegacyAccessMethod)}
+                  className="w-full px-4 py-2.5 rounded-lg border border-ww-gray-300 text-sm text-ww-gray-800 focus:outline-none focus:ring-2 focus:ring-ww-primary focus:border-transparent transition-shadow bg-white"
+                >
+                  <option value="">Select legacy method...</option>
+                  {Object.entries(LEGACY_METHOD_LABELS).map(([key, label]) => (
+                    <option key={key} value={key}>{label}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="flex items-start gap-2 p-3 rounded-md bg-amber-50 border border-amber-200">
+                <Info size={14} className="text-amber-500 shrink-0 mt-0.5" />
+                <p className="text-xs text-amber-700 leading-relaxed">
+                  This request will be flagged as part of the Data Access Consolidation initiative.
+                </p>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     )
@@ -1144,6 +1222,18 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
               <span className="text-[13px] text-ww-gray-500 w-44 shrink-0">Builder Type</span>
               <span className="text-sm text-ww-gray-800">{builderType ? BUILDER_TYPE_LABELS[builderType] : '--'}</span>
             </div>
+            <div className="flex py-2">
+              <span className="text-[13px] text-ww-gray-500 w-44 shrink-0">Request Type</span>
+              <span className="text-sm text-ww-gray-800">{requestType ? (REQUEST_TYPE_LABELS[requestType] ?? requestType) : '--'}</span>
+            </div>
+            {requestType === 'migration' && migratingFrom && (
+              <div className="flex py-2">
+                <span className="text-[13px] text-ww-gray-500 w-44 shrink-0">Migrating From</span>
+                <span className="bg-amber-100 text-amber-800 text-xs px-2 py-0.5 rounded font-medium">
+                  {LEGACY_METHOD_LABELS[migratingFrom] ?? migratingFrom}
+                </span>
+              </div>
+            )}
           </div>
         </div>
 

@@ -1,0 +1,249 @@
+import { useState, useMemo } from 'react'
+import { useNavigate } from 'react-router-dom'
+import {
+  Layers,
+  FlaskConical,
+  Server,
+  ChevronRight,
+  Search,
+} from 'lucide-react'
+import type { WorkWaveProduct, GatewayPlatform } from '@/data/types'
+import { store } from '@/data/store'
+import {
+  PRODUCT_LABELS,
+  GATEWAY_LABELS,
+  REQUEST_TYPE_LABELS,
+} from '@/App'
+
+function formatDate(iso: string): string {
+  return new Date(iso).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  })
+}
+
+const REQUEST_TYPE_COLORS: Record<string, string> = {
+  new_access: 'bg-emerald-100 text-emerald-700',
+  migration: 'bg-amber-100 text-amber-700',
+  expand_access: 'bg-blue-100 text-blue-700',
+}
+
+export function ReviewerActiveAccess() {
+  const navigate = useNavigate()
+  const [productFilter, setProductFilter] = useState<WorkWaveProduct | ''>('')
+  const [gatewayFilter, setGatewayFilter] = useState<GatewayPlatform | ''>('')
+  const [searchQuery, setSearchQuery] = useState('')
+
+  const approvedRequests = useMemo(() => store.getApprovedRequests(), [])
+
+  const stats = useMemo(() => {
+    const apigee = approvedRequests.filter(r => r.gatewayPlatform === 'apigee')
+    const concourse = approvedRequests.filter(r => r.gatewayPlatform === 'concourse')
+    const migrations = approvedRequests.filter(r => r.requestType === 'migration')
+    const needsProvisioning = approvedRequests.filter(r => {
+      if (r.provisioningChecklist.length === 0) return true
+      return r.provisioningChecklist.some(s => !s.completed)
+    })
+    return {
+      total: approvedRequests.length,
+      apigee: apigee.length,
+      concourse: concourse.length,
+      migrations: migrations.length,
+      needsProvisioning: needsProvisioning.length,
+    }
+  }, [approvedRequests])
+
+  const filteredRequests = useMemo(() => {
+    let filtered = [...approvedRequests]
+
+    if (productFilter) {
+      filtered = filtered.filter(r => r.product === productFilter)
+    }
+    if (gatewayFilter) {
+      filtered = filtered.filter(r => r.gatewayPlatform === gatewayFilter)
+    }
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase()
+      filtered = filtered.filter(r => {
+        const customer = store.getCustomer(r.customerId)
+        const partner = r.partnerId ? store.getPartner(r.partnerId) : null
+        const partnerName = partner?.name ?? r.partnerNameFreetext ?? ''
+        return (
+          (customer?.name ?? '').toLowerCase().includes(q) ||
+          partnerName.toLowerCase().includes(q) ||
+          r.caseNumber.toLowerCase().includes(q)
+        )
+      })
+    }
+
+    // Sort by most recently updated
+    filtered.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
+    return filtered
+  }, [approvedRequests, productFilter, gatewayFilter, searchQuery])
+
+  return (
+    <div className="mx-auto py-8">
+      {/* Header */}
+      <div className="flex items-center gap-3 mb-6">
+        <div className="w-10 h-10 rounded-md bg-ww-navy flex items-center justify-center">
+          <Layers size={20} className="text-white" />
+        </div>
+        <div>
+          <h1 className="text-2xl font-display font-bold text-ww-gray-900">Active Access Inventory</h1>
+          <p className="text-sm text-ww-gray-500">All approved API integrations across customers</p>
+        </div>
+      </div>
+
+      {/* Stats Row */}
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+        <div className="bg-white rounded-md border border-ww-gray-200 p-4">
+          <div className="flex items-center gap-2 mb-1">
+            <Layers size={14} className="text-ww-gray-400" />
+            <span className="text-xs font-mono font-medium text-ww-gray-500 uppercase tracking-[0.06em]">Total Active</span>
+          </div>
+          <p className="text-2xl font-display font-bold text-ww-gray-900">{stats.total}</p>
+        </div>
+        <div className="bg-white rounded-md border border-ww-gray-200 p-4">
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-xs font-mono font-medium text-ww-gray-500 uppercase tracking-[0.06em]">Apigee</span>
+          </div>
+          <p className="text-2xl font-display font-bold text-ww-gray-900">{stats.apigee}</p>
+        </div>
+        <div className="bg-white rounded-md border border-ww-gray-200 p-4">
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-xs font-mono font-medium text-ww-gray-500 uppercase tracking-[0.06em]">Concourse</span>
+          </div>
+          <p className="text-2xl font-display font-bold text-ww-gray-900">{stats.concourse}</p>
+        </div>
+        <div className="bg-white rounded-md border border-ww-gray-200 p-4">
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-xs font-mono font-medium text-ww-gray-500 uppercase tracking-[0.06em]">Migrations</span>
+          </div>
+          <p className="text-2xl font-display font-bold text-amber-600">{stats.migrations}</p>
+        </div>
+        <div className="bg-white rounded-md border border-ww-gray-200 p-4">
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-xs font-mono font-medium text-ww-gray-500 uppercase tracking-[0.06em]">Needs Provisioning</span>
+          </div>
+          <p className="text-2xl font-display font-bold text-ww-red">{stats.needsProvisioning}</p>
+        </div>
+      </div>
+
+      {/* Filter Bar */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mb-6">
+        <div className="relative flex-1 min-w-0">
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-ww-gray-400" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            placeholder="Search customer or partner..."
+            className="w-full pl-9 pr-4 py-2 rounded-md border border-ww-gray-200 text-sm text-ww-gray-800 placeholder:text-ww-gray-400 focus:outline-none focus:ring-2 focus:ring-ww-primary/30 focus:border-ww-primary transition-colors"
+          />
+        </div>
+        <select
+          value={productFilter}
+          onChange={e => setProductFilter(e.target.value as WorkWaveProduct | '')}
+          className="px-3 py-2 rounded-md border border-ww-gray-200 text-sm text-ww-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-ww-primary/30"
+        >
+          <option value="">All Products</option>
+          {Object.entries(PRODUCT_LABELS).map(([key, label]) => (
+            <option key={key} value={key}>{label}</option>
+          ))}
+        </select>
+        <select
+          value={gatewayFilter}
+          onChange={e => setGatewayFilter(e.target.value as GatewayPlatform | '')}
+          className="px-3 py-2 rounded-md border border-ww-gray-200 text-sm text-ww-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-ww-primary/30"
+        >
+          <option value="">All Gateways</option>
+          {Object.entries(GATEWAY_LABELS).map(([key, label]) => (
+            <option key={key} value={key}>{label}</option>
+          ))}
+        </select>
+      </div>
+
+      {/* Request List */}
+      {filteredRequests.length === 0 ? (
+        <div className="bg-white rounded-md border border-ww-gray-200 p-12 text-center">
+          <Layers size={40} className="mx-auto text-ww-gray-300 mb-3" />
+          <p className="text-ww-gray-500 font-medium">No active integrations match your filters</p>
+          <p className="text-sm text-ww-gray-400 mt-1">Try adjusting the filters above</p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {filteredRequests.map(req => {
+            const customer = store.getCustomer(req.customerId)
+            const partner = req.partnerId ? store.getPartner(req.partnerId) : null
+            const partnerName = partner?.name ?? req.partnerNameFreetext ?? 'Unknown'
+            const completedSteps = req.provisioningChecklist.filter(s => s.completed).length
+            const totalSteps = req.provisioningChecklist.length
+            const requestTypeColor = REQUEST_TYPE_COLORS[req.requestType] ?? 'bg-gray-100 text-gray-600'
+
+            return (
+              <button
+                key={req.id}
+                onClick={() => navigate(`/reviewer/request/${req.id}`)}
+                className="w-full text-left bg-white rounded-md border border-ww-gray-200 transition-all hover:border-ww-primary group"
+              >
+                <div className="p-4 sm:p-5">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex-1 min-w-0">
+                      {/* Top row */}
+                      <div className="flex items-center gap-2 mb-2 flex-wrap">
+                        <h3 className="text-sm font-semibold text-ww-gray-900 truncate">
+                          {customer?.name ?? 'Unknown Customer'}
+                        </h3>
+                        <span className="text-sm text-ww-gray-500">{partnerName}</span>
+                      </div>
+
+                      {/* Badges row */}
+                      <div className="flex items-center gap-2 flex-wrap mb-2">
+                        <span className="inline-flex px-2 py-0.5 rounded text-[10px] font-mono font-semibold bg-ww-sky text-ww-navy uppercase tracking-wide">
+                          {PRODUCT_LABELS[req.product] ?? req.product}
+                        </span>
+                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono font-medium ${
+                          req.environment === 'production'
+                            ? 'bg-purple-100 text-purple-700'
+                            : 'bg-blue-100 text-blue-700'
+                        }`}>
+                          {req.environment === 'production' ? <Server size={10} /> : <FlaskConical size={10} />}
+                          {req.environment === 'production' ? 'Production' : 'Sandbox'}
+                        </span>
+                        {req.gatewayPlatform && (
+                          <span className="inline-flex px-2 py-0.5 rounded text-[10px] font-medium bg-ww-gray-100 text-ww-gray-600">
+                            {GATEWAY_LABELS[req.gatewayPlatform] ?? req.gatewayPlatform}
+                          </span>
+                        )}
+                        <span className={`inline-flex px-2 py-0.5 rounded text-[10px] font-semibold ${requestTypeColor}`}>
+                          {REQUEST_TYPE_LABELS[req.requestType] ?? req.requestType}
+                        </span>
+                      </div>
+
+                      {/* Details row */}
+                      <div className="flex items-center gap-4 text-xs text-ww-gray-500 flex-wrap">
+                        {totalSteps > 0 ? (
+                          <span className={`font-medium ${completedSteps === totalSteps ? 'text-emerald-600' : 'text-amber-600'}`}>
+                            {completedSteps}/{totalSteps} provisioned
+                          </span>
+                        ) : (
+                          <span className="font-medium text-ww-red">Not provisioned</span>
+                        )}
+                        <span className="font-mono">Approved {formatDate(req.updatedAt)}</span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center self-center">
+                      <ChevronRight size={18} className="text-ww-gray-300 group-hover:text-ww-primary transition-colors" />
+                    </div>
+                  </div>
+                </div>
+              </button>
+            )
+          })}
+        </div>
+      )}
+    </div>
+  )
+}

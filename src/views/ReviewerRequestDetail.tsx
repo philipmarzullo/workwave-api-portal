@@ -26,9 +26,12 @@ import {
   FileText,
   StickyNote,
   Save,
+  ListChecks,
+  ArrowUpFromLine,
+  Tag,
 } from 'lucide-react'
-import type { ApprovalStage, ApprovalDecision, ApiPricing } from '@/data/types'
-import { store } from '@/data/store'
+import type { ApprovalStage, ApprovalDecision, ApiPricing, VolumeTier, ApiCategory } from '@/data/types'
+import { store, VOLUME_TIERS, suggestTier } from '@/data/store'
 import {
   PRODUCT_LABELS,
   STATUS_LABELS,
@@ -37,6 +40,11 @@ import {
   DATA_CATEGORY_LABELS,
   STAGE_LABELS,
   STAGE_REVIEWER_ROLES,
+  REQUEST_TYPE_LABELS,
+  LEGACY_METHOD_LABELS,
+  GATEWAY_LABELS,
+  VOLUME_TIER_LABELS,
+  API_CATEGORY_LABELS,
 } from '@/App'
 
 const BUILDER_TYPE_LABELS: Record<string, string> = {
@@ -80,13 +88,11 @@ export function ReviewerRequestDetail({ onRefresh }: { onRefresh: () => void }) 
   const [stageDropdownOpen, setStageDropdownOpen] = useState(false)
 
   // Pricing state
-  const [pricingMonthly, setPricingMonthly] = useState('')
-  const [pricingPerCall, setPricingPerCall] = useState('')
-  const [pricingCallsIncluded, setPricingCallsIncluded] = useState('')
-  const [pricingTier, setPricingTier] = useState<ApiPricing['rateTier']>('standard')
+  const [selectedVolumeTier, setSelectedVolumeTier] = useState<VolumeTier | null>(null)
   const [pricingNotes, setPricingNotes] = useState('')
   const [pricingSaved, setPricingSaved] = useState(false)
-  const [pricingTierOpen, setPricingTierOpen] = useState(false)
+  const [estimatedVolumeInput, setEstimatedVolumeInput] = useState('')
+  const [categoriesRefresh, setCategoriesRefresh] = useState(0)
 
   // Endpoints approved state
   const [endpointsApprovedText, setEndpointsApprovedText] = useState('')
@@ -97,7 +103,10 @@ export function ReviewerRequestDetail({ onRefresh }: { onRefresh: () => void }) 
   const [noteContent, setNoteContent] = useState('')
   const [noteSubmitted, setNoteSubmitted] = useState(false)
 
-  const request = useMemo(() => (requestId ? store.getRequest(requestId) : undefined), [requestId, pricingSaved, endpointsApprovedSaved, noteSubmitted])
+  // Provisioning state
+  const [provisioningRefresh, setProvisioningRefresh] = useState(0)
+
+  const request = useMemo(() => (requestId ? store.getRequest(requestId) : undefined), [requestId, pricingSaved, endpointsApprovedSaved, noteSubmitted, provisioningRefresh, categoriesRefresh])
   const customer = useMemo(() => (request ? store.getCustomer(request.customerId) : undefined), [request])
   const requestingUser = useMemo(() => (request ? store.getCustomerUser(request.requestedBy) : undefined), [request])
   const partner = useMemo(() => (request?.partnerId ? store.getPartner(request.partnerId) : undefined), [request])
@@ -142,13 +151,12 @@ export function ReviewerRequestDetail({ onRefresh }: { onRefresh: () => void }) 
   // Pre-fill pricing form if pricing already exists
   const initPricing = useCallback(() => {
     if (request?.pricing) {
-      setPricingMonthly(String(request.pricing.monthlyRate))
-      setPricingPerCall(String(request.pricing.perCallRate))
-      setPricingCallsIncluded(String(request.pricing.callsIncluded))
-      setPricingTier(request.pricing.rateTier)
+      setSelectedVolumeTier(request.pricing.volumeTier)
       setPricingNotes(request.pricing.notes)
+    } else if (request?.estimatedMonthlyVolume) {
+      setSelectedVolumeTier(suggestTier(request.estimatedMonthlyVolume))
     }
-  }, [request?.pricing])
+  }, [request?.pricing, request?.estimatedMonthlyVolume])
 
   // Initialize on first render when pricing exists
   useMemo(() => {
@@ -180,17 +188,15 @@ export function ReviewerRequestDetail({ onRefresh }: { onRefresh: () => void }) 
   }
 
   const handleSavePricing = () => {
-    if (!requestId) return
-    const monthly = parseFloat(pricingMonthly)
-    const perCall = parseFloat(pricingPerCall)
-    const callsIncluded = parseInt(pricingCallsIncluded, 10)
-    if (isNaN(monthly) || isNaN(perCall) || isNaN(callsIncluded)) return
+    if (!requestId || !selectedVolumeTier) return
+    const tierDef = VOLUME_TIERS.find(t => t.tier === selectedVolumeTier)
+    if (!tierDef) return
 
     const pricing: ApiPricing = {
-      monthlyRate: monthly,
-      perCallRate: perCall,
-      callsIncluded,
-      rateTier: pricingTier,
+      volumeTier: selectedVolumeTier,
+      monthlyRate: tierDef.monthlyRate,
+      perCallRate: tierDef.perCallRate,
+      callsIncluded: tierDef.callsPerMonth,
       notes: pricingNotes.trim(),
       setBy: 'Reviewer',
       setAt: new Date().toISOString(),
@@ -200,6 +206,30 @@ export function ReviewerRequestDetail({ onRefresh }: { onRefresh: () => void }) 
     setTimeout(() => setPricingSaved(false), 2000)
     onRefresh()
   }
+
+  const handleSaveEstimatedVolume = () => {
+    if (!requestId) return
+    const vol = parseInt(estimatedVolumeInput.replace(/,/g, ''), 10)
+    if (isNaN(vol) || vol <= 0) return
+    store.setEstimatedVolume(requestId, vol)
+    setEstimatedVolumeInput('')
+    setCategoriesRefresh(p => p + 1)
+    onRefresh()
+  }
+
+  const handleToggleCategory = (cat: ApiCategory) => {
+    if (!requestId || !request) return
+    const current = request.apiCategories ?? []
+    const next = current.includes(cat)
+      ? current.filter(c => c !== cat)
+      : [...current, cat]
+    store.setApiCategories(requestId, next.length > 0 ? next : null)
+    setCategoriesRefresh(p => p + 1)
+    onRefresh()
+  }
+
+  const suggestedTier = request?.estimatedMonthlyVolume ? suggestTier(request.estimatedMonthlyVolume) : null
+  const isConcourseProduct = request?.product === 'winteam' || request?.product === 'timegate_plus' || request?.product === 'lighthouse'
 
   const stageOptions: { value: ApprovalStage; label: string; role: string }[] = [
     { value: 'initial_review', label: 'Initial Review', role: STAGE_REVIEWER_ROLES.initial_review.role },
@@ -424,6 +454,32 @@ export function ReviewerRequestDetail({ onRefresh }: { onRefresh: () => void }) 
                 <p className="text-sm font-semibold text-ww-gray-900">{BUILDER_TYPE_LABELS[request.builderType] ?? request.builderType}</p>
               </div>
               <div>
+                <p className="text-xs text-ww-gray-400 font-medium font-mono uppercase tracking-wide mb-1">Request Type</p>
+                <div className="flex items-center gap-2">
+                  <span className={`inline-flex px-2 py-0.5 rounded text-xs font-semibold ${
+                    request.requestType === 'migration' ? 'bg-amber-100 text-amber-700'
+                    : request.requestType === 'expand_access' ? 'bg-blue-100 text-blue-700'
+                    : 'bg-emerald-100 text-emerald-700'
+                  }`}>
+                    {REQUEST_TYPE_LABELS[request.requestType] ?? request.requestType}
+                  </span>
+                  {request.requestType === 'migration' && request.migratingFrom && (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium bg-amber-50 text-amber-600 border border-amber-200">
+                      <ArrowUpFromLine size={10} />
+                      {LEGACY_METHOD_LABELS[request.migratingFrom] ?? request.migratingFrom}
+                    </span>
+                  )}
+                </div>
+              </div>
+              {request.gatewayPlatform && (
+                <div>
+                  <p className="text-xs text-ww-gray-400 font-medium font-mono uppercase tracking-wide mb-1">Gateway</p>
+                  <span className="inline-flex px-2 py-0.5 rounded text-xs font-medium bg-ww-gray-100 text-ww-gray-700">
+                    {GATEWAY_LABELS[request.gatewayPlatform] ?? request.gatewayPlatform}
+                  </span>
+                </div>
+              )}
+              <div>
                 <p className="text-xs text-ww-gray-400 font-medium font-mono uppercase tracking-wide mb-1">Connecting System</p>
                 <p className="text-sm font-semibold text-ww-gray-900">{request.connectingSystem}</p>
               </div>
@@ -442,6 +498,27 @@ export function ReviewerRequestDetail({ onRefresh }: { onRefresh: () => void }) 
                   {request.environment === 'production' ? 'Production' : 'Sandbox'}
                 </span>
               </div>
+              {request.estimatedMonthlyVolume && (
+                <div>
+                  <p className="text-xs text-ww-gray-400 font-medium font-mono uppercase tracking-wide mb-1">Est. Monthly Volume</p>
+                  <p className="text-sm font-semibold text-ww-gray-900">{request.estimatedMonthlyVolume.toLocaleString()} calls</p>
+                </div>
+              )}
+              {request.apiCategories && request.apiCategories.length > 0 && (
+                <div>
+                  <p className="text-xs text-ww-gray-400 font-medium font-mono uppercase tracking-wide mb-1">API Classification</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {request.apiCategories.map(cat => {
+                      const catInfo = API_CATEGORY_LABELS[cat]
+                      return (
+                        <span key={cat} className={`inline-flex px-2 py-0.5 rounded text-xs font-semibold ${catInfo?.color ?? 'bg-gray-100 text-gray-700'}`}>
+                          {catInfo?.label ?? cat}
+                        </span>
+                      )
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
             <div>
               <p className="text-xs text-ww-gray-400 font-medium font-mono uppercase tracking-wide mb-1">Use Case Detail</p>
@@ -500,6 +577,103 @@ export function ReviewerRequestDetail({ onRefresh }: { onRefresh: () => void }) 
               </div>
             )}
           </div>
+
+          {/* Provisioning Checklist — visible for approved requests */}
+          {(request.status === 'sandbox_approved' || request.status === 'production_approved') && (
+            <div className="bg-white rounded-md border border-ww-gray-200 p-6">
+              <h2 className="text-sm font-display font-mono font-semibold text-ww-gray-900 uppercase tracking-wide mb-4 flex items-center gap-2">
+                <ListChecks size={16} className="text-ww-gray-400" />
+                Provisioning Checklist
+              </h2>
+
+              {request.gatewayPlatform && (
+                <div className="mb-4">
+                  <span className="inline-flex px-2 py-0.5 rounded text-xs font-medium bg-ww-gray-100 text-ww-gray-700">
+                    {GATEWAY_LABELS[request.gatewayPlatform] ?? request.gatewayPlatform}
+                  </span>
+                </div>
+              )}
+
+              {request.provisioningChecklist.length === 0 ? (
+                <div>
+                  <p className="text-sm text-ww-gray-500 mb-3">Provisioning checklist has not been initialized for this request.</p>
+                  <button
+                    onClick={() => {
+                      if (!requestId) return
+                      store.initializeProvisioningChecklist(requestId)
+                      setProvisioningRefresh(p => p + 1)
+                      onRefresh()
+                    }}
+                    className="px-4 py-2 rounded-md bg-ww-navy text-white text-sm font-medium hover:bg-ww-navy-light transition-colors"
+                  >
+                    Initialize Checklist
+                  </button>
+                </div>
+              ) : (
+                <div>
+                  {/* Progress summary */}
+                  <div className="flex items-center gap-3 mb-4">
+                    {(() => {
+                      const completed = request.provisioningChecklist.filter(s => s.completed).length
+                      const total = request.provisioningChecklist.length
+                      const pct = Math.round((completed / total) * 100)
+                      return (
+                        <>
+                          <div className="flex-1 h-2 bg-ww-gray-100 rounded-full overflow-hidden">
+                            <div
+                              className={`h-full rounded-full transition-all ${completed === total ? 'bg-emerald-500' : 'bg-ww-primary'}`}
+                              style={{ width: `${pct}%` }}
+                            />
+                          </div>
+                          <span className={`text-xs font-semibold ${completed === total ? 'text-emerald-600' : 'text-ww-gray-600'}`}>
+                            {completed}/{total}
+                          </span>
+                        </>
+                      )
+                    })()}
+                  </div>
+
+                  {/* Checklist items */}
+                  <div className="space-y-2">
+                    {request.provisioningChecklist.map(step => (
+                      <div key={step.id} className="flex items-start gap-3 p-3 rounded-md bg-ww-gray-50 border border-ww-gray-100">
+                        <button
+                          onClick={() => {
+                            if (!requestId) return
+                            store.toggleProvisioningStep(requestId, step.id, 'Reviewer')
+                            setProvisioningRefresh(p => p + 1)
+                            onRefresh()
+                          }}
+                          className={`mt-0.5 w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 transition-colors ${
+                            step.completed
+                              ? 'bg-emerald-500 border-emerald-500'
+                              : 'border-ww-gray-300 bg-white hover:border-ww-primary'
+                          }`}
+                        >
+                          {step.completed && (
+                            <svg width="10" height="8" viewBox="0 0 10 8" fill="none" className="text-white">
+                              <path d="M1 4L3.5 6.5L9 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                            </svg>
+                          )}
+                        </button>
+                        <div className="flex-1 min-w-0">
+                          <p className={`text-sm font-medium ${step.completed ? 'text-ww-gray-500 line-through' : 'text-ww-gray-900'}`}>
+                            {step.label}
+                          </p>
+                          <p className="text-xs text-ww-gray-400 mt-0.5">{step.description}</p>
+                          {step.completed && step.completedAt && (
+                            <p className="text-[10px] font-mono text-ww-gray-400 mt-1">
+                              {step.completedBy ?? 'Reviewer'} &middot; {formatDateTime(step.completedAt)}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Previous Approvals Timeline */}
           <div className="bg-white rounded-md border border-ww-gray-200 p-6">
@@ -866,152 +1040,211 @@ export function ReviewerRequestDetail({ onRefresh }: { onRefresh: () => void }) 
               </div>
             </div>
 
-            {/* Pricing Panel — visible for approved requests */}
-            {(
+            {/* Pricing Panel */}
+            <div className="bg-white rounded-md border border-ww-gray-200 p-5">
+              <h3 className="text-sm font-display font-mono font-semibold text-ww-gray-900 uppercase tracking-wide mb-4 flex items-center gap-2">
+                <DollarSign size={14} className="text-ww-navy" />
+                API Pricing
+              </h3>
+
+              {/* Pricing Set summary */}
+              {request.pricing && !pricingSaved ? (
+                <div className="space-y-3 mb-4">
+                  <div className="p-3 rounded-md bg-emerald-50 border border-emerald-200">
+                    <div className="flex items-center gap-1.5 mb-2">
+                      <CheckCircle2 size={12} className="text-emerald-600" />
+                      <span className="text-xs font-semibold text-emerald-700">Pricing Set</span>
+                    </div>
+                    <dl className="grid grid-cols-2 gap-2 text-xs">
+                      <div>
+                        <dt className="text-ww-gray-400 font-mono">Tier</dt>
+                        <dd className="font-semibold text-ww-gray-900">{VOLUME_TIER_LABELS[request.pricing.volumeTier] ?? `Tier ${request.pricing.volumeTier}`}</dd>
+                      </div>
+                      <div>
+                        <dt className="text-ww-gray-400 font-mono">Monthly</dt>
+                        <dd className="font-semibold text-ww-gray-900">${request.pricing.monthlyRate.toLocaleString()}</dd>
+                      </div>
+                      <div>
+                        <dt className="text-ww-gray-400 font-mono">Per Call</dt>
+                        <dd className="font-semibold text-ww-gray-900">${request.pricing.perCallRate}</dd>
+                      </div>
+                      <div>
+                        <dt className="text-ww-gray-400 font-mono">Calls Included</dt>
+                        <dd className="font-semibold text-ww-gray-900">{request.pricing.callsIncluded.toLocaleString()}</dd>
+                      </div>
+                      <div>
+                        <dt className="text-ww-gray-400 font-mono">Annual</dt>
+                        <dd className="font-semibold text-ww-gray-900">${(request.pricing.monthlyRate * 12).toLocaleString()}</dd>
+                      </div>
+                      <div>
+                        <dt className="text-ww-gray-400 font-mono">Overage Rate</dt>
+                        <dd className="font-semibold text-ww-gray-900">${(VOLUME_TIERS.find(t => t.tier === request.pricing!.volumeTier)?.overageRate ?? 0).toFixed(6)}</dd>
+                      </div>
+                    </dl>
+                    {request.pricing.notes && (
+                      <p className="text-xs text-ww-gray-500 mt-2 border-t border-emerald-200 pt-2">{request.pricing.notes}</p>
+                    )}
+                    <p className="text-[10px] font-mono text-ww-gray-400 mt-2">
+                      Set by {request.pricing.setBy} on {formatDate(request.pricing.setAt)}
+                    </p>
+                  </div>
+                </div>
+              ) : null}
+
+              <div className="space-y-3">
+                {/* Estimated Volume context */}
+                {request.estimatedMonthlyVolume ? (
+                  <div className="flex items-center justify-between p-2.5 rounded-md bg-ww-gray-50 border border-ww-gray-100">
+                    <div>
+                      <p className="text-[10px] text-ww-gray-400 font-mono uppercase tracking-wide">Est. Volume</p>
+                      <p className="text-sm font-semibold text-ww-gray-900">{request.estimatedMonthlyVolume.toLocaleString()} calls/mo</p>
+                    </div>
+                    {suggestedTier && (
+                      <span className="inline-flex px-2 py-0.5 rounded text-[10px] font-semibold bg-ww-sky text-ww-navy">
+                        Suggested: {VOLUME_TIER_LABELS[suggestedTier]}
+                      </span>
+                    )}
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      value={estimatedVolumeInput}
+                      onChange={e => setEstimatedVolumeInput(e.target.value)}
+                      placeholder="Est. monthly calls"
+                      className="flex-1 px-2.5 py-1.5 rounded-md border border-ww-gray-200 text-sm text-ww-gray-900 placeholder:text-ww-gray-400 focus:outline-none focus:ring-2 focus:ring-ww-primary/30 focus:border-ww-primary"
+                    />
+                    <button
+                      onClick={handleSaveEstimatedVolume}
+                      disabled={!estimatedVolumeInput.trim()}
+                      className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-colors ${
+                        estimatedVolumeInput.trim()
+                          ? 'bg-ww-navy text-white hover:bg-ww-navy-light'
+                          : 'bg-ww-gray-200 text-ww-gray-400 cursor-not-allowed'
+                      }`}
+                    >
+                      Set
+                    </button>
+                  </div>
+                )}
+
+                {/* Volume Tier Table */}
+                <div>
+                  <label className="block text-xs font-medium text-ww-gray-600 mb-1.5">Volume Tier</label>
+                  <div className="border border-ww-gray-200 rounded-md overflow-hidden">
+                    <table className="w-full text-[11px]">
+                      <thead>
+                        <tr className="bg-ww-gray-50 text-ww-gray-500 font-mono uppercase tracking-wide">
+                          <th className="text-left px-2 py-1.5">Tier</th>
+                          <th className="text-right px-2 py-1.5">Calls/Mo</th>
+                          <th className="text-right px-2 py-1.5">Monthly</th>
+                          <th className="text-right px-2 py-1.5">Per Call</th>
+                          <th className="text-right px-2 py-1.5">Overage</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {VOLUME_TIERS.map(t => {
+                          const isSelected = selectedVolumeTier === t.tier
+                          const isSuggested = suggestedTier === t.tier
+                          return (
+                            <tr
+                              key={t.tier}
+                              onClick={() => setSelectedVolumeTier(t.tier)}
+                              className={`cursor-pointer border-t border-ww-gray-100 transition-colors ${
+                                isSelected ? 'bg-ww-sky font-medium' : 'hover:bg-ww-gray-50'
+                              }`}
+                            >
+                              <td className="px-2 py-1.5 text-ww-gray-900 whitespace-nowrap">
+                                <div className="flex items-center gap-1">
+                                  <input
+                                    type="radio"
+                                    checked={isSelected}
+                                    onChange={() => setSelectedVolumeTier(t.tier)}
+                                    className="w-3 h-3"
+                                  />
+                                  <span>{t.tier}</span>
+                                  {isSuggested && (
+                                    <span className="inline-flex px-1 py-0 rounded text-[9px] font-semibold bg-ww-navy/10 text-ww-navy">Suggested</span>
+                                  )}
+                                </div>
+                              </td>
+                              <td className="px-2 py-1.5 text-right text-ww-gray-700 font-mono">{t.callsPerMonth >= 1_000_000 ? `${t.callsPerMonth / 1_000_000}M` : `${t.callsPerMonth / 1_000}K`}</td>
+                              <td className="px-2 py-1.5 text-right text-ww-gray-700 font-mono">${t.monthlyRate.toLocaleString()}</td>
+                              <td className="px-2 py-1.5 text-right text-ww-gray-700 font-mono">${t.perCallRate}</td>
+                              <td className="px-2 py-1.5 text-right text-ww-gray-700 font-mono">${t.overageRate}</td>
+                            </tr>
+                          )
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                {/* Notes */}
+                <div>
+                  <label className="block text-xs font-medium text-ww-gray-600 mb-1">Notes</label>
+                  <textarea
+                    value={pricingNotes}
+                    onChange={e => setPricingNotes(e.target.value)}
+                    placeholder="Pricing notes, special terms, etc."
+                    rows={2}
+                    className="w-full px-2.5 py-1.5 rounded-md border border-ww-gray-200 text-sm text-ww-gray-900 placeholder:text-ww-gray-400 focus:outline-none focus:ring-2 focus:ring-ww-primary/30 focus:border-ww-primary resize-none"
+                  />
+                </div>
+
+                {/* Save */}
+                <button
+                  onClick={handleSavePricing}
+                  disabled={!selectedVolumeTier}
+                  className={`w-full py-2 rounded-md text-sm font-semibold transition-colors ${
+                    selectedVolumeTier
+                      ? 'bg-ww-navy text-white hover:bg-ww-navy-light'
+                      : 'bg-ww-gray-200 text-ww-gray-400 cursor-not-allowed'
+                  }`}
+                >
+                  {pricingSaved ? 'Saved!' : request.pricing ? 'Update Pricing' : 'Set Pricing'}
+                </button>
+              </div>
+            </div>
+
+            {/* API Classification Panel — Concourse products only */}
+            {isConcourseProduct && (
               <div className="bg-white rounded-md border border-ww-gray-200 p-5">
                 <h3 className="text-sm font-display font-mono font-semibold text-ww-gray-900 uppercase tracking-wide mb-4 flex items-center gap-2">
-                  <DollarSign size={14} className="text-ww-navy" />
-                  API Pricing
+                  <Tag size={14} className="text-ww-navy" />
+                  API Classification
                 </h3>
-
-                {request.pricing && !pricingSaved ? (
-                  <div className="space-y-3 mb-4">
-                    <div className="p-3 rounded-md bg-emerald-50 border border-emerald-200">
-                      <div className="flex items-center gap-1.5 mb-2">
-                        <CheckCircle2 size={12} className="text-emerald-600" />
-                        <span className="text-xs font-semibold text-emerald-700">Pricing Set</span>
-                      </div>
-                      <dl className="grid grid-cols-2 gap-2 text-xs">
-                        <div>
-                          <dt className="text-ww-gray-400 font-mono">Monthly</dt>
-                          <dd className="font-semibold text-ww-gray-900">${request.pricing.monthlyRate.toLocaleString()}</dd>
-                        </div>
-                        <div>
-                          <dt className="text-ww-gray-400 font-mono">Per Call</dt>
-                          <dd className="font-semibold text-ww-gray-900">${request.pricing.perCallRate}</dd>
-                        </div>
-                        <div>
-                          <dt className="text-ww-gray-400 font-mono">Included Calls</dt>
-                          <dd className="font-semibold text-ww-gray-900">{request.pricing.callsIncluded.toLocaleString()}</dd>
-                        </div>
-                        <div>
-                          <dt className="text-ww-gray-400 font-mono">Rate Tier</dt>
-                          <dd className="font-semibold text-ww-gray-900 capitalize">{request.pricing.rateTier}</dd>
-                        </div>
-                      </dl>
-                      {request.pricing.notes && (
-                        <p className="text-xs text-ww-gray-500 mt-2 border-t border-emerald-200 pt-2">{request.pricing.notes}</p>
-                      )}
-                      <p className="text-[10px] font-mono text-ww-gray-400 mt-2">
-                        Set by {request.pricing.setBy} on {formatDate(request.pricing.setAt)}
-                      </p>
-                    </div>
-                  </div>
-                ) : null}
-
-                <div className="space-y-3">
-                  <p className="text-xs text-ww-gray-500">
-                    {request.pricing ? 'Update pricing for this API access request.' : 'Set pricing for this approved API access request. This will be communicated to the client.'}
-                  </p>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-xs font-medium text-ww-gray-600 mb-1">Monthly Rate ($)</label>
-                      <input
-                        type="number"
-                        value={pricingMonthly}
-                        onChange={e => setPricingMonthly(e.target.value)}
-                        placeholder="500"
-                        min="0"
-                        step="1"
-                        className="w-full px-2.5 py-1.5 rounded-md border border-ww-gray-200 text-sm text-ww-gray-900 placeholder:text-ww-gray-400 focus:outline-none focus:ring-2 focus:ring-ww-primary/30 focus:border-ww-primary"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-medium text-ww-gray-600 mb-1">Per-Call Rate ($)</label>
-                      <input
-                        type="number"
-                        value={pricingPerCall}
-                        onChange={e => setPricingPerCall(e.target.value)}
-                        placeholder="0.005"
-                        min="0"
-                        step="0.001"
-                        className="w-full px-2.5 py-1.5 rounded-md border border-ww-gray-200 text-sm text-ww-gray-900 placeholder:text-ww-gray-400 focus:outline-none focus:ring-2 focus:ring-ww-primary/30 focus:border-ww-primary"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-xs font-medium text-ww-gray-600 mb-1">Calls Included</label>
-                      <input
-                        type="number"
-                        value={pricingCallsIncluded}
-                        onChange={e => setPricingCallsIncluded(e.target.value)}
-                        placeholder="10000"
-                        min="0"
-                        step="1000"
-                        className="w-full px-2.5 py-1.5 rounded-md border border-ww-gray-200 text-sm text-ww-gray-900 placeholder:text-ww-gray-400 focus:outline-none focus:ring-2 focus:ring-ww-primary/30 focus:border-ww-primary"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-medium text-ww-gray-600 mb-1">Rate Tier</label>
-                      <div className="relative">
-                        <button
-                          onClick={() => setPricingTierOpen(!pricingTierOpen)}
-                          className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-md border border-ww-gray-200 bg-white text-sm text-ww-gray-900 hover:border-ww-gray-300 transition-colors"
-                        >
-                          <span className="capitalize">{pricingTier}</span>
-                          <ChevronDown size={12} className="text-ww-gray-400" />
-                        </button>
-                        {pricingTierOpen && (
-                          <>
-                            <div className="fixed inset-0 z-10" onClick={() => setPricingTierOpen(false)} />
-                            <div className="absolute z-20 top-full mt-1 left-0 right-0 bg-white border border-ww-gray-200 rounded-md py-1">
-                              {(['standard', 'professional', 'enterprise'] as const).map(tier => (
-                                <button
-                                  key={tier}
-                                  onClick={() => {
-                                    setPricingTier(tier)
-                                    setPricingTierOpen(false)
-                                  }}
-                                  className={`w-full text-left px-3 py-1.5 text-sm capitalize hover:bg-ww-gray-50 transition-colors ${
-                                    pricingTier === tier ? 'bg-ww-sky text-ww-navy font-medium' : 'text-ww-gray-700'
-                                  }`}
-                                >
-                                  {tier}
-                                </button>
-                              ))}
-                            </div>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-medium text-ww-gray-600 mb-1">Notes</label>
-                    <textarea
-                      value={pricingNotes}
-                      onChange={e => setPricingNotes(e.target.value)}
-                      placeholder="Pricing notes, special terms, etc."
-                      rows={2}
-                      className="w-full px-2.5 py-1.5 rounded-md border border-ww-gray-200 text-sm text-ww-gray-900 placeholder:text-ww-gray-400 focus:outline-none focus:ring-2 focus:ring-ww-primary/30 focus:border-ww-primary resize-none"
-                    />
-                  </div>
-
-                  <button
-                    onClick={handleSavePricing}
-                    disabled={!pricingMonthly || !pricingPerCall || !pricingCallsIncluded}
-                    className={`w-full py-2 rounded-md text-sm font-semibold transition-colors ${
-                      pricingMonthly && pricingPerCall && pricingCallsIncluded
-                        ? 'bg-ww-navy text-white hover:bg-ww-navy-light'
-                        : 'bg-ww-gray-200 text-ww-gray-400 cursor-not-allowed'
-                    }`}
-                  >
-                    {pricingSaved ? 'Saved!' : request.pricing ? 'Update Pricing' : 'Set Pricing'}
-                  </button>
+                <p className="text-xs text-ww-gray-500 mb-3">Classify API endpoints used by this integration.</p>
+                <div className="flex gap-2">
+                  {(Object.entries(API_CATEGORY_LABELS) as [string, { label: string; color: string }][]).map(([key, info]) => {
+                    const isActive = request.apiCategories?.includes(key as ApiCategory) ?? false
+                    return (
+                      <button
+                        key={key}
+                        onClick={() => handleToggleCategory(key as ApiCategory)}
+                        className={`flex-1 px-3 py-2 rounded-md text-xs font-semibold border-2 transition-all ${
+                          isActive
+                            ? `${info.color} border-current`
+                            : 'border-ww-gray-200 text-ww-gray-400 hover:border-ww-gray-300'
+                        }`}
+                      >
+                        {info.label}
+                      </button>
+                    )
+                  })}
                 </div>
+                {request.apiCategories && request.apiCategories.length > 0 && (
+                  <div className="mt-3 flex flex-wrap gap-1.5">
+                    {request.apiCategories.map(cat => {
+                      const catInfo = API_CATEGORY_LABELS[cat]
+                      return (
+                        <span key={cat} className={`inline-flex px-2 py-0.5 rounded text-[10px] font-semibold ${catInfo?.color ?? 'bg-gray-100 text-gray-700'}`}>
+                          {catInfo?.label ?? cat}
+                        </span>
+                      )
+                    })}
+                  </div>
+                )}
               </div>
             )}
           </div>

@@ -9,7 +9,7 @@ import {
 } from 'lucide-react'
 import { useState } from 'react'
 import { store } from '@/data/store'
-import { PRODUCT_LABELS, USE_CASE_LABELS } from '@/App'
+import { PRODUCT_LABELS, USE_CASE_LABELS, REQUEST_TYPE_LABELS, LEGACY_METHOD_LABELS } from '@/App'
 
 export function Confirmation() {
   const { requestId } = useParams<{ requestId: string }>()
@@ -111,6 +111,20 @@ export function Confirmation() {
                 {request.environment}
               </dd>
             </div>
+            <div className="flex justify-between">
+              <dt className="text-sm text-ww-gray-500">Request Type</dt>
+              <dd className="text-sm text-ww-gray-800">
+                {REQUEST_TYPE_LABELS[request.requestType] ?? request.requestType}
+              </dd>
+            </div>
+            {request.requestType === 'migration' && request.migratingFrom && (
+              <div className="flex justify-between">
+                <dt className="text-sm text-ww-gray-500">Migrating From</dt>
+                <dd className="text-[11px] font-medium px-2 py-0.5 rounded bg-amber-100 text-amber-700">
+                  {LEGACY_METHOD_LABELS[request.migratingFrom] ?? request.migratingFrom}
+                </dd>
+              </div>
+            )}
             {request.targetTimeline && (
               <div className="flex justify-between">
                 <dt className="text-sm text-ww-gray-500">Target Timeline</dt>

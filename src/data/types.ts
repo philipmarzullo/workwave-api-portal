@@ -21,6 +21,15 @@ export type Environment = 'sandbox' | 'production'
 // Builder type
 export type BuilderType = 'partner' | 'internal_team' | 'contractor'
 
+// Request type
+export type RequestType = 'new_access' | 'migration' | 'expand_access'
+
+// Legacy access methods (for migration requests)
+export type LegacyAccessMethod = 'sap_bi' | 'vpn' | 'sftp' | 'createam' | 'insights' | 'query_scheduler'
+
+// Gateway platform
+export type GatewayPlatform = 'apigee' | 'concourse' | 'manual'
+
 // Common use cases for the intake form
 export type UseCase =
   | 'sync_customer_data'
@@ -86,11 +95,27 @@ export interface PartnerCustomer {
   revokedAt: string | null
 }
 
+export type VolumeTier = 1 | 2 | 3 | 4 | 5 | 6 | 7
+
+export interface VolumeTierDefinition {
+  tier: VolumeTier
+  label: string
+  callsPerMonth: number
+  monthlyRate: number
+  perCallRate: number
+  overageRate: number  // 2.5x per-call rate (from original proposal doc)
+}
+
+export type ApiCategory = 'standard' | 'premium'
+export type ApiSubCategory =
+  | 'employee_information' | 'jobs_work_orders' | 'general'
+  | 'payroll_information' | 'financials' | 'schedules' | 'timekeeping_calculations'
+
 export interface ApiPricing {
-  monthlyRate: number       // e.g. 500
-  perCallRate: number       // e.g. 0.005
-  callsIncluded: number     // e.g. 10000 calls included in monthly rate
-  rateTier: 'standard' | 'professional' | 'enterprise'
+  volumeTier: VolumeTier
+  monthlyRate: number
+  perCallRate: number
+  callsIncluded: number
   notes: string
   setBy: string             // reviewer name
   setAt: string             // ISO date
@@ -126,8 +151,23 @@ export interface ApiRequest {
   status: RequestStatus
   agreementSignedAt: string | null
   pricing: ApiPricing | null  // set by reviewer after approval
+  requestType: RequestType
+  migratingFrom: LegacyAccessMethod | null
+  provisioningChecklist: ProvisioningStep[]
+  gatewayPlatform: GatewayPlatform | null
+  estimatedMonthlyVolume: number | null
+  apiCategories: ApiCategory[] | null
   createdAt: string
   updatedAt: string
+}
+
+export interface ProvisioningStep {
+  id: string
+  label: string
+  description: string
+  completed: boolean
+  completedAt: string | null
+  completedBy: string | null
 }
 
 export interface ReviewerNote {

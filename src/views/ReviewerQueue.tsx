@@ -237,6 +237,11 @@ export function ReviewerQueue() {
                       {/* Details row */}
                       <div className="flex items-center gap-4 text-xs text-ww-gray-500 flex-wrap">
                         <span>{USE_CASE_LABELS[req.useCase] ?? req.useCase}</span>
+                        {req.requestType === 'migration' && (
+                          <span className="inline-flex px-2 py-0.5 rounded text-[10px] font-semibold bg-amber-100 text-amber-700">
+                            Migration
+                          </span>
+                        )}
                         <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded font-mono font-medium ${
                           req.environment === 'production'
                             ? 'bg-purple-100 text-purple-700'
