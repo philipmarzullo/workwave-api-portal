@@ -140,6 +140,9 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
   const [connectingSystem, setConnectingSystem] = useState('')
   const [useCase, setUseCase] = useState<UseCase | ''>('')
   const [useCaseDetail, setUseCaseDetail] = useState('')
+  const [endpointsRequested, setEndpointsRequested] = useState('')
+  const [thirdPartyTool, setThirdPartyTool] = useState('')
+  const [thirdPartyToolUrl, setThirdPartyToolUrl] = useState('')
   const [dataRead, setDataRead] = useState<DataCategory[]>([])
   const [dataWrite, setDataWrite] = useState<DataCategory[]>([])
   const [dataLeavesEnvironment, setDataLeavesEnvironment] = useState<boolean | null>(null)
@@ -198,6 +201,9 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
     if (connectingSystem.trim()) return true
     if (useCase) return true
     if (useCaseDetail.trim()) return true
+    if (endpointsRequested.trim()) return true
+    if (thirdPartyTool.trim()) return true
+    if (thirdPartyToolUrl.trim()) return true
     if (dataRead.length > 0) return true
     if (dataWrite.length > 0) return true
     if (dataLeavesEnvironment !== null) return true
@@ -304,6 +310,13 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
         dataRead,
         dataWrite,
         dataLeavesEnvironment: dataLeavesEnvironment as boolean,
+        endpointsRequested: endpointsRequested.trim(),
+        thirdPartyTool: thirdPartyTool.trim() || null,
+        thirdPartyToolUrl: thirdPartyToolUrl.trim() || null,
+        technicalContactName: techContactSameAsRequester ? null : (techContactName.trim() || null),
+        technicalContactEmail: techContactSameAsRequester ? null : (techContactEmail.trim() || null),
+        technicalContactPhone: techContactSameAsRequester ? null : (techContactPhone.trim() || null),
+        targetTimeline: targetTimeline || null,
         environment: environment as Environment,
       })
 
@@ -726,6 +739,23 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
           {renderError(fieldError('useCaseDetail', !!useCaseDetail.trim()))}
         </div>
 
+        {/* API Endpoints Requested */}
+        <div>
+          <label className="block text-sm font-semibold text-ww-gray-700 mb-1.5">
+            API Endpoints Requested
+          </label>
+          <p className="text-xs text-ww-gray-500 mb-3">
+            If you know which specific API endpoints you need, list them here (one per line).
+          </p>
+          <textarea
+            value={endpointsRequested}
+            onChange={e => setEndpointsRequested(e.target.value)}
+            placeholder="e.g. WinTeam.employees-V2 GET, WinTeam.timesheets-V3 GET/POST..."
+            rows={3}
+            className="w-full px-4 py-2.5 rounded-lg border border-ww-gray-300 text-sm text-ww-gray-800 placeholder:text-ww-gray-400 focus:outline-none focus:ring-2 focus:ring-ww-primary focus:border-transparent transition-shadow resize-none font-mono"
+          />
+        </div>
+
         {/* Data to READ */}
         <div>
           <label className="block text-sm font-semibold text-ww-gray-700 mb-1.5">
@@ -845,6 +875,47 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
           </div>
           {touched.dataLeavesEnvironment && dataLeavesEnvironment === null && renderError('This field is required')}
         </div>
+
+        {/* Third-Party Tool (only for partner builder type) */}
+        {builderType === 'partner' && (
+          <div>
+            <label className="block text-sm font-semibold text-ww-gray-700 mb-1.5">
+              Third-Party Tool or Middleware
+            </label>
+            <p className="text-xs text-ww-gray-500 mb-3">
+              If a third-party tool (other than the partner above) is involved in this integration, provide its details.
+            </p>
+            <div className="space-y-3">
+              <div>
+                <label className="block text-sm font-medium text-ww-gray-700 mb-1.5">
+                  Tool Name
+                </label>
+                <input
+                  type="text"
+                  value={thirdPartyTool}
+                  onChange={e => setThirdPartyTool(e.target.value)}
+                  placeholder="e.g. Lumera, Workato, MuleSoft"
+                  className="w-full px-4 py-2.5 rounded-lg border border-ww-gray-300 text-sm text-ww-gray-800 placeholder:text-ww-gray-400 focus:outline-none focus:ring-2 focus:ring-ww-primary focus:border-transparent transition-shadow"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-ww-gray-700 mb-1.5">
+                  <span className="flex items-center gap-1.5">
+                    <Globe size={14} />
+                    Tool Website
+                  </span>
+                </label>
+                <input
+                  type="text"
+                  value={thirdPartyToolUrl}
+                  onChange={e => setThirdPartyToolUrl(e.target.value)}
+                  placeholder="https://www.example.com"
+                  className="w-full px-4 py-2.5 rounded-lg border border-ww-gray-300 text-sm text-ww-gray-800 placeholder:text-ww-gray-400 focus:outline-none focus:ring-2 focus:ring-ww-primary focus:border-transparent transition-shadow"
+                />
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* ── Contact Information ─────────────────────────────────── */}
         <div>
@@ -1172,6 +1243,16 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
                 </div>
               </div>
             </div>
+            {endpointsRequested.trim() && (
+              <div className="py-2">
+                <div className="flex">
+                  <span className="text-[13px] text-ww-gray-500 w-44 shrink-0">Endpoints Requested</span>
+                </div>
+                <div className="border border-ww-gray-200 rounded-lg p-3 mt-1 text-xs text-ww-gray-700 leading-relaxed font-mono whitespace-pre-wrap">
+                  {endpointsRequested}
+                </div>
+              </div>
+            )}
             <div className="flex py-2">
               <span className="text-[13px] text-ww-gray-500 w-44 shrink-0">Data Leaves Environment</span>
               {dataLeavesEnvironment === true ? (
@@ -1231,6 +1312,14 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
                   </span>
                 </div>
               )
+            )}
+            {thirdPartyTool.trim() && (
+              <div className="flex py-2">
+                <span className="text-[13px] text-ww-gray-500 w-44 shrink-0">Third-Party Tool</span>
+                <span className="text-sm text-ww-gray-800">
+                  {thirdPartyTool}{thirdPartyToolUrl.trim() ? ` (${thirdPartyToolUrl})` : ''}
+                </span>
+              </div>
             )}
             <div className="flex py-2">
               <span className="text-[13px] text-ww-gray-500 w-44 shrink-0">Target Timeline</span>

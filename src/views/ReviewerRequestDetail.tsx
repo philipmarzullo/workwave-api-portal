@@ -6,6 +6,7 @@ import {
   User,
   Globe,
   Mail,
+  Phone,
   Shield,
   ShieldAlert,
   AlertTriangle,
@@ -22,6 +23,9 @@ import {
   Users,
   ChevronDown,
   DollarSign,
+  FileText,
+  StickyNote,
+  Save,
 } from 'lucide-react'
 import type { ApprovalStage, ApprovalDecision, ApiPricing } from '@/data/types'
 import { store } from '@/data/store'
@@ -90,7 +94,16 @@ export function ReviewerRequestDetail({ onRefresh }: { onRefresh: () => void }) 
   const [pricingSaved, setPricingSaved] = useState(false)
   const [pricingTierOpen, setPricingTierOpen] = useState(false)
 
-  const request = useMemo(() => (requestId ? store.getRequest(requestId) : undefined), [requestId, pricingSaved])
+  // Endpoints approved state
+  const [endpointsApprovedText, setEndpointsApprovedText] = useState('')
+  const [endpointsApprovedSaved, setEndpointsApprovedSaved] = useState(false)
+  const [endpointsApprovedInit, setEndpointsApprovedInit] = useState(false)
+
+  // Internal notes state
+  const [noteContent, setNoteContent] = useState('')
+  const [noteSubmitted, setNoteSubmitted] = useState(false)
+
+  const request = useMemo(() => (requestId ? store.getRequest(requestId) : undefined), [requestId, pricingSaved, endpointsApprovedSaved, noteSubmitted])
   const customer = useMemo(() => (request ? store.getCustomer(request.customerId) : undefined), [request])
   const requestingUser = useMemo(() => (request ? store.getCustomerUser(request.requestedBy) : undefined), [request])
   const partner = useMemo(() => (request?.partnerId ? store.getPartner(request.partnerId) : undefined), [request])
@@ -111,6 +124,13 @@ export function ReviewerRequestDetail({ onRefresh }: { onRefresh: () => void }) 
         </button>
       </div>
     )
+  }
+
+  const TIMELINE_LABELS: Record<string, string> = {
+    asap: 'ASAP',
+    this_quarter: 'This Quarter',
+    next_quarter: 'Next Quarter',
+    exploring: 'Exploring',
   }
 
   const isUnlisted = request.partnerId === null
@@ -140,6 +160,30 @@ export function ReviewerRequestDetail({ onRefresh }: { onRefresh: () => void }) 
   useMemo(() => {
     initPricing()
   }, [initPricing])
+
+  // Initialize endpoints approved text
+  useMemo(() => {
+    if (request && !endpointsApprovedInit) {
+      setEndpointsApprovedText(request.endpointsApproved ?? request.endpointsRequested ?? '')
+      setEndpointsApprovedInit(true)
+    }
+  }, [request, endpointsApprovedInit])
+
+  const handleSaveEndpointsApproved = () => {
+    if (!requestId) return
+    store.setEndpointsApproved(requestId, endpointsApprovedText.trim())
+    setEndpointsApprovedSaved(true)
+    setTimeout(() => setEndpointsApprovedSaved(false), 2000)
+    onRefresh()
+  }
+
+  const handleAddNote = () => {
+    if (!requestId || !noteContent.trim()) return
+    store.addReviewerNote(requestId, 'Reviewer', noteContent.trim())
+    setNoteContent('')
+    setNoteSubmitted(prev => !prev)
+    onRefresh()
+  }
 
   const handleSavePricing = () => {
     if (!requestId) return
@@ -209,6 +253,12 @@ export function ReviewerRequestDetail({ onRefresh }: { onRefresh: () => void }) 
                   <span className="text-ww-green font-mono">Agreement signed {formatDate(request.agreementSignedAt)}</span>
                 </>
               )}
+              {request.targetTimeline && (
+                <>
+                  <span className="text-ww-gray-300">|</span>
+                  <span className="text-amber-600 font-mono">Timeline: {TIMELINE_LABELS[request.targetTimeline] ?? request.targetTimeline}</span>
+                </>
+              )}
             </div>
           </div>
 
@@ -243,6 +293,23 @@ export function ReviewerRequestDetail({ onRefresh }: { onRefresh: () => void }) 
                   </div>
                 </div>
                 <p className="text-sm text-ww-gray-600">{partner.description}</p>
+                {request.thirdPartyTool && (
+                  <div className="mt-3 pt-3 border-t border-ww-gray-100">
+                    <p className="text-xs text-ww-gray-400 font-medium font-mono uppercase tracking-wide mb-1">Third-Party Tool</p>
+                    <p className="text-sm font-semibold text-ww-gray-900">{request.thirdPartyTool}</p>
+                    {request.thirdPartyToolUrl && (
+                      <a
+                        href={request.thirdPartyToolUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs text-ww-primary hover:underline flex items-center gap-1 mt-0.5"
+                      >
+                        {request.thirdPartyToolUrl}
+                        <ExternalLink size={10} />
+                      </a>
+                    )}
+                  </div>
+                )}
               </div>
             ) : (
               <div className="space-y-3">
@@ -273,6 +340,23 @@ export function ReviewerRequestDetail({ onRefresh }: { onRefresh: () => void }) 
                     <span>{request.partnerContact}</span>
                   </div>
                 )}
+                {request.thirdPartyTool && (
+                  <div className="mt-3 pt-3 border-t border-ww-gray-100">
+                    <p className="text-xs text-ww-gray-400 font-medium font-mono uppercase tracking-wide mb-1">Third-Party Tool</p>
+                    <p className="text-sm font-semibold text-ww-gray-900">{request.thirdPartyTool}</p>
+                    {request.thirdPartyToolUrl && (
+                      <a
+                        href={request.thirdPartyToolUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs text-ww-primary hover:underline flex items-center gap-1 mt-0.5"
+                      >
+                        {request.thirdPartyToolUrl}
+                        <ExternalLink size={10} />
+                      </a>
+                    )}
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -301,6 +385,31 @@ export function ReviewerRequestDetail({ onRefresh }: { onRefresh: () => void }) 
                 <p className="text-sm text-ww-gray-700">{requestingUser?.email ?? 'Unknown'}</p>
               </div>
             </div>
+            {(request.technicalContactName || request.technicalContactEmail || request.technicalContactPhone) && (
+              <div className="mt-4 pt-4 border-t border-ww-gray-100">
+                <p className="text-xs text-ww-gray-400 font-medium font-mono uppercase tracking-wide mb-3">Technical Contact</p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {request.technicalContactName && (
+                    <div className="flex items-center gap-2 text-sm text-ww-gray-700">
+                      <User size={14} className="text-ww-gray-400" />
+                      <span>{request.technicalContactName}</span>
+                    </div>
+                  )}
+                  {request.technicalContactEmail && (
+                    <div className="flex items-center gap-2 text-sm text-ww-gray-700">
+                      <Mail size={14} className="text-ww-gray-400" />
+                      <span>{request.technicalContactEmail}</span>
+                    </div>
+                  )}
+                  {request.technicalContactPhone && (
+                    <div className="flex items-center gap-2 text-sm text-ww-gray-700">
+                      <Phone size={14} className="text-ww-gray-400" />
+                      <span>{request.technicalContactPhone}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Integration Details */}
@@ -344,6 +453,14 @@ export function ReviewerRequestDetail({ onRefresh }: { onRefresh: () => void }) 
               <p className="text-xs text-ww-gray-400 font-medium font-mono uppercase tracking-wide mb-1">Use Case Detail</p>
               <p className="text-sm text-ww-gray-700 leading-relaxed">{request.useCaseDetail}</p>
             </div>
+            {request.endpointsRequested && (
+              <div className="mt-4">
+                <p className="text-xs text-ww-gray-400 font-medium font-mono uppercase tracking-wide mb-1">Endpoints Requested</p>
+                <pre className="text-sm text-ww-gray-700 leading-relaxed font-mono whitespace-pre-wrap bg-ww-gray-50 border border-ww-gray-100 rounded-md p-3">
+                  {request.endpointsRequested}
+                </pre>
+              </div>
+            )}
           </div>
 
           {/* Data Access */}
@@ -651,6 +768,96 @@ export function ReviewerRequestDetail({ onRefresh }: { onRefresh: () => void }) 
                   </button>
                 </div>
               )}
+            </div>
+
+            {/* Endpoints Approved Panel */}
+            {request.endpointsRequested && (
+              <div className="bg-white rounded-md border border-ww-gray-200 p-5">
+                <h3 className="text-sm font-display font-mono font-semibold text-ww-gray-900 uppercase tracking-wide mb-4 flex items-center gap-2">
+                  <FileText size={14} className="text-ww-navy" />
+                  Endpoints Approved
+                </h3>
+
+                {/* Read-only reference of requested endpoints */}
+                <div className="mb-4">
+                  <p className="text-xs text-ww-gray-400 font-medium font-mono uppercase tracking-wide mb-1">Requested</p>
+                  <pre className="text-xs text-ww-gray-600 leading-relaxed font-mono whitespace-pre-wrap bg-ww-gray-50 border border-ww-gray-100 rounded-md p-2.5">
+                    {request.endpointsRequested}
+                  </pre>
+                </div>
+
+                {/* Editable approved endpoints */}
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-xs font-medium text-ww-gray-600 mb-1">Approved Endpoints</label>
+                    <textarea
+                      value={endpointsApprovedText}
+                      onChange={e => setEndpointsApprovedText(e.target.value)}
+                      placeholder="Enter approved endpoints (one per line)..."
+                      rows={4}
+                      className="w-full px-2.5 py-1.5 rounded-md border border-ww-gray-200 text-sm text-ww-gray-900 placeholder:text-ww-gray-400 focus:outline-none focus:ring-2 focus:ring-ww-primary/30 focus:border-ww-primary resize-none font-mono"
+                    />
+                  </div>
+                  <button
+                    onClick={handleSaveEndpointsApproved}
+                    disabled={!endpointsApprovedText.trim()}
+                    className={`w-full flex items-center justify-center gap-1.5 py-2 rounded-md text-sm font-semibold transition-colors ${
+                      endpointsApprovedText.trim()
+                        ? 'bg-ww-navy text-white hover:bg-ww-navy-light'
+                        : 'bg-ww-gray-200 text-ww-gray-400 cursor-not-allowed'
+                    }`}
+                  >
+                    <Save size={14} />
+                    {endpointsApprovedSaved ? 'Saved!' : request.endpointsApproved ? 'Update Approved Endpoints' : 'Save Approved Endpoints'}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Internal Notes Panel */}
+            <div className="bg-white rounded-md border border-ww-gray-200 p-5">
+              <h3 className="text-sm font-display font-mono font-semibold text-ww-gray-900 uppercase tracking-wide mb-4 flex items-center gap-2">
+                <StickyNote size={14} className="text-ww-navy" />
+                Internal Notes
+              </h3>
+
+              {/* Existing notes */}
+              {request.reviewerNotes && request.reviewerNotes.length > 0 ? (
+                <div className="space-y-3 mb-4">
+                  {request.reviewerNotes.map(note => (
+                    <div key={note.id} className="p-3 rounded-md bg-ww-gray-50 border border-ww-gray-100">
+                      <p className="text-sm text-ww-gray-700 leading-relaxed">{note.content}</p>
+                      <p className="text-[10px] font-mono text-ww-gray-400 mt-2">
+                        {note.author} &middot; {formatDateTime(note.createdAt)}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-xs text-ww-gray-400 italic mb-4">No internal notes yet.</p>
+              )}
+
+              {/* Add note */}
+              <div className="space-y-3">
+                <textarea
+                  value={noteContent}
+                  onChange={e => setNoteContent(e.target.value)}
+                  placeholder="Add an internal note..."
+                  rows={3}
+                  className="w-full px-2.5 py-1.5 rounded-md border border-ww-gray-200 text-sm text-ww-gray-900 placeholder:text-ww-gray-400 focus:outline-none focus:ring-2 focus:ring-ww-primary/30 focus:border-ww-primary resize-none"
+                />
+                <button
+                  onClick={handleAddNote}
+                  disabled={!noteContent.trim()}
+                  className={`w-full py-2 rounded-md text-sm font-semibold transition-colors ${
+                    noteContent.trim()
+                      ? 'bg-ww-navy text-white hover:bg-ww-navy-light'
+                      : 'bg-ww-gray-200 text-ww-gray-400 cursor-not-allowed'
+                  }`}
+                >
+                  Add Note
+                </button>
+              </div>
             </div>
 
             {/* Pricing Panel — visible for approved requests */}

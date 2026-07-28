@@ -113,12 +113,28 @@ export interface ApiRequest {
   dataRead: DataCategory[]
   dataWrite: DataCategory[]
   dataLeavesEnvironment: boolean
+  endpointsRequested: string
+  endpointsApproved: string | null
+  thirdPartyTool: string | null
+  thirdPartyToolUrl: string | null
+  technicalContactName: string | null
+  technicalContactEmail: string | null
+  technicalContactPhone: string | null
+  targetTimeline: string | null
+  reviewerNotes: ReviewerNote[]
   environment: Environment
   status: RequestStatus
   agreementSignedAt: string | null
   pricing: ApiPricing | null  // set by reviewer after approval
   createdAt: string
   updatedAt: string
+}
+
+export interface ReviewerNote {
+  id: string
+  author: string
+  content: string
+  createdAt: string
 }
 
 export interface Approval {

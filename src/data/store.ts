@@ -11,6 +11,7 @@ import type {
   ApiRequest,
   ApiPricing,
   Approval,
+  ReviewerNote,
   ViewMode,
   RequestStatus,
   ApprovalStage,
@@ -29,7 +30,7 @@ import {
 
 // ── Storage helpers ──────────────────────────────────────────────
 
-const SEED_VERSION = '3'
+const SEED_VERSION = '4'
 const PREFIX = 'ww-api-portal:'
 
 function key(name: string): string {
@@ -168,7 +169,7 @@ export const store = {
     return `WW-API-${String(max + 1).padStart(4, '0')}`
   },
 
-  createRequest(req: Omit<ApiRequest, 'id' | 'caseNumber' | 'createdAt' | 'updatedAt' | 'status' | 'agreementSignedAt' | 'pricing'>): ApiRequest {
+  createRequest(req: Omit<ApiRequest, 'id' | 'caseNumber' | 'createdAt' | 'updatedAt' | 'status' | 'agreementSignedAt' | 'pricing' | 'endpointsApproved' | 'reviewerNotes'>): ApiRequest {
     const requests = this.getRequests()
     const newReq: ApiRequest = {
       ...req,
@@ -177,6 +178,8 @@ export const store = {
       status: 'pending_agreement',
       agreementSignedAt: null,
       pricing: null,
+      endpointsApproved: null,
+      reviewerNotes: [],
       createdAt: now(),
       updatedAt: now(),
     }
@@ -245,6 +248,38 @@ export const store = {
     requests[idx] = { ...requests[idx], pricing, updatedAt: now() }
     save('requests', requests)
     return requests[idx]
+  },
+
+  // ── Endpoints Approved ──────────────────────────────────────
+
+  setEndpointsApproved(requestId: string, endpoints: string): ApiRequest | undefined {
+    const requests = this.getRequests()
+    const idx = requests.findIndex(r => r.id === requestId)
+    if (idx === -1) return undefined
+    requests[idx] = { ...requests[idx], endpointsApproved: endpoints, updatedAt: now() }
+    save('requests', requests)
+    return requests[idx]
+  },
+
+  // ── Reviewer Notes ────────────────────────────────────────
+
+  addReviewerNote(requestId: string, author: string, content: string): ReviewerNote | undefined {
+    const requests = this.getRequests()
+    const idx = requests.findIndex(r => r.id === requestId)
+    if (idx === -1) return undefined
+    const note: ReviewerNote = {
+      id: `note-${uid()}`,
+      author,
+      content,
+      createdAt: now(),
+    }
+    requests[idx] = {
+      ...requests[idx],
+      reviewerNotes: [...requests[idx].reviewerNotes, note],
+      updatedAt: now(),
+    }
+    save('requests', requests)
+    return note
   },
 
   // ── Approvals ────────────────────────────────────────────────

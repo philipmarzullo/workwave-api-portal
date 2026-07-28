@@ -111,6 +111,28 @@ export function Confirmation() {
                 {request.environment}
               </dd>
             </div>
+            {request.targetTimeline && (
+              <div className="flex justify-between">
+                <dt className="text-sm text-ww-gray-500">Target Timeline</dt>
+                <dd className="text-sm text-ww-gray-800">
+                  {request.targetTimeline === 'asap' ? 'As soon as possible'
+                    : request.targetTimeline === 'this_quarter' ? 'This quarter'
+                    : request.targetTimeline === 'next_quarter' ? 'Next quarter'
+                    : request.targetTimeline === 'exploring' ? 'Just exploring'
+                    : request.targetTimeline}
+                </dd>
+              </div>
+            )}
+            {request.endpointsRequested && (
+              <div className="pt-1">
+                <dt className="text-sm text-ww-gray-500 mb-1">Endpoints Requested</dt>
+                <dd className="text-xs font-mono text-ww-gray-700 bg-ww-gray-50 border border-ww-gray-100 rounded-md p-2 whitespace-pre-wrap leading-relaxed">
+                  {request.endpointsRequested.length > 200
+                    ? request.endpointsRequested.slice(0, 200) + '...'
+                    : request.endpointsRequested}
+                </dd>
+              </div>
+            )}
           </dl>
         </div>
       </div>
