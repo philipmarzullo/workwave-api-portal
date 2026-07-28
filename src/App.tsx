@@ -8,13 +8,14 @@ import {
   ClipboardList,
   Eye,
   Users,
+  Search,
 } from 'lucide-react'
 import { store } from '@/data/store'
 import type { ViewMode, CustomerUser } from '@/data/types'
 import { Directory } from '@/views/Directory'
 import { RequestForm } from '@/views/RequestForm'
-import { MyRequests } from '@/views/MyRequests'
-import { RequestDetail } from '@/views/RequestDetail'
+import { Confirmation } from '@/views/Confirmation'
+import { CheckStatus } from '@/views/CheckStatus'
 import { ReviewerQueue } from '@/views/ReviewerQueue'
 import { ReviewerRequestDetail } from '@/views/ReviewerRequestDetail'
 import { PartnerDetail } from '@/views/PartnerDetail'
@@ -22,9 +23,13 @@ import { PartnerDetail } from '@/views/PartnerDetail'
 // ── Product labels ──────────────────────────────────────────────
 
 export const PRODUCT_LABELS: Record<string, string> = {
-  winteam: 'WinTeam',
   pestpac: 'PestPac',
   realgreen: 'RealGreen',
+  winteam: 'WinTeam',
+  lighthouse: 'Lighthouse',
+  timegate_plus: 'Timegate+',
+  route_manager: 'RouteManager',
+  hire: 'Hire by WorkWave',
   service_ceo: 'ServiceCEO',
 }
 
@@ -122,7 +127,7 @@ export default function App() {
   // Customer nav items
   const customerNav = [
     { path: '/', label: 'Partner Directory', icon: Globe },
-    { path: '/my-requests', label: 'My Requests', icon: ClipboardList },
+    { path: '/check-status', label: 'Check Status', icon: Search },
   ]
 
   // Reviewer nav items
@@ -275,8 +280,8 @@ export default function App() {
             {/* Customer routes */}
             <Route path="/" element={<Directory activeUser={activeUser} />} />
             <Route path="/request/:partnerId?" element={<RequestForm activeUser={activeUser} onSubmit={refresh} />} />
-            <Route path="/my-requests" element={<MyRequests activeUser={activeUser} onRefresh={refresh} />} />
-            <Route path="/my-requests/:requestId" element={<RequestDetail onRefresh={refresh} />} />
+            <Route path="/confirmation/:requestId" element={<Confirmation />} />
+            <Route path="/check-status" element={<CheckStatus />} />
 
             {/* Reviewer routes */}
             <Route path="/reviewer" element={<ReviewerQueue />} />

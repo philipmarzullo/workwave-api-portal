@@ -28,7 +28,7 @@ import {
 
 // ── Storage helpers ──────────────────────────────────────────────
 
-const SEED_VERSION = '1'
+const SEED_VERSION = '2'
 const PREFIX = 'ww-api-portal:'
 
 function key(name: string): string {
@@ -137,6 +137,10 @@ export const store = {
     return this.getRequests().find(r => r.id === id)
   },
 
+  getRequestByCaseNumber(caseNumber: string): ApiRequest | undefined {
+    return this.getRequests().find(r => r.caseNumber === caseNumber.toUpperCase())
+  },
+
   getRequestsForCustomer(customerId: string): ApiRequest[] {
     return this.getRequests().filter(r => r.customerId === customerId)
   },
@@ -150,11 +154,25 @@ export const store = {
     return this.getRequests().filter(r => pendingStatuses.includes(r.status))
   },
 
-  createRequest(req: Omit<ApiRequest, 'id' | 'createdAt' | 'updatedAt' | 'status' | 'agreementSignedAt'>): ApiRequest {
+  nextCaseNumber(): string {
+    const requests = this.getRequests()
+    let max = 0
+    for (const r of requests) {
+      const match = r.caseNumber?.match(/WW-API-(\d+)/)
+      if (match) {
+        const n = parseInt(match[1], 10)
+        if (n > max) max = n
+      }
+    }
+    return `WW-API-${String(max + 1).padStart(4, '0')}`
+  },
+
+  createRequest(req: Omit<ApiRequest, 'id' | 'caseNumber' | 'createdAt' | 'updatedAt' | 'status' | 'agreementSignedAt'>): ApiRequest {
     const requests = this.getRequests()
     const newReq: ApiRequest = {
       ...req,
       id: `req-${uid()}`,
+      caseNumber: this.nextCaseNumber(),
       status: 'pending_agreement',
       agreementSignedAt: null,
       createdAt: now(),

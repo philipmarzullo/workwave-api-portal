@@ -1,5 +1,5 @@
 // Product lines
-export type WorkWaveProduct = 'winteam' | 'pestpac' | 'realgreen' | 'service_ceo'
+export type WorkWaveProduct = 'pestpac' | 'realgreen' | 'winteam' | 'lighthouse' | 'timegate_plus' | 'route_manager' | 'hire' | 'service_ceo'
 
 // Partner tiers
 export type PartnerTier = 'approved' | 'under_review' | 'unapproved'
@@ -88,6 +88,7 @@ export interface PartnerCustomer {
 
 export interface ApiRequest {
   id: string
+  caseNumber: string  // human-readable case number, e.g. WW-API-0042
   customerId: string
   requestedBy: string  // CustomerUser.id
   partnerId: string | null  // null for unlisted partner

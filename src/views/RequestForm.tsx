@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import {
   Lock, ChevronRight, ChevronLeft, CheckCircle2,
@@ -44,6 +44,11 @@ const ALL_DATA_CATEGORIES: DataCategory[] = [
   'service_history',
   'estimates',
   'documents',
+]
+
+const ALL_PRODUCTS: WorkWaveProduct[] = [
+  'pestpac', 'realgreen', 'winteam', 'lighthouse',
+  'timegate_plus', 'route_manager', 'hire', 'service_ceo',
 ]
 
 const ALL_BUILDER_TYPES: BuilderType[] = ['partner', 'internal_team', 'contractor']
@@ -112,8 +117,6 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
   const { partnerId } = useParams<{ partnerId?: string }>()
 
   const partner = partnerId ? store.getPartner(partnerId) : undefined
-  const customer = activeUser ? store.getCustomer(activeUser.customerId) : undefined
-  const customerProducts = customer?.products ?? []
 
   // Step state
   const [currentStep, setCurrentStep] = useState(0)
@@ -161,12 +164,7 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
   // Submitting state
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  // Auto-select product if customer has exactly one
-  useEffect(() => {
-    if (customerProducts.length === 1 && !selectedProduct) {
-      setSelectedProduct(customerProducts[0])
-    }
-  }, [customerProducts, selectedProduct])
+  // Reserved for future auto-selection logic
 
   // ── Locked state ──────────────────────────────────────────────
   if (!activeUser || !activeUser.canRequestApi) {
@@ -195,7 +193,7 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
     if (partnerWebsite.trim()) return true
     if (partnerContact.trim()) return true
     if (partnerContactName.trim()) return true
-    if (selectedProduct && customerProducts.length !== 1) return true
+    if (selectedProduct) return true
     if (builderType) return true
     if (connectingSystem.trim()) return true
     if (useCase) return true
@@ -310,7 +308,7 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
       })
 
       store.signAgreement(newRequest.id)
-      navigate(`/my-requests/${newRequest.id}`)
+      navigate(`/confirmation/${newRequest.id}`)
       onSubmit()
     } catch {
       setIsSubmitting(false)
@@ -563,64 +561,43 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
             WorkWave Product <span className="text-ww-red">*</span>
           </label>
           <p className="text-xs text-ww-gray-500 mb-3">
-            Select the WorkWave product you want to integrate with.
+            Which WorkWave product does this integration connect to?
           </p>
 
-          {customerProducts.length === 1 ? (
-            /* Single product: read-only confirmed value */
-            <div className="flex items-center gap-3 px-4 py-3.5 rounded-md border-2 border-ww-green/40 bg-emerald-50/50">
-              <CheckCircle2 size={18} className="text-ww-green shrink-0" />
-              <div>
-                <span className="text-sm font-medium text-ww-gray-800">
-                  {PRODUCT_LABELS[customerProducts[0]] ?? customerProducts[0]}
-                </span>
-                <p className="text-xs text-ww-gray-500 mt-0.5">
-                  Your organization is licensed for {PRODUCT_LABELS[customerProducts[0]] ?? customerProducts[0]}
-                </p>
-              </div>
-            </div>
-          ) : (
-            <div className="space-y-2.5">
-              {customerProducts.map(product => (
-                <label
-                  key={product}
-                  className={`relative flex items-center gap-3 px-4 py-3.5 rounded-md border-2 cursor-pointer transition-all ${
-                    selectedProduct === product
-                      ? 'border-ww-primary bg-ww-sky/30'
-                      : 'border-ww-gray-200 bg-white hover:border-ww-gray-300'
+          <div className="grid grid-cols-2 gap-2">
+            {ALL_PRODUCTS.map(product => (
+              <label
+                key={product}
+                className={`relative flex items-center gap-3 px-4 py-3 rounded-md border-2 cursor-pointer transition-all ${
+                  selectedProduct === product
+                    ? 'border-ww-primary bg-ww-sky/30'
+                    : 'border-ww-gray-200 bg-white hover:border-ww-gray-300'
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="product"
+                  value={product}
+                  checked={selectedProduct === product}
+                  onChange={() => {
+                    setSelectedProduct(product)
+                    touch('selectedProduct')
+                  }}
+                  className="sr-only"
+                />
+                <RadioDot selected={selectedProduct === product} />
+                <span
+                  className={`text-sm font-medium ${
+                    selectedProduct === product ? 'text-ww-gray-800' : 'text-ww-gray-700'
                   }`}
                 >
-                  <input
-                    type="radio"
-                    name="product"
-                    value={product}
-                    checked={selectedProduct === product}
-                    onChange={() => {
-                      setSelectedProduct(product)
-                      touch('selectedProduct')
-                    }}
-                    className="sr-only"
-                  />
-                  <RadioDot selected={selectedProduct === product} />
-                  <span
-                    className={`text-sm font-medium ${
-                      selectedProduct === product ? 'text-ww-gray-800' : 'text-ww-gray-700'
-                    }`}
-                  >
-                    {PRODUCT_LABELS[product] ?? product}
-                  </span>
-                </label>
-              ))}
-            </div>
-          )}
+                  {PRODUCT_LABELS[product] ?? product}
+                </span>
+              </label>
+            ))}
+          </div>
 
           {touched.selectedProduct && !selectedProduct && renderError('This field is required')}
-
-          {customerProducts.length === 0 && (
-            <p className="text-xs text-ww-gray-400 italic mt-2">
-              No products found for your account.
-            </p>
-          )}
         </div>
 
         {/* Builder type */}
@@ -879,7 +856,7 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
           <div className="bg-ww-gray-50 border border-ww-gray-200 rounded-lg p-4 mb-5">
             <p className="text-sm text-ww-gray-700">
               Requesting as <span className="font-medium text-ww-gray-800">{activeUser!.name}</span>{' '}
-              ({activeUser!.email}) — {customer?.name ?? 'Unknown Company'}
+              ({activeUser!.email}) — {store.getCustomer(activeUser!.customerId)?.name ?? 'Unknown Company'}
             </p>
           </div>
 
