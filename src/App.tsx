@@ -5,7 +5,6 @@ import {
   ChevronDown,
   RotateCcw,
   Globe,
-  Send,
   ClipboardList,
   Eye,
   Users,
@@ -289,7 +288,7 @@ export default function App() {
           <Route path="/" element={<Directory activeUser={activeUser} />} />
           <Route path="/request/:partnerId?" element={<RequestForm activeUser={activeUser} onSubmit={refresh} />} />
           <Route path="/my-requests" element={<MyRequests activeUser={activeUser} onRefresh={refresh} />} />
-          <Route path="/my-requests/:requestId" element={<RequestDetail activeUser={activeUser} onRefresh={refresh} />} />
+          <Route path="/my-requests/:requestId" element={<RequestDetail onRefresh={refresh} />} />
 
           {/* Reviewer routes */}
           <Route path="/reviewer" element={<ReviewerQueue />} />

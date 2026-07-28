@@ -5,7 +5,6 @@ import {
   ChevronRight,
   ChevronLeft,
   CheckCircle2,
-  Circle,
   Building2,
   Settings2,
   ClipboardCheck,
@@ -179,7 +178,7 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
   // ── Submit ────────────────────────────────────────────────────
 
   function handleSubmit() {
-    if (!canProceed() || isSubmitting) return
+    if (!activeUser || !canProceed() || isSubmitting) return
     setIsSubmitting(true)
 
     try {

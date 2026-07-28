@@ -17,7 +17,7 @@ import {
   Link2,
 } from 'lucide-react'
 import { store } from '@/data/store'
-import type { CustomerUser, ApprovalDecision } from '@/data/types'
+import type { ApprovalDecision } from '@/data/types'
 import {
   PRODUCT_LABELS,
   STATUS_LABELS,
@@ -27,7 +27,6 @@ import {
 } from '@/App'
 
 interface RequestDetailProps {
-  activeUser?: CustomerUser
   onRefresh: () => void
 }
 
@@ -87,7 +86,7 @@ const DECISION_CONFIG: Record<
   },
 }
 
-export function RequestDetail({ activeUser, onRefresh }: RequestDetailProps) {
+export function RequestDetail({ onRefresh }: RequestDetailProps) {
   const { requestId } = useParams<{ requestId: string }>()
   const navigate = useNavigate()
 
@@ -403,7 +402,7 @@ export function RequestDetail({ activeUser, onRefresh }: RequestDetailProps) {
                 <div className="absolute left-[7px] top-2 bottom-2 w-0.5 bg-ww-gray-100" />
 
                 <div className="space-y-5">
-                  {approvals.map((approval, idx) => {
+                  {approvals.map((approval) => {
                     const config = DECISION_CONFIG[approval.decision]
                     const Icon = config.icon
 
