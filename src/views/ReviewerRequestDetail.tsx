@@ -35,15 +35,9 @@ import {
   TIER_LABELS,
   USE_CASE_LABELS,
   DATA_CATEGORY_LABELS,
+  STAGE_LABELS,
+  STAGE_REVIEWER_ROLES,
 } from '@/App'
-
-const STAGE_LABELS: Record<string, string> = {
-  initial_review: 'Initial Review',
-  security_review: 'Security Review',
-  legal_review: 'Legal Review',
-  sandbox_approval: 'Sandbox Approval',
-  production_approval: 'Production Approval',
-}
 
 const BUILDER_TYPE_LABELS: Record<string, string> = {
   partner: 'Partner',
@@ -207,12 +201,12 @@ export function ReviewerRequestDetail({ onRefresh }: { onRefresh: () => void }) 
     onRefresh()
   }
 
-  const stageOptions: { value: ApprovalStage; label: string }[] = [
-    { value: 'initial_review', label: 'Initial Review' },
-    { value: 'security_review', label: 'Security Review' },
-    { value: 'legal_review', label: 'Legal Review' },
-    { value: 'sandbox_approval', label: 'Sandbox Approval' },
-    { value: 'production_approval', label: 'Production Approval' },
+  const stageOptions: { value: ApprovalStage; label: string; role: string }[] = [
+    { value: 'initial_review', label: 'Initial Review', role: STAGE_REVIEWER_ROLES.initial_review.role },
+    { value: 'security_review', label: 'Security Review', role: STAGE_REVIEWER_ROLES.security_review.role },
+    { value: 'legal_review', label: 'Legal Review', role: STAGE_REVIEWER_ROLES.legal_review.role },
+    { value: 'sandbox_approval', label: 'Sandbox Approval', role: STAGE_REVIEWER_ROLES.sandbox_approval.role },
+    { value: 'production_approval', label: 'Production Approval', role: STAGE_REVIEWER_ROLES.production_approval.role },
   ]
 
   return (
@@ -549,7 +543,11 @@ export function ReviewerRequestDetail({ onRefresh }: { onRefresh: () => void }) 
                           </span>
                         </div>
                         <p className="text-xs text-ww-gray-400 mt-0.5 font-mono">
-                          {appr.reviewer} &middot; {formatDateTime(appr.decidedAt)}
+                          {appr.reviewer}
+                          {STAGE_REVIEWER_ROLES[appr.stage] && (
+                            <span className="text-ww-gray-300"> ({STAGE_REVIEWER_ROLES[appr.stage].team})</span>
+                          )}
+                          {' '}&middot; {formatDateTime(appr.decidedAt)}
                         </p>
                         <p className="text-sm text-ww-gray-600 mt-1 leading-relaxed">{appr.rationale}</p>
                       </div>
@@ -673,7 +671,12 @@ export function ReviewerRequestDetail({ onRefresh }: { onRefresh: () => void }) 
                         onClick={() => setStageDropdownOpen(!stageDropdownOpen)}
                         className="w-full flex items-center justify-between px-3 py-2 rounded-md border border-ww-gray-200 bg-white text-sm text-ww-gray-900 hover:border-ww-gray-300 transition-colors"
                       >
-                        <span>{STAGE_LABELS[stage]}</span>
+                        <div className="flex items-center gap-2">
+                          <span>{STAGE_LABELS[stage]}</span>
+                          <span className="text-[10px] font-mono text-ww-gray-400 bg-ww-gray-100 px-1.5 py-0.5 rounded">
+                            {STAGE_REVIEWER_ROLES[stage]?.role}
+                          </span>
+                        </div>
                         <ChevronDown size={14} className="text-ww-gray-400" />
                       </button>
                       {stageDropdownOpen && (
@@ -691,7 +694,10 @@ export function ReviewerRequestDetail({ onRefresh }: { onRefresh: () => void }) 
                                   stage === opt.value ? 'bg-ww-sky text-ww-navy font-medium' : 'text-ww-gray-700'
                                 }`}
                               >
-                                {opt.label}
+                                <div className="flex items-center justify-between">
+                                  <span>{opt.label}</span>
+                                  <span className="text-[10px] font-mono text-ww-gray-400">{opt.role}</span>
+                                </div>
                               </button>
                             ))}
                           </div>

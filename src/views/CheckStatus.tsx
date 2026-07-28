@@ -9,10 +9,13 @@ import {
   Building2,
   Calendar,
   ShieldCheck,
+  Key,
+  FileCode,
+  Headphones,
 } from 'lucide-react'
 import { store } from '@/data/store'
 import type { ApiRequest, Approval } from '@/data/types'
-import { PRODUCT_LABELS, STATUS_LABELS, USE_CASE_LABELS } from '@/App'
+import { PRODUCT_LABELS, STATUS_LABELS, USE_CASE_LABELS, STAGE_LABELS, STAGE_REVIEWER_ROLES } from '@/App'
 
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString('en-US', {
@@ -38,13 +41,7 @@ const DECISION_CONFIG: Record<string, { icon: typeof CheckCircle2; className: st
   needs_info: { icon: AlertCircle, className: 'text-amber-600', label: 'More Info Requested' },
 }
 
-const STAGE_LABELS: Record<string, string> = {
-  initial_review: 'Initial Review',
-  security_review: 'Security Review',
-  legal_review: 'Legal Review',
-  sandbox_approval: 'Sandbox Approval',
-  production_approval: 'Production Approval',
-}
+// STAGE_LABELS and STAGE_REVIEWER_ROLES imported from App
 
 export function CheckStatus() {
   const [query, setQuery] = useState('')
@@ -266,7 +263,7 @@ export function CheckStatus() {
                               {approval.rationale}
                             </p>
                             <div className="text-[10px] font-mono text-ww-gray-400">
-                              {formatDateTime(approval.decidedAt)}
+                              {STAGE_REVIEWER_ROLES[approval.stage]?.team ?? 'Review Team'} &middot; {formatDateTime(approval.decidedAt)}
                             </div>
                           </div>
                         </div>
@@ -277,6 +274,49 @@ export function CheckStatus() {
               )}
             </div>
           </div>
+
+          {/* Next Steps — shown for approved requests */}
+          {(result.status === 'sandbox_approved' || result.status === 'production_approved') && (
+            <div className="bg-white rounded-md border border-emerald-200">
+              <div className="px-6 py-5">
+                <div className="flex items-center gap-2 mb-4">
+                  <CheckCircle2 size={13} className="text-emerald-600" />
+                  <span className="text-[10px] font-mono font-medium text-emerald-600 uppercase tracking-[0.08em]">
+                    Approved — Next Steps
+                  </span>
+                </div>
+                <div className="space-y-3">
+                  <div className="flex items-start gap-3">
+                    <Key size={14} className="text-ww-gray-400 shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-sm font-medium text-ww-gray-800">Credential Delivery</p>
+                      <p className="text-xs text-ww-gray-500 leading-relaxed">
+                        API credentials and {result.status === 'production_approved' ? 'production' : 'sandbox'} access keys will be delivered to your technical contact via secure email.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <FileCode size={14} className="text-ww-gray-400 shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-sm font-medium text-ww-gray-800">Integration Setup</p>
+                      <p className="text-xs text-ww-gray-500 leading-relaxed">
+                        Your approved endpoints and rate limits are documented in the credentials package. Refer to the API documentation for integration guidance.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <Headphones size={14} className="text-ww-gray-400 shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-sm font-medium text-ww-gray-800">Support</p>
+                      <p className="text-xs text-ww-gray-500 leading-relaxed">
+                        Contact your CSM or the API team for onboarding assistance. Reference your case number in all communications.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       )}
 

@@ -62,6 +62,22 @@ export const USE_CASE_LABELS: Record<string, string> = {
   other: 'Other',
 }
 
+export const STAGE_LABELS: Record<string, string> = {
+  initial_review: 'Initial Review',
+  security_review: 'Security Review',
+  legal_review: 'Legal Review',
+  sandbox_approval: 'Sandbox Approval',
+  production_approval: 'Production Approval',
+}
+
+export const STAGE_REVIEWER_ROLES: Record<string, { role: string; team: string }> = {
+  initial_review: { role: 'CSM', team: 'Customer Success' },
+  security_review: { role: 'Security Analyst', team: 'InfoSec' },
+  legal_review: { role: 'Legal Counsel', team: 'Legal' },
+  sandbox_approval: { role: 'API Engineer', team: 'API Team' },
+  production_approval: { role: 'API Team Lead', team: 'API Team' },
+}
+
 export const DATA_CATEGORY_LABELS: Record<string, string> = {
   customers: 'Customers',
   appointments: 'Appointments',

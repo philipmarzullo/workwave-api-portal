@@ -194,8 +194,8 @@ export const seedPartners: Partner[] = [
 export const seedCustomers: Customer[] = [
   { id: 'cust-001', name: 'Greenleaf Pest Solutions', products: ['pestpac', 'route_manager'], plan: 'professional' },
   { id: 'cust-002', name: 'Summit Facility Services', products: ['winteam', 'timegate_plus', 'lighthouse'], plan: 'enterprise' },
-  { id: 'cust-003', name: 'Patriot Pest Management', products: ['pestpac', 'realgreen', 'route_manager'], plan: 'enterprise' },
-  { id: 'cust-004', name: 'Guardian Pest & Termite', products: ['pestpac', 'realgreen', 'route_manager'], plan: 'enterprise' },
+  { id: 'cust-003', name: 'Patriot Pest Management', products: ['pestpac', 'realgreen', 'route_manager', 'timegate_plus'], plan: 'enterprise' },
+  { id: 'cust-004', name: 'Guardian Pest & Termite', products: ['pestpac', 'realgreen', 'route_manager', 'lighthouse'], plan: 'enterprise' },
   { id: 'cust-005', name: 'Apex Lawn Management', products: ['realgreen', 'route_manager', 'hire'], plan: 'enterprise' },
 ]
 
@@ -332,16 +332,16 @@ export const seedRequests: ApiRequest[] = [
     partnerNameFreetext: null,
     partnerWebsite: null,
     partnerContact: null,
-    product: 'pestpac',
+    product: 'timegate_plus',
     builderType: 'partner',
     connectingSystem: 'Stripe Payments API',
     useCase: 'payment_processing',
-    useCaseDetail: 'Process customer payments through Stripe from PestPac. Supports credit cards, ACH, and digital wallets for pest control service invoices.',
+    useCaseDetail: 'Process customer payments through Stripe from Timegate+. Supports credit cards, ACH, and digital wallets for security service invoices.',
     dataRead: ['invoices', 'payments', 'customers'],
     dataWrite: ['payments'],
     dataLeavesEnvironment: true,
-    endpointsRequested: 'PestPac.invoices-V3 GET\nPestPac.payments-V2 GET/POST\nPestPac.customers-V2 GET',
-    endpointsApproved: 'PestPac.invoices-V3 GET\nPestPac.payments-V2 GET/POST\nPestPac.customers-V2 GET',
+    endpointsRequested: 'Timegate.invoices-V2 GET\nTimegate.payments-V1 GET/POST\nTimegate.customers-V2 GET',
+    endpointsApproved: 'Timegate.invoices-V2 GET\nTimegate.payments-V1 GET/POST\nTimegate.customers-V2 GET',
     thirdPartyTool: null,
     thirdPartyToolUrl: null,
     technicalContactName: 'Robert Chen',
@@ -578,15 +578,15 @@ export const seedRequests: ApiRequest[] = [
     partnerNameFreetext: null,
     partnerWebsite: null,
     partnerContact: null,
-    product: 'pestpac',
+    product: 'lighthouse',
     builderType: 'partner',
     connectingSystem: 'Google Maps Platform',
     useCase: 'fleet_tracking',
-    useCaseDetail: 'Promote existing sandbox integration to production. Google Maps Platform needs production-level access to geocode customer addresses and render technician routes for Guardian Pest.',
+    useCaseDetail: 'Promote existing sandbox integration to production. Google Maps Platform needs production-level access to geocode customer addresses and render technician routes for Guardian Pest via Lighthouse.',
     dataRead: ['customers', 'appointments', 'service_history', 'routes'],
     dataWrite: [],
     dataLeavesEnvironment: true,
-    endpointsRequested: 'PestPac.customers-V2 GET\nPestPac.appointments-V2 GET\nPestPac.serviceHistory-V1 GET\nPestPac.routes-V1 GET',
+    endpointsRequested: 'Lighthouse.customers-V2 GET\nLighthouse.appointments-V2 GET\nLighthouse.serviceHistory-V1 GET\nLighthouse.routes-V1 GET',
     endpointsApproved: null,
     thirdPartyTool: null,
     thirdPartyToolUrl: null,
@@ -687,14 +687,14 @@ export const seedApprovals: Approval[] = [
     decidedAt: '2026-02-10T09:15:00Z',
   },
 
-  // req-003: Stripe + Patriot Pest (sandbox approved) — 3 approvals
+  // req-003: Stripe + Patriot Pest / Timegate+ (sandbox approved) — 3 approvals
   {
     id: 'appr-009',
     requestId: 'req-003',
     reviewer: 'Sarah Mitchell',
     stage: 'initial_review',
     decision: 'approved',
-    rationale: 'Stripe is an approved partner with active MSA. Payment processing is a standard integration use case.',
+    rationale: 'Stripe is an approved partner with active MSA. Payment processing is a standard integration use case for Timegate+.',
     decidedAt: '2026-04-12T10:00:00Z',
   },
   {
@@ -712,7 +712,7 @@ export const seedApprovals: Approval[] = [
     reviewer: 'Jennifer Liu',
     stage: 'sandbox_approval',
     decision: 'approved',
-    rationale: 'Sandbox integration validated. Payment webhook callbacks processing within SLA. Refund flow tested.',
+    rationale: 'Sandbox integration validated for Timegate+. Payment webhook callbacks processing within SLA. Refund flow tested.',
     decidedAt: '2026-04-22T10:00:00Z',
   },
 
@@ -756,14 +756,14 @@ export const seedApprovals: Approval[] = [
     decidedAt: '2026-04-02T16:30:00Z',
   },
 
-  // req-010: Google Maps Platform + Guardian Pest (pending production review) — 3 approvals
+  // req-010: Google Maps Platform + Guardian Pest / Lighthouse (pending production review) — 3 approvals
   {
     id: 'appr-016',
     requestId: 'req-010',
     reviewer: 'Sarah Mitchell',
     stage: 'initial_review',
     decision: 'approved',
-    rationale: 'Google Maps Platform is an approved partner. Guardian Pest already has active Google Maps integration for route visualization.',
+    rationale: 'Google Maps Platform is an approved partner. Guardian Pest already has active Google Maps integration for route visualization via Lighthouse.',
     decidedAt: '2026-06-18T09:30:00Z',
   },
   {
@@ -781,7 +781,7 @@ export const seedApprovals: Approval[] = [
     reviewer: 'Jennifer Liu',
     stage: 'sandbox_approval',
     decision: 'approved',
-    rationale: 'Sandbox testing for PestPac geocoding integration complete. 30-day parallel run showed 99.8% address match accuracy.',
+    rationale: 'Sandbox testing for Lighthouse geocoding integration complete. 30-day parallel run showed 99.8% address match accuracy.',
     decidedAt: '2026-07-01T14:00:00Z',
   },
 ]
