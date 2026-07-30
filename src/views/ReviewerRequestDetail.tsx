@@ -29,8 +29,10 @@ import {
   ListChecks,
   ArrowUpFromLine,
   Tag,
+  Briefcase,
+  TriangleAlert,
 } from 'lucide-react'
-import type { ApprovalStage, ApprovalDecision, ApiPricing, VolumeTier, ApiCategory } from '@/data/types'
+import type { ApprovalStage, ApprovalDecision, ApiPricing, VolumeTier, ApiCategory, SupportPackage } from '@/data/types'
 import { store, VOLUME_TIERS, suggestTier } from '@/data/store'
 import {
   PRODUCT_LABELS,
@@ -45,6 +47,7 @@ import {
   GATEWAY_LABELS,
   VOLUME_TIER_LABELS,
   API_CATEGORY_LABELS,
+  SUPPORT_PACKAGE_LABELS,
 } from '@/App'
 
 const BUILDER_TYPE_LABELS: Record<string, string> = {
@@ -94,6 +97,13 @@ export function ReviewerRequestDetail({ onRefresh }: { onRefresh: () => void }) 
   const [estimatedVolumeInput, setEstimatedVolumeInput] = useState('')
   const [categoriesRefresh, setCategoriesRefresh] = useState(0)
 
+  // Support package state
+  const [supportPackageSaved, setSupportPackageSaved] = useState(false)
+
+  // Legacy pricing state
+  const [isLegacyPricing, setIsLegacyPricing] = useState(false)
+  const [legacyUseCaseCount, setLegacyUseCaseCount] = useState('1')
+
   // Endpoints approved state
   const [endpointsApprovedText, setEndpointsApprovedText] = useState('')
   const [endpointsApprovedSaved, setEndpointsApprovedSaved] = useState(false)
@@ -106,7 +116,7 @@ export function ReviewerRequestDetail({ onRefresh }: { onRefresh: () => void }) 
   // Provisioning state
   const [provisioningRefresh, setProvisioningRefresh] = useState(0)
 
-  const request = useMemo(() => (requestId ? store.getRequest(requestId) : undefined), [requestId, pricingSaved, endpointsApprovedSaved, noteSubmitted, provisioningRefresh, categoriesRefresh])
+  const request = useMemo(() => (requestId ? store.getRequest(requestId) : undefined), [requestId, pricingSaved, endpointsApprovedSaved, noteSubmitted, provisioningRefresh, categoriesRefresh, supportPackageSaved])
   const customer = useMemo(() => (request ? store.getCustomer(request.customerId) : undefined), [request])
   const requestingUser = useMemo(() => (request ? store.getCustomerUser(request.requestedBy) : undefined), [request])
   const partner = useMemo(() => (request?.partnerId ? store.getPartner(request.partnerId) : undefined), [request])
@@ -226,6 +236,39 @@ export function ReviewerRequestDetail({ onRefresh }: { onRefresh: () => void }) 
     store.setApiCategories(requestId, next.length > 0 ? next : null)
     setCategoriesRefresh(p => p + 1)
     onRefresh()
+  }
+
+  const handleSaveSupportPackage = (pkg: SupportPackage) => {
+    if (!requestId) return
+    store.setSupportPackage(requestId, pkg)
+    setSupportPackageSaved(prev => !prev)
+    onRefresh()
+  }
+
+  const handleSavePricingWithLegacy = () => {
+    if (!requestId) return
+    if (isLegacyPricing) {
+      const count = parseInt(legacyUseCaseCount, 10) || 1
+      const legacyMonthly = count * 330
+      const pricing: ApiPricing = {
+        volumeTier: 1,
+        monthlyRate: legacyMonthly,
+        perCallRate: 0,
+        callsIncluded: 0,
+        notes: pricingNotes.trim() || `Legacy pricing: ${count} use case(s) × $330/mo. Pending migration to volume-based tiers.`,
+        setBy: 'Reviewer',
+        setAt: new Date().toISOString(),
+        pricingModel: 'legacy',
+        legacyUseCaseCount: count,
+        legacyMonthlyCost: legacyMonthly,
+      }
+      store.setPricing(requestId, pricing)
+      setPricingSaved(true)
+      setTimeout(() => setPricingSaved(false), 2000)
+      onRefresh()
+      return
+    }
+    handleSavePricing()
   }
 
   const suggestedTier = request?.estimatedMonthlyVolume ? suggestTier(request.estimatedMonthlyVolume) : null
@@ -1241,6 +1284,129 @@ export function ReviewerRequestDetail({ onRefresh }: { onRefresh: () => void }) 
                       )
                     })}
                   </div>
+                )}
+              </div>
+            )}
+
+            {/* Professional Services Package Panel */}
+            <div className="bg-white rounded-md border border-ww-gray-200 p-5">
+              <h3 className="text-sm font-display font-mono font-semibold text-ww-gray-900 uppercase tracking-wide mb-4 flex items-center gap-2">
+                <Briefcase size={14} className="text-ww-navy" />
+                Professional Services
+              </h3>
+
+              {request.supportPackage && !supportPackageSaved ? (
+                <div className="p-3 rounded-md bg-emerald-50 border border-emerald-200 mb-3">
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <CheckCircle2 size={12} className="text-emerald-600" />
+                    <span className="text-xs font-semibold text-emerald-700">Package Assigned</span>
+                  </div>
+                  <p className="text-sm font-semibold text-ww-gray-900">{SUPPORT_PACKAGE_LABELS[request.supportPackage]?.label ?? request.supportPackage}</p>
+                  <p className="text-xs text-ww-gray-500 mt-0.5">{SUPPORT_PACKAGE_LABELS[request.supportPackage]?.description}</p>
+                  <div className="flex gap-4 mt-2 text-xs">
+                    <span className="font-mono text-ww-gray-600">{SUPPORT_PACKAGE_LABELS[request.supportPackage]?.hours}</span>
+                    <span className="font-semibold text-ww-gray-900">{SUPPORT_PACKAGE_LABELS[request.supportPackage]?.price}</span>
+                  </div>
+                </div>
+              ) : null}
+
+              <p className="text-xs text-ww-gray-500 mb-3">API access requires a bundled consulting package for onboarding and integration support.</p>
+              <div className="space-y-2">
+                {(Object.entries(SUPPORT_PACKAGE_LABELS) as [string, { label: string; description: string; hours: string; price: string }][]).map(([key, info]) => {
+                  const isActive = request.supportPackage === key
+                  return (
+                    <button
+                      key={key}
+                      onClick={() => handleSaveSupportPackage(key as SupportPackage)}
+                      className={`w-full text-left px-3 py-2.5 rounded-md border-2 transition-all ${
+                        isActive
+                          ? 'border-ww-navy bg-ww-sky'
+                          : 'border-ww-gray-200 hover:border-ww-gray-300'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className={`text-xs font-semibold ${isActive ? 'text-ww-navy' : 'text-ww-gray-700'}`}>{info.label}</span>
+                        <div className="flex items-center gap-2 text-[10px] font-mono text-ww-gray-500">
+                          <span>{info.hours}</span>
+                          <span className="font-semibold text-ww-gray-700">{info.price}</span>
+                        </div>
+                      </div>
+                      <p className="text-[10px] text-ww-gray-500 mt-0.5">{info.description}</p>
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+
+            {/* Legacy Pricing Migration Indicator */}
+            {request.pricing?.pricingModel === 'legacy' ? (
+              <div className="bg-amber-50 rounded-md border border-amber-300 p-5">
+                <h3 className="text-sm font-display font-mono font-semibold text-amber-900 uppercase tracking-wide mb-3 flex items-center gap-2">
+                  <TriangleAlert size={14} className="text-amber-600" />
+                  Legacy Pricing Active
+                </h3>
+                <div className="space-y-2 text-xs">
+                  <div className="flex justify-between">
+                    <span className="text-amber-700">Model</span>
+                    <span className="font-semibold text-amber-900">Per Use Case ($330/mo)</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-amber-700">Use Cases</span>
+                    <span className="font-semibold text-amber-900">{request.pricing.legacyUseCaseCount ?? 1}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-amber-700">Monthly Total</span>
+                    <span className="font-semibold text-amber-900">${request.pricing.legacyMonthlyCost?.toLocaleString() ?? '$330'}</span>
+                  </div>
+                  <div className="mt-3 p-2.5 rounded bg-amber-100 border border-amber-200">
+                    <p className="text-[11px] text-amber-800 leading-relaxed">
+                      This customer is on legacy per-use-case pricing. No Salesforce SKUs or billing workflow exist for the new volume-based model yet.
+                      Pricing will migrate to volume tiers once operationalized.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="bg-white rounded-md border border-ww-gray-200 p-5">
+                <h3 className="text-sm font-display font-mono font-semibold text-ww-gray-900 uppercase tracking-wide mb-3 flex items-center gap-2">
+                  <TriangleAlert size={14} className="text-ww-gray-400" />
+                  Pricing Model
+                </h3>
+                <label className="flex items-center gap-2 cursor-pointer mb-3">
+                  <input
+                    type="checkbox"
+                    checked={isLegacyPricing}
+                    onChange={e => setIsLegacyPricing(e.target.checked)}
+                    className="w-3.5 h-3.5 rounded"
+                  />
+                  <span className="text-xs text-ww-gray-700">Flag as legacy pricing ($330/use case)</span>
+                </label>
+                {isLegacyPricing && (
+                  <div className="space-y-2 p-3 rounded-md bg-amber-50 border border-amber-200">
+                    <div className="flex items-center gap-2">
+                      <label className="text-xs text-amber-700 shrink-0">Use Cases:</label>
+                      <input
+                        type="number"
+                        min="1"
+                        value={legacyUseCaseCount}
+                        onChange={e => setLegacyUseCaseCount(e.target.value)}
+                        className="w-16 px-2 py-1 rounded border border-amber-300 text-xs text-ww-gray-900 focus:outline-none focus:ring-2 focus:ring-amber-400/30"
+                      />
+                      <span className="text-xs font-mono text-amber-800">
+                        = ${(parseInt(legacyUseCaseCount, 10) || 1) * 330}/mo
+                      </span>
+                    </div>
+                    <button
+                      onClick={handleSavePricingWithLegacy}
+                      className="w-full py-1.5 rounded-md text-xs font-semibold bg-amber-600 text-white hover:bg-amber-700 transition-colors"
+                    >
+                      {pricingSaved ? 'Saved!' : 'Set Legacy Pricing'}
+                    </button>
+                    <p className="text-[10px] text-amber-600">No Salesforce SKUs exist yet. This flags the request for migration when volume pricing is operationalized.</p>
+                  </div>
+                )}
+                {!isLegacyPricing && (
+                  <p className="text-[10px] text-ww-gray-400">Using volume-based tier pricing (default). Check box above to flag existing customers on legacy per-use-case contracts.</p>
                 )}
               </div>
             )}

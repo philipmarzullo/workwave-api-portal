@@ -132,6 +132,13 @@ export const API_CATEGORY_LABELS: Record<string, { label: string; color: string 
   premium: { label: 'Premium', color: 'bg-purple-100 text-purple-700' },
 }
 
+export const SUPPORT_PACKAGE_LABELS: Record<string, { label: string; description: string; hours: string; price: string }> = {
+  standard: { label: 'Standard Onboarding', description: 'Basic integration support and documentation access', hours: '10 hrs', price: '$5,000' },
+  premium: { label: 'Premium Onboarding', description: 'Dedicated integration engineer, sandbox validation, and go-live support', hours: '25 hrs', price: '$12,500' },
+  enterprise: { label: 'Enterprise', description: 'Custom engagement with dedicated team, architecture review, and ongoing support', hours: 'Custom', price: 'Custom' },
+  none: { label: 'Self-Service', description: 'No professional services — customer manages integration independently', hours: '0 hrs', price: '$0' },
+}
+
 export const API_SUB_CATEGORY_LABELS: Record<string, string> = {
   employee_information: 'Employee Information',
   jobs_work_orders: 'Jobs & Work Orders',

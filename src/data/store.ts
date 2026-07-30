@@ -23,6 +23,7 @@ import type {
   VolumeTier,
   VolumeTierDefinition,
   ApiCategory,
+  SupportPackage,
 } from './types'
 
 import {
@@ -36,7 +37,7 @@ import {
 
 // ── Storage helpers ──────────────────────────────────────────────
 
-const SEED_VERSION = '8'
+const SEED_VERSION = '9'
 const PREFIX = 'ww-api-portal:'
 
 function key(name: string): string {
@@ -219,7 +220,7 @@ export const store = {
     return `WW-API-${String(max + 1).padStart(4, '0')}`
   },
 
-  createRequest(req: Omit<ApiRequest, 'id' | 'caseNumber' | 'createdAt' | 'updatedAt' | 'status' | 'agreementSignedAt' | 'pricing' | 'endpointsApproved' | 'reviewerNotes' | 'provisioningChecklist' | 'gatewayPlatform' | 'estimatedMonthlyVolume' | 'apiCategories'>): ApiRequest {
+  createRequest(req: Omit<ApiRequest, 'id' | 'caseNumber' | 'createdAt' | 'updatedAt' | 'status' | 'agreementSignedAt' | 'pricing' | 'supportPackage' | 'endpointsApproved' | 'reviewerNotes' | 'provisioningChecklist' | 'gatewayPlatform' | 'estimatedMonthlyVolume' | 'apiCategories'>): ApiRequest {
     const requests = this.getRequests()
     const newReq: ApiRequest = {
       ...req,
@@ -228,6 +229,7 @@ export const store = {
       status: 'pending_agreement',
       agreementSignedAt: null,
       pricing: null,
+      supportPackage: null,
       endpointsApproved: null,
       reviewerNotes: [],
       provisioningChecklist: [],
@@ -326,6 +328,15 @@ export const store = {
     const idx = requests.findIndex(r => r.id === requestId)
     if (idx === -1) return undefined
     requests[idx] = { ...requests[idx], apiCategories: categories, updatedAt: now() }
+    save('requests', requests)
+    return requests[idx]
+  },
+
+  setSupportPackage(requestId: string, pkg: SupportPackage): ApiRequest | undefined {
+    const requests = this.getRequests()
+    const idx = requests.findIndex(r => r.id === requestId)
+    if (idx === -1) return undefined
+    requests[idx] = { ...requests[idx], supportPackage: pkg, updatedAt: now() }
     save('requests', requests)
     return requests[idx]
   },

@@ -111,6 +111,12 @@ export type ApiSubCategory =
   | 'employee_information' | 'jobs_work_orders' | 'general'
   | 'payroll_information' | 'financials' | 'schedules' | 'timekeeping_calculations'
 
+// Professional services packages bundled with API access
+export type SupportPackage = 'standard' | 'premium' | 'enterprise' | 'none'
+
+// Pricing model: legacy (per-use-case) vs. volume (new tiered model)
+export type PricingModel = 'volume' | 'legacy'
+
 export interface ApiPricing {
   volumeTier: VolumeTier
   monthlyRate: number
@@ -119,6 +125,9 @@ export interface ApiPricing {
   notes: string
   setBy: string             // reviewer name
   setAt: string             // ISO date
+  pricingModel?: PricingModel       // 'volume' (default) or 'legacy'
+  legacyUseCaseCount?: number       // number of use cases under legacy pricing
+  legacyMonthlyCost?: number        // legacy monthly total ($330/use case)
 }
 
 export interface ApiRequest {
@@ -151,6 +160,7 @@ export interface ApiRequest {
   status: RequestStatus
   agreementSignedAt: string | null
   pricing: ApiPricing | null  // set by reviewer after approval
+  supportPackage: SupportPackage | null  // professional services package
   requestType: RequestType
   migratingFrom: LegacyAccessMethod | null
   provisioningChecklist: ProvisioningStep[]

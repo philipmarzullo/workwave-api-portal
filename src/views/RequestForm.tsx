@@ -1417,9 +1417,42 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
           </div>
         </div>
 
-        {/* ── Terms checkbox ─────────────────────────────────── */}
-        <div className="bg-ww-gray-50 border border-ww-gray-200 rounded-md p-5">
-          <label className="flex items-start gap-3 cursor-pointer">
+        {/* ── Terms & Conditions ────────────────────────────── */}
+        <div className="bg-ww-gray-50 border border-ww-gray-200 rounded-md p-5 space-y-4">
+          <h3 className="font-display font-semibold text-sm text-ww-gray-800 flex items-center gap-2">
+            <AlertTriangle size={14} className="text-amber-500" />
+            API Terms of Use
+          </h3>
+
+          <div className="text-xs text-ww-gray-600 leading-relaxed space-y-2 pl-1">
+            <p>
+              <span className="font-semibold text-ww-gray-800">Authorized Partners Only.</span>{' '}
+              API credentials are issued exclusively for use with WorkWave-approved integration partners.
+              Use of credentials in connection with any unapproved third party, middleware, or data broker
+              is a material breach and will result in immediate revocation of API access.
+            </p>
+            <p>
+              <span className="font-semibold text-ww-gray-800">Credential Sharing Prohibited.</span>{' '}
+              API credentials (client ID, secret, tokens) are non-transferable. You may not share, delegate,
+              or disclose credentials to any third party, including partners, contractors, or affiliated companies,
+              without explicit written authorization from WorkWave. Credential misuse will be detected through
+              traffic monitoring and will result in termination of access.
+            </p>
+            <p>
+              <span className="font-semibold text-ww-gray-800">Data Protection & Usage.</span>{' '}
+              All data accessed through WorkWave APIs remains the property of WorkWave and its customers.
+              Data may not be aggregated, resold, shared with competitors, or used for benchmarking or
+              competitive intelligence purposes. WorkWave reserves the right to audit API usage at any time.
+            </p>
+            <p>
+              <span className="font-semibold text-ww-gray-800">Professional Services.</span>{' '}
+              API access includes a required onboarding consulting package. Integration support, troubleshooting,
+              and technical assistance beyond the included package are available through WorkWave Professional
+              Services at standard consulting rates.
+            </p>
+          </div>
+
+          <label className="flex items-start gap-3 cursor-pointer pt-2 border-t border-ww-gray-200">
             <input
               type="checkbox"
               checked={termsAccepted}
@@ -1443,14 +1476,15 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
               )}
             </div>
             <span className="text-sm text-ww-gray-700 leading-relaxed">
-              I acknowledge that API access is subject to WorkWave's API Terms of Service and
-              Integration Partner Agreement. Access granted through this portal is void if used
-              in connection with an unapproved integration partner. I confirm the information
+              I acknowledge and agree to WorkWave's API Terms of Service, Integration Partner Agreement,
+              and the credential usage and data protection provisions above. I understand that API access
+              is void if credentials are shared or used with unapproved partners, and that WorkWave may
+              revoke access and pursue contractual remedies for any violations. I confirm the information
               provided above is accurate.
             </span>
           </label>
           {touched.termsAccepted && !termsAccepted && (
-            <p className="text-xs text-red-500 mt-2 ml-8">You must accept the terms to continue</p>
+            <p className="text-xs text-red-500 mt-1 ml-8">You must accept the terms to continue</p>
           )}
         </div>
       </div>
