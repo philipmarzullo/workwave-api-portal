@@ -149,41 +149,41 @@ export function PartnerDetail() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
-        <div className="bg-white rounded-md border border-ww-gray-200 p-4">
+        <button className="bg-white rounded-md border border-ww-gray-200 p-4 text-left transition-all hover:bg-ww-gray-50 hover:border-ww-gray-300">
           <div className="flex items-center gap-2 mb-1">
             <Users size={14} className="text-ww-gray-400" />
             <span className="text-xs font-mono font-medium text-ww-gray-500 uppercase tracking-[0.06em]">Linked Customers</span>
           </div>
           <p className="text-2xl font-display font-bold text-ww-gray-900">{stats.totalLinked}</p>
-        </div>
-        <div className="bg-white rounded-md border border-ww-gray-200 p-4">
+        </button>
+        <button className="bg-white rounded-md border border-ww-gray-200 p-4 text-left transition-all hover:bg-ww-gray-50 hover:border-ww-gray-300">
           <div className="flex items-center gap-2 mb-1">
             <Link2 size={14} className="text-ww-green" />
             <span className="text-xs font-mono font-medium text-ww-gray-500 uppercase tracking-[0.06em]">Active</span>
           </div>
           <p className="text-2xl font-display font-bold text-ww-green">{stats.active}</p>
-        </div>
-        <div className="bg-white rounded-md border border-ww-gray-200 p-4">
+        </button>
+        <button className="bg-white rounded-md border border-ww-gray-200 p-4 text-left transition-all hover:bg-ww-gray-50 hover:border-ww-gray-300">
           <div className="flex items-center gap-2 mb-1">
             <FlaskConical size={14} className="text-ww-primary" />
             <span className="text-xs font-mono font-medium text-ww-gray-500 uppercase tracking-[0.06em]">Sandbox</span>
           </div>
           <p className="text-2xl font-display font-bold text-ww-primary">{stats.sandbox}</p>
-        </div>
-        <div className="bg-white rounded-md border border-ww-gray-200 p-4">
+        </button>
+        <button className="bg-white rounded-md border border-ww-gray-200 p-4 text-left transition-all hover:bg-ww-gray-50 hover:border-ww-gray-300">
           <div className="flex items-center gap-2 mb-1">
             <Server size={14} className="text-purple-600" />
             <span className="text-xs font-mono font-medium text-ww-gray-500 uppercase tracking-[0.06em]">Production</span>
           </div>
           <p className="text-2xl font-display font-bold text-purple-600">{stats.production}</p>
-        </div>
-        <div className="bg-white rounded-md border border-ww-gray-200 p-4">
+        </button>
+        <button className="bg-white rounded-md border border-ww-gray-200 p-4 text-left transition-all hover:bg-ww-gray-50 hover:border-ww-gray-300">
           <div className="flex items-center gap-2 mb-1">
             <FileText size={14} className="text-ww-gray-400" />
             <span className="text-xs font-mono font-medium text-ww-gray-500 uppercase tracking-[0.06em]">Requests</span>
           </div>
           <p className="text-2xl font-display font-bold text-ww-gray-900">{stats.totalRequests}</p>
-        </div>
+        </button>
       </div>
 
       {/* Linked Customers Table */}

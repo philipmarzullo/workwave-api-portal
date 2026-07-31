@@ -18,7 +18,7 @@ import {
   BarChart3,
 } from 'lucide-react'
 import type { HistoricalApplication } from '@/data/types'
-import { COMPETITIVE_VENDORS } from '@/data/types'
+import { COMPETITIVE_VENDORS, normalizeProductName } from '@/data/types'
 import rawApplications from '@/data/extracted-applications.json'
 
 const applications = rawApplications as HistoricalApplication[]
@@ -105,7 +105,7 @@ function buildProfiles(): DeveloperProfile[] {
 
     for (const app of apps) {
       if (app.customerName) customerSet.add(app.customerName)
-      if (app.wwProduct) productSet.add(app.wwProduct)
+      if (app.wwProduct) productSet.add(normalizeProductName(app.wwProduct))
       if (app.externalProduct) externalProductSet.add(app.externalProduct)
       if (app.useCase) {
         useCases.push(app.useCase)

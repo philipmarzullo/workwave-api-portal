@@ -13,7 +13,7 @@ import {
   Trash2,
 } from 'lucide-react'
 import type { HistoricalApplication } from '@/data/types'
-import { COMPETITIVE_VENDORS } from '@/data/types'
+import { COMPETITIVE_VENDORS, normalizeProductName } from '@/data/types'
 import rawApplications from '@/data/extracted-applications.json'
 
 const applications = rawApplications as HistoricalApplication[]
@@ -94,7 +94,7 @@ export function ApplicationsDashboard() {
       const entry = vendorMap.get(match)!
       entry.count++
       if (app.customerName) entry.customers.add(app.customerName)
-      if (app.wwProduct) entry.products.add(app.wwProduct)
+      if (app.wwProduct) entry.products.add(normalizeProductName(app.wwProduct))
       if (app.customerIntendToResell === true || app.developerIntendToResell === true) {
         entry.resellYes++
       }
@@ -108,7 +108,7 @@ export function ApplicationsDashboard() {
   const productDistribution = useMemo(() => {
     const counts = new Map<string, number>()
     for (const app of applications) {
-      const key = app.wwProduct || 'Unknown'
+      const key = normalizeProductName(app.wwProduct)
       counts.set(key, (counts.get(key) || 0) + 1)
     }
     return Array.from(counts.entries())
@@ -637,7 +637,7 @@ function CompetitiveTable({
                               {app.customerName || 'Unknown'}
                             </span>
                             <span className="text-ww-gray-500 w-24">
-                              {app.wwProduct || '—'}
+                              {normalizeProductName(app.wwProduct)}
                             </span>
                             <span className="text-ww-gray-500 flex-1 truncate">
                               {app.useCase

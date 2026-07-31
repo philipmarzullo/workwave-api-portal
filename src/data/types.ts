@@ -264,5 +264,96 @@ export const COMPETITIVE_VENDORS = [
   'Cinch',
 ] as const
 
+/**
+ * Normalizes the free-text wwProduct field from historical applications
+ * into one of the canonical WorkWave product names.
+ *
+ * Historical data has 150+ variations including typos, casing differences,
+ * multi-product lists, and addon references. This maps them all to a small
+ * set of canonical labels.
+ */
+export function normalizeProductName(raw: string | null): string {
+  if (!raw) return 'Unknown'
+  const s = raw.trim()
+  if (!s) return 'Unknown'
+  const lower = s.toLowerCase()
+
+  // Exact or near-exact matches first (before multi-product detection)
+  // PestPac variants
+  if (/^pest\s*pac$/i.test(s) || /^pestpac$/i.test(s) || /^pestpal$/i.test(s) || /^pestpax$/i.test(s) || /^pestpack$/i.test(s) || /^pest\s*pac\s*$/i.test(s)) return 'PestPac'
+  // Route Manager variants
+  if (/^route\s*manager$/i.test(s) || /^routemanager$/i.test(s) || /^route\s*manger$/i.test(s)) return 'Route Manager'
+  if (/^workwave('s)?\s*route\s*manager$/i.test(s) || /^ww\s*route\s*manager$/i.test(s) || /^www\s*route\s*manager$/i.test(s) || /^wwrm$/i.test(s)) return 'Route Manager'
+  if (/^route\s*manager\s*360/i.test(s)) return 'Route Manager'
+  if (/^routing$/i.test(s) || /^routing\s*manager$/i.test(s) || /^workwave\s*routing$/i.test(s)) return 'Route Manager'
+  if (/^route\s*manager\s*\/\s*mobile/i.test(s)) return 'Route Manager'
+  // RealGreen / SA5 variants
+  if (/^real\s*green$/i.test(s) || /^realgreen$/i.test(s)) return 'RealGreen'
+  if (/^sa\s*5$/i.test(s) || /^sa-5$/i.test(s) || /^sas$/i.test(s)) return 'RealGreen'
+  if (/^service\s*assist(ant|ance)?\s*(5)?$/i.test(s)) return 'RealGreen'
+  if (/^real\s*green\s*sa\s*5$/i.test(s) || /^realgreen\s*sa\s*5$/i.test(s)) return 'RealGreen'
+  if (/^realgreen\s*\/\s*service/i.test(s) || /^real\s*green\s*\/\s*sa5$/i.test(s) || /^real\s*green\s*-\s*sa5$/i.test(s)) return 'RealGreen'
+  if (/^realgreen\s*service/i.test(s) || /^realgreen\s*la5$/i.test(s)) return 'RealGreen'
+  if (/^workwave\s*service\s*assistant$/i.test(s)) return 'RealGreen'
+  // WinTeam variants
+  if (/^team\s*lite$/i.test(s)) return 'WinTeam'
+  // Sales Center (PestPac addon)
+  if (/^sales\s*center$/i.test(s)) return 'PestPac'
+  // Enterprise (PestPac Enterprise)
+  if (/^enterprise(\s*plus)?$/i.test(s)) return 'PestPac'
+  // Generic "all" or "most" or long descriptions → Multiple
+  if (/^all$/i.test(s) || /^most$/i.test(s) || /^api$/i.test(s) || /^apis$/i.test(s)) return 'Multiple'
+  if (lower.startsWith('almost') || lower.startsWith('most add')) return 'Multiple'
+  if (lower === 'api details' || lower === 'api / crm' || lower === 'team lite / api / crm') return 'Multiple'
+  if (lower === 'all of them') return 'Multiple'
+  if (lower.startsWith('rna')) return 'PestPac'
+  if (lower.startsWith('rgs') || lower === 'gro lawn') return 'RealGreen'
+  if (lower.includes('insight') || lower === 'workwave 360') return 'Route Manager'
+  if (lower === 'collection module') return 'PestPac'
+  if (lower.startsWith('wws')) return 'Route Manager'
+  if (lower.startsWith('clicki')) return 'Other'
+  if (lower === 'netcov') return 'Other'
+
+  // Multi-product strings (contains comma or "and")
+  if (s.includes(',') || / and /i.test(s) || s.includes('/') || s.includes('&')) {
+    return detectPrimaryProduct(lower)
+  }
+
+  // Keyword-based fallback for remaining strings
+  if (lower.includes('pestpac') || lower.includes('pest pac') || lower.includes('pest ai')) return 'PestPac'
+  if (lower.includes('route') && (lower.includes('manager') || lower.includes('op'))) return 'Route Manager'
+  if (lower.includes('realgreen') || lower.includes('real green') || lower.includes('sa5') || lower.includes('sa-5') || lower.includes('service assistant') || lower.includes('sas')) return 'RealGreen'
+  if (lower.includes('winteam') || lower.includes('team lite')) return 'WinTeam'
+  if (lower.includes('lighthouse')) return 'Lighthouse'
+  if (lower.includes('timegate')) return 'Timegate+'
+  if (lower.includes('workwave service') || lower.includes('work wave service')) return 'Route Manager'
+  if (lower.includes('workwave route') || lower.includes('work wave route')) return 'Route Manager'
+  if (lower.includes('routing') || lower.includes('route op')) return 'Route Manager'
+
+  // Remaining unmatched
+  return 'Other'
+}
+
+function detectPrimaryProduct(lower: string): string {
+  // Count product keyword matches to find the primary
+  const scores: Record<string, number> = {}
+  if (/pestpac|pest pac|pest\s*pac/i.test(lower)) scores['PestPac'] = (scores['PestPac'] || 0) + 3
+  if (/realgreen|real green|sa5|sa\-5|service assist/i.test(lower)) scores['RealGreen'] = (scores['RealGreen'] || 0) + 3
+  if (/route\s*manager|routemanager|wwrm/i.test(lower)) scores['Route Manager'] = (scores['Route Manager'] || 0) + 3
+  if (/winteam|team lite/i.test(lower)) scores['WinTeam'] = (scores['WinTeam'] || 0) + 3
+
+  // Secondary signals (addons/modules — attribute to their parent)
+  if (/sales\s*center|lead\s*management/i.test(lower)) scores['PestPac'] = (scores['PestPac'] || 0) + 1
+  if (/route\s*op|routeop/i.test(lower)) scores['PestPac'] = (scores['PestPac'] || 0) + 1
+  if (/communication|comm\s*center/i.test(lower)) scores['PestPac'] = (scores['PestPac'] || 0) + 1
+  if (/mobile\s*live|caw|ama|routing\s*assist/i.test(lower)) scores['RealGreen'] = (scores['RealGreen'] || 0) + 1
+  if (/wavelytics/i.test(lower)) scores['PestPac'] = (scores['PestPac'] || 0) + 1
+
+  const entries = Object.entries(scores).sort((a, b) => b[1] - a[1])
+  if (entries.length === 0) return 'Multiple'
+  if (entries.length > 1 && entries[0][1] === entries[1][1]) return 'Multiple'
+  return entries[0][0]
+}
+
 // Session context
 export type ViewMode = 'customer' | 'reviewer'

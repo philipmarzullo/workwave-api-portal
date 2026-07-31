@@ -15,7 +15,7 @@ import {
   Trash2,
 } from 'lucide-react'
 import type { HistoricalApplication } from '@/data/types'
-import { COMPETITIVE_VENDORS } from '@/data/types'
+import { COMPETITIVE_VENDORS, normalizeProductName } from '@/data/types'
 import rawApplications from '@/data/extracted-applications.json'
 
 const applications = rawApplications as HistoricalApplication[]
@@ -109,7 +109,13 @@ export function HistoricalApplications() {
     }
   }
 
-  const products = useMemo(() => uniqueValues('wwProduct'), [])
+  const products = useMemo(() => {
+    const set = new Set<string>()
+    for (const app of applications) {
+      set.add(normalizeProductName(app.wwProduct))
+    }
+    return Array.from(set).filter(v => v !== 'Unknown').sort()
+  }, [])
   const developers = useMemo(() => uniqueValues('developerName'), [])
 
   const stats = useMemo(() => {
@@ -156,7 +162,7 @@ export function HistoricalApplications() {
     }
 
     if (productFilter) {
-      result = result.filter(a => a.wwProduct === productFilter)
+      result = result.filter(a => normalizeProductName(a.wwProduct) === productFilter)
     }
     if (developerFilter) {
       result = result.filter(a => a.developerName === developerFilter)
@@ -564,7 +570,7 @@ export function HistoricalApplications() {
                   </div>
                   {/* Product */}
                   <div className="px-3 py-2.5 min-w-0 overflow-hidden">
-                    <span className="text-ww-gray-600 truncate block text-sm">{app.wwProduct || '—'}</span>
+                    <span className="text-ww-gray-600 truncate block text-sm">{normalizeProductName(app.wwProduct)}</span>
                   </div>
                   {/* Use Case */}
                   <div className="px-3 py-2.5 min-w-0 overflow-hidden flex items-center gap-2">
@@ -645,7 +651,7 @@ export function HistoricalApplications() {
                         <h4 className="text-[11px] font-mono text-ww-gray-400 uppercase tracking-wider">
                           Application Details
                         </h4>
-                        <DetailRow label="WW Product" value={app.wwProduct} />
+                        <DetailRow label="WW Product" value={normalizeProductName(app.wwProduct)} />
                         <DetailRow
                           label="WW Customer"
                           value={

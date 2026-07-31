@@ -162,37 +162,37 @@ export function ReviewerActiveAccess() {
 
       {/* Stats Row */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
-        <div className="bg-white rounded-md border border-ww-gray-200 p-4">
+        <button onClick={() => { setProductFilter(''); setGatewayFilter(''); setSearchQuery('') }} className="bg-white rounded-md border border-ww-gray-200 p-4 text-left transition-all hover:bg-ww-gray-50 hover:border-ww-gray-300">
           <div className="flex items-center gap-2 mb-1">
             <Layers size={14} className="text-ww-gray-400" />
             <span className="text-xs font-mono font-medium text-ww-gray-500 uppercase tracking-[0.06em]">Total Active</span>
           </div>
           <p className="text-2xl font-display font-bold text-ww-gray-900">{stats.total}</p>
-        </div>
-        <div className="bg-white rounded-md border border-ww-gray-200 p-4">
+        </button>
+        <button onClick={() => { setGatewayFilter('apigee'); setProductFilter('') }} className="bg-white rounded-md border border-ww-gray-200 p-4 text-left transition-all hover:bg-ww-gray-50 hover:border-ww-gray-300">
           <div className="flex items-center gap-2 mb-1">
             <span className="text-xs font-mono font-medium text-ww-gray-500 uppercase tracking-[0.06em]">Apigee</span>
           </div>
           <p className="text-2xl font-display font-bold text-ww-gray-900">{stats.apigee}</p>
-        </div>
-        <div className="bg-white rounded-md border border-ww-gray-200 p-4">
+        </button>
+        <button onClick={() => { setGatewayFilter('concourse'); setProductFilter('') }} className="bg-white rounded-md border border-ww-gray-200 p-4 text-left transition-all hover:bg-ww-gray-50 hover:border-ww-gray-300">
           <div className="flex items-center gap-2 mb-1">
             <span className="text-xs font-mono font-medium text-ww-gray-500 uppercase tracking-[0.06em]">Concourse</span>
           </div>
           <p className="text-2xl font-display font-bold text-ww-gray-900">{stats.concourse}</p>
-        </div>
-        <div className="bg-white rounded-md border border-ww-gray-200 p-4">
+        </button>
+        <button onClick={() => { setGatewayFilter(''); setProductFilter(''); setSearchQuery('migration') }} className="bg-white rounded-md border border-amber-200 bg-amber-50 p-4 text-left transition-all hover:bg-amber-100">
           <div className="flex items-center gap-2 mb-1">
             <span className="text-xs font-mono font-medium text-ww-gray-500 uppercase tracking-[0.06em]">Migrations</span>
           </div>
           <p className="text-2xl font-display font-bold text-amber-600">{stats.migrations}</p>
-        </div>
-        <div className="bg-white rounded-md border border-ww-gray-200 p-4">
+        </button>
+        <button onClick={() => { setGatewayFilter(''); setProductFilter(''); setSearchQuery('') }} className="bg-white rounded-md border border-ww-red/30 bg-red-50 p-4 text-left transition-all hover:bg-red-100">
           <div className="flex items-center gap-2 mb-1">
             <span className="text-xs font-mono font-medium text-ww-gray-500 uppercase tracking-[0.06em]">Needs Provisioning</span>
           </div>
           <p className="text-2xl font-display font-bold text-ww-red">{stats.needsProvisioning}</p>
-        </div>
+        </button>
       </div>
 
       {/* Ask the Agent panel */}

@@ -7,6 +7,7 @@
  */
 
 import type { HistoricalApplication, DataCategory } from './types'
+import { normalizeProductName } from './types'
 import rawApplications from './extracted-applications.json'
 import { store } from './store'
 
@@ -158,27 +159,13 @@ function classifyUseCase(text: string): CapabilityGroup[] {
   )
 }
 
-/** Normalize product names from historical data (inconsistent casing) */
-function normalizeProduct(raw: string | null): string {
-  if (!raw) return 'Unknown'
-  const lower = raw.toLowerCase().replace(/[\s_-]+/g, '')
-  if (lower.includes('pestpac') || lower.includes('pestpac')) return 'PestPac'
-  if (lower.includes('winteam')) return 'WinTeam'
-  if (lower.includes('realgreen')) return 'RealGreen'
-  if (lower.includes('routemanager') || lower.includes('route manager')) return 'RouteManager'
-  if (lower.includes('lighthouse')) return 'Lighthouse'
-  if (lower.includes('timegate')) return 'Timegate+'
-  if (lower.includes('hire')) return 'Hire'
-  return raw
-}
-
 /** Base volume by product for synthetic data */
 function baseVolumeForProduct(product: string): number {
   switch (product) {
     case 'PestPac': return 200_000
     case 'WinTeam': return 400_000
     case 'RealGreen': return 150_000
-    case 'RouteManager': return 300_000
+    case 'Route Manager': return 300_000
     default: return 100_000
   }
 }
@@ -252,7 +239,7 @@ export function computeUsageIntelligence(): UsageIntelligenceData {
     const matchedGroups = classifyUseCase(app.useCase)
     if (matchedGroups.length === 0) continue
 
-    const product = normalizeProduct(app.wwProduct)
+    const product = normalizeProductName(app.wwProduct)
     const multiplier = 0.3 + hashCode(app.id) * 3.7 // 0.3x – 4x
     const syntheticVolume = baseVolumeForProduct(product) * multiplier
 
@@ -299,7 +286,7 @@ export function computeUsageIntelligence(): UsageIntelligenceData {
     const customer = store.getCustomer(req.customerId)
     const partnerName = partner?.name || req.partnerNameFreetext || 'Unknown'
     const customerName = customer?.name || 'Unknown'
-    const product = normalizeProduct(req.product)
+    const product = normalizeProductName(req.product)
     const volume = req.estimatedMonthlyVolume || baseVolumeForProduct(product)
     const hasResell = req.customerIntendToResell === true || req.developerIntendToResell === true
 
@@ -396,7 +383,7 @@ export function computeUsageIntelligence(): UsageIntelligenceData {
 
   for (const app of applications) {
     if (!app.useCase) continue
-    const product = normalizeProduct(app.wwProduct)
+    const product = normalizeProductName(app.wwProduct)
     productSet.add(product)
     const cats = inferDataCategories(app.useCase)
     for (const cat of cats) {
@@ -407,7 +394,7 @@ export function computeUsageIntelligence(): UsageIntelligenceData {
   }
 
   for (const req of activeRequests) {
-    const product = normalizeProduct(req.product)
+    const product = normalizeProductName(req.product)
     productSet.add(product)
     const cats: DataCategory[] = [...req.dataRead, ...req.dataWrite]
     for (const cat of cats) {

@@ -126,27 +126,27 @@ export function MyIntegrations({ activeUser }: MyIntegrationsProps) {
 
       {/* Stats Row */}
       <div className="grid grid-cols-3 gap-4 mb-6">
-        <div className="bg-white rounded-md border border-ww-gray-200 p-4">
+        <button onClick={() => {}} className="bg-white rounded-md border border-ww-gray-200 p-4 text-left transition-all hover:bg-ww-gray-50 hover:border-ww-gray-300">
           <div className="flex items-center gap-2 mb-1">
             <Layers size={14} className="text-ww-gray-400" />
             <span className="text-xs font-mono font-medium text-ww-gray-500 uppercase tracking-[0.06em]">Total Active</span>
           </div>
           <p className="text-2xl font-display font-bold text-ww-gray-900">{stats.total}</p>
-        </div>
-        <div className="bg-white rounded-md border border-ww-gray-200 p-4">
+        </button>
+        <button onClick={() => {}} className="bg-white rounded-md border border-ww-gray-200 p-4 text-left transition-all hover:bg-ww-gray-50 hover:border-ww-gray-300">
           <div className="flex items-center gap-2 mb-1">
             <FlaskConical size={14} className="text-ww-primary" />
             <span className="text-xs font-mono font-medium text-ww-gray-500 uppercase tracking-[0.06em]">Sandbox</span>
           </div>
           <p className="text-2xl font-display font-bold text-ww-primary">{stats.sandbox}</p>
-        </div>
-        <div className="bg-white rounded-md border border-ww-gray-200 p-4">
+        </button>
+        <button onClick={() => {}} className="bg-white rounded-md border border-ww-gray-200 p-4 text-left transition-all hover:bg-ww-gray-50 hover:border-ww-gray-300">
           <div className="flex items-center gap-2 mb-1">
             <Server size={14} className="text-purple-600" />
             <span className="text-xs font-mono font-medium text-ww-gray-500 uppercase tracking-[0.06em]">Production</span>
           </div>
           <p className="text-2xl font-display font-bold text-purple-600">{stats.production}</p>
-        </div>
+        </button>
       </div>
 
       {/* Ask the Agent panel */}
@@ -292,7 +292,7 @@ export function MyIntegrations({ activeUser }: MyIntegrationsProps) {
             return (
               <div
                 key={req.id}
-                className="bg-white rounded-md border border-ww-gray-200 p-5"
+                className="bg-white rounded-md border border-ww-gray-200 p-5 transition-all hover:border-ww-gray-300 hover:bg-ww-gray-50/50"
               >
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1 min-w-0">
