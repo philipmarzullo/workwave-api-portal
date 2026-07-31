@@ -103,6 +103,15 @@ export function UsageIntelligence() {
     [data.signals]
   )
 
+  // Section refs for card click-through
+  const gapTableRef = useRef<HTMLElement>(null)
+  const heatmapRef = useRef<HTMLElement>(null)
+  const convergenceRef = useRef<HTMLElement>(null)
+
+  const scrollTo = (ref: React.RefObject<HTMLElement | null>) => {
+    ref.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+
   return (
     <div className="py-8 space-y-6">
       {/* ── Section A: Header ── */}
@@ -140,6 +149,7 @@ export function UsageIntelligence() {
           icon={<Layers size={14} className="text-ww-primary" />}
           label="Capability Groups"
           value={data.summaryStats.capabilityGroupCount}
+          onClick={() => scrollTo(gapTableRef)}
         />
         <SummaryCard
           icon={<TrendingUp size={14} className="text-amber-600" />}
@@ -147,18 +157,25 @@ export function UsageIntelligence() {
           value={data.summaryStats.topGapSignalLabel}
           sub={`Score: ${data.summaryStats.topGapScore}`}
           variant="warning"
+          onClick={() => {
+            const topId = data.signals[0]?.group.id
+            if (topId) setExpandedGroup(topId)
+            scrollTo(gapTableRef)
+          }}
         />
         <SummaryCard
           icon={<Users size={14} className="text-ww-teal" />}
           label="Partners Building Same Thing"
           value={data.summaryStats.partnersBuildingSameThing}
           sub="groups with 3+ partners"
+          onClick={() => scrollTo(convergenceRef)}
         />
         <SummaryCard
           icon={<Activity size={14} className="text-ww-primary" />}
           label="Est. Monthly API Calls"
           value={fmtNum(data.summaryStats.estimatedMonthlyApiCalls)}
           sub="synthetic estimate"
+          onClick={() => scrollTo(heatmapRef)}
         />
       </div>
 
@@ -280,7 +297,7 @@ export function UsageIntelligence() {
       )}
 
       {/* ── Section C: Product Gap Signals Table ── */}
-      <section>
+      <section ref={gapTableRef}>
         <h2 className="text-lg font-display font-bold text-ww-navy mb-3">Product Gap Signals</h2>
         <div className="border border-ww-gray-200 rounded-lg bg-white overflow-hidden">
           {/* Table header */}
@@ -427,7 +444,7 @@ export function UsageIntelligence() {
       </section>
 
       {/* ── Section D: Data Category Demand Heatmap ── */}
-      <section>
+      <section ref={heatmapRef}>
         <h2 className="text-lg font-display font-bold text-ww-navy mb-3">Data Category Demand</h2>
         <p className="text-sm text-ww-gray-500 mb-4">
           Application count by data category and WW product. Darker cells indicate higher demand.
@@ -491,7 +508,7 @@ export function UsageIntelligence() {
 
       {/* ── Section E: Partner Convergence Cards ── */}
       {convergenceGroups.length > 0 && (
-        <section>
+        <section ref={convergenceRef}>
           <h2 className="text-lg font-display font-bold text-ww-navy mb-3">Partner Convergence</h2>
           <p className="text-sm text-ww-gray-500 mb-4">
             Capability areas where 3+ distinct partners are building the same thing — strongest signals for native product investment.
@@ -566,28 +583,33 @@ function SummaryCard({
   value,
   sub,
   variant,
+  onClick,
 }: {
   icon: React.ReactNode
   label: string
   value: string | number
   sub?: string
   variant?: 'warning'
+  onClick?: () => void
 }) {
   const borderClass =
     variant === 'warning'
-      ? 'border-amber-200 bg-amber-50/50'
-      : 'border-ww-gray-200 bg-white'
+      ? 'border-amber-200 bg-amber-50/50 hover:bg-amber-100/60'
+      : 'border-ww-gray-200 bg-white hover:bg-ww-gray-50 hover:border-ww-gray-300'
   const textClass = variant === 'warning' ? 'text-amber-800' : 'text-ww-navy'
 
   return (
-    <div className={`rounded-lg border px-4 py-3 ${borderClass}`}>
+    <button
+      onClick={onClick}
+      className={`rounded-lg border px-4 py-3 text-left transition-all ${borderClass}`}
+    >
       <div className="flex items-center gap-1.5 mb-1">
         {icon}
         <p className="text-[11px] font-mono text-ww-gray-400 uppercase tracking-wider">{label}</p>
       </div>
       <p className={`text-xl font-display font-bold ${textClass} truncate`}>{value}</p>
       {sub && <p className="text-[11px] text-ww-gray-400 mt-0.5">{sub}</p>}
-    </div>
+    </button>
   )
 }
 
