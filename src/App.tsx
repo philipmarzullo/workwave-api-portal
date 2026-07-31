@@ -13,6 +13,7 @@ import {
   User,
   FileText,
   BarChart3,
+  Lock,
 } from 'lucide-react'
 import { store } from '@/data/store'
 import type { ViewMode, CustomerUser } from '@/data/types'
@@ -157,6 +158,82 @@ export const API_SUB_CATEGORY_LABELS: Record<string, string> = {
   timekeeping_calculations: 'Timekeeping & Calculations',
 }
 
+// ── Password gate ───────────────────────────────────────────────
+
+const PASS_HASH = 'd8cbbc006b81a091bc537e4554fe382f7ab82b721912bae670f44616a45cbb99'
+
+async function sha256(text: string): Promise<string> {
+  const data = new TextEncoder().encode(text)
+  const hash = await crypto.subtle.digest('SHA-256', data)
+  return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('')
+}
+
+function AuthGate({ children }: { children: React.ReactNode }) {
+  const [authed, setAuthed] = useState(() => sessionStorage.getItem('ww_authed') === '1')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState(false)
+  const [checking, setChecking] = useState(false)
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setChecking(true)
+    setError(false)
+    const hash = await sha256(password)
+    if (hash === PASS_HASH) {
+      sessionStorage.setItem('ww_authed', '1')
+      setAuthed(true)
+    } else {
+      setError(true)
+      setPassword('')
+    }
+    setChecking(false)
+  }
+
+  if (authed) return <>{children}</>
+
+  return (
+    <div className="min-h-screen bg-ww-gray-50 flex items-center justify-center px-4">
+      <div className="w-full max-w-sm">
+        <div className="bg-white rounded-lg border border-ww-gray-200 shadow-sm px-6 py-8">
+          <div className="flex flex-col items-center mb-6">
+            <div className="w-10 h-10 rounded-full bg-ww-navy flex items-center justify-center mb-3">
+              <Shield size={18} className="text-ww-teal" />
+            </div>
+            <h1 className="font-display font-bold text-lg text-ww-navy">WorkWave API Portal</h1>
+            <p className="text-xs text-ww-gray-400 font-mono mt-0.5">Internal access only</p>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-3">
+            <div className="relative">
+              <Lock size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-ww-gray-400" />
+              <input
+                type="password"
+                value={password}
+                onChange={e => { setPassword(e.target.value); setError(false) }}
+                placeholder="Enter password"
+                autoFocus
+                className={`w-full pl-9 pr-3 py-2.5 text-sm border rounded-lg focus:ring-2 focus:ring-ww-primary/30 focus:border-ww-primary outline-none ${
+                  error ? 'border-red-300 bg-red-50' : 'border-ww-gray-200'
+                }`}
+              />
+            </div>
+            {error && (
+              <p className="text-xs text-red-600">Incorrect password</p>
+            )}
+            <button
+              type="submit"
+              disabled={!password || checking}
+              className="w-full py-2.5 rounded-lg bg-ww-navy text-white text-sm font-medium hover:bg-ww-navy/90 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            >
+              {checking ? 'Checking...' : 'Sign In'}
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // ── App ─────────────────────────────────────────────────────────
 
 export default function App() {
@@ -227,6 +304,7 @@ export default function App() {
   const navItems = viewMode === 'customer' ? customerNav : reviewerNav
 
   return (
+    <AuthGate>
     <div className="min-h-screen flex flex-col">
       {/* ── Nav bar — tight, structural ── */}
       <header className="bg-ww-navy text-white sticky top-0 z-50 border-b border-white/5">
@@ -386,5 +464,6 @@ export default function App() {
         </div>
       </footer>
     </div>
+    </AuthGate>
   )
 }
