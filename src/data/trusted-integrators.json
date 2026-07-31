@@ -1,0 +1,1679 @@
+[
+  {
+    "id": "int-1-800-accountant",
+    "name": "1-800 Accountant",
+    "status": "inactive",
+    "platforms": [
+      "winteam"
+    ],
+    "integrationType": "partner_api",
+    "trustedStatus": "unknown",
+    "doNotApprove": false,
+    "competitiveLevel": "none",
+    "commercialAgreement": "yes",
+    "impactARR": null,
+    "estimatedCustomers": null,
+    "notes": null,
+    "action": null
+  },
+  {
+    "id": "int-adp",
+    "name": "ADP",
+    "status": "active",
+    "platforms": [
+      "winteam"
+    ],
+    "integrationType": "partner_api",
+    "trustedStatus": "trusted",
+    "doNotApprove": false,
+    "competitiveLevel": "somewhat",
+    "commercialAgreement": "yes",
+    "impactARR": 3167000,
+    "estimatedCustomers": null,
+    "notes": null,
+    "action": null
+  },
+  {
+    "id": "int-appaa-touchpoint",
+    "name": "APPAA/Touchpoint",
+    "status": "active",
+    "platforms": [
+      "pestpac"
+    ],
+    "integrationType": "partner_api",
+    "trustedStatus": "unknown",
+    "doNotApprove": false,
+    "competitiveLevel": "none",
+    "commercialAgreement": "yes",
+    "impactARR": 123000,
+    "estimatedCustomers": null,
+    "notes": null,
+    "action": null
+  },
+  {
+    "id": "int-arm-collections",
+    "name": "ARM (collections)",
+    "status": "active",
+    "platforms": [
+      "pestpac"
+    ],
+    "integrationType": "partner_api",
+    "trustedStatus": "unknown",
+    "doNotApprove": false,
+    "competitiveLevel": "none",
+    "commercialAgreement": "yes",
+    "impactARR": 145000,
+    "estimatedCustomers": null,
+    "notes": null,
+    "action": null
+  },
+  {
+    "id": "int-ats-faceid",
+    "name": "ATS/FaceID",
+    "status": "active",
+    "platforms": [
+      "winteam"
+    ],
+    "integrationType": "partner_api",
+    "trustedStatus": "unknown",
+    "doNotApprove": false,
+    "competitiveLevel": "somewhat",
+    "commercialAgreement": "yes",
+    "impactARR": 438000,
+    "estimatedCustomers": null,
+    "notes": "Like Findd, Potentially if we get into Biometrics",
+    "action": null
+  },
+  {
+    "id": "int-access-group-payroll",
+    "name": "Access Group Payroll",
+    "status": "active",
+    "platforms": [
+      "winteam"
+    ],
+    "integrationType": "partner_api",
+    "trustedStatus": "unknown",
+    "doNotApprove": false,
+    "competitiveLevel": "none",
+    "commercialAgreement": "yes",
+    "impactARR": null,
+    "estimatedCustomers": null,
+    "notes": null,
+    "action": null
+  },
+  {
+    "id": "int-access-payroll",
+    "name": "Access Payroll",
+    "status": "active",
+    "platforms": [
+      "international"
+    ],
+    "integrationType": "partner_api",
+    "trustedStatus": "trusted",
+    "doNotApprove": false,
+    "competitiveLevel": "unknown",
+    "commercialAgreement": "no",
+    "impactARR": null,
+    "estimatedCustomers": null,
+    "notes": null,
+    "action": null
+  },
+  {
+    "id": "int-ainsight",
+    "name": "Ainsight",
+    "status": "inactive",
+    "platforms": [
+      "winteam"
+    ],
+    "integrationType": "customer_api",
+    "trustedStatus": "unknown",
+    "doNotApprove": false,
+    "competitiveLevel": "none",
+    "commercialAgreement": "no",
+    "impactARR": null,
+    "estimatedCustomers": null,
+    "notes": null,
+    "action": null
+  },
+  {
+    "id": "int-american-profit-recovery",
+    "name": "American Profit Recovery",
+    "status": "active",
+    "platforms": [
+      "realgreen"
+    ],
+    "integrationType": "partner_api",
+    "trustedStatus": "trusted",
+    "doNotApprove": false,
+    "competitiveLevel": "none",
+    "commercialAgreement": "yes",
+    "impactARR": 1000,
+    "estimatedCustomers": null,
+    "notes": null,
+    "action": null
+  },
+  {
+    "id": "int-american-telephone",
+    "name": "American Telephone",
+    "status": "active",
+    "platforms": [
+      "pestpac"
+    ],
+    "integrationType": "partner_api",
+    "trustedStatus": "unknown",
+    "doNotApprove": false,
+    "competitiveLevel": "somewhat",
+    "commercialAgreement": "yes",
+    "impactARR": null,
+    "estimatedCustomers": null,
+    "notes": "Yacano brought them on, offering competetive with Comm Center. Wanted to own parts of stack, didn't want to be just a phone vendor, wanted to be a SMS. Trying to compete against each other, solution they were building on prem phone service but probably not useful.",
+    "action": null
+  },
+  {
+    "id": "int-apex-live-chat",
+    "name": "Apex Live Chat",
+    "status": "active",
+    "platforms": [
+      "pestpac"
+    ],
+    "integrationType": "none",
+    "trustedStatus": "unknown",
+    "doNotApprove": false,
+    "competitiveLevel": "unknown",
+    "commercialAgreement": "no",
+    "impactARR": null,
+    "estimatedCustomers": null,
+    "notes": null,
+    "action": null
+  },
+  {
+    "id": "int-applause",
+    "name": "Applause",
+    "status": "active",
+    "platforms": [
+      "pestpac",
+      "realgreen"
+    ],
+    "integrationType": "partner_api",
+    "trustedStatus": "trusted",
+    "doNotApprove": false,
+    "competitiveLevel": "extremely",
+    "commercialAgreement": "yes",
+    "impactARR": 344000,
+    "estimatedCustomers": "250+",
+    "notes": "AI Scorecard threat to Wavelytics, Technician scorecards, generating leads,",
+    "action": "1) Identify if currently in breach.\n2) If so, estimate breach value\n2b) Update terms so that they are in breach then proceed to 3\n3) Talk to Applause about what they owe us and re-negotiate 50% rev share, data rights, rev share on everything (like scorecard)"
+  },
+  {
+    "id": "int-asknicely",
+    "name": "AskNicely",
+    "status": "active",
+    "platforms": [
+      "pestpac",
+      "realgreen"
+    ],
+    "integrationType": "customer_api",
+    "trustedStatus": "unknown",
+    "doNotApprove": false,
+    "competitiveLevel": "somewhat",
+    "commercialAgreement": "no",
+    "impactARR": null,
+    "estimatedCustomers": null,
+    "notes": "Customer Service AI bot, kind of what comm and sales center does, AI agent",
+    "action": null
+  },
+  {
+    "id": "int-authvia",
+    "name": "Authvia",
+    "status": "active",
+    "platforms": [
+      "winteam"
+    ],
+    "integrationType": "partner_api",
+    "trustedStatus": "unknown",
+    "doNotApprove": false,
+    "competitiveLevel": "somewhat",
+    "commercialAgreement": "yes",
+    "impactARR": 103000,
+    "estimatedCustomers": null,
+    "notes": "Vendor PestPac customers, payment reminders and credit cards, by the end of year it will be competitive",
+    "action": null
+  },
+  {
+    "id": "int-avalara",
+    "name": "Avalara",
+    "status": "active",
+    "platforms": [
+      "pestpac",
+      "winteam"
+    ],
+    "integrationType": "partner_api",
+    "trustedStatus": "trusted",
+    "doNotApprove": false,
+    "competitiveLevel": "none",
+    "commercialAgreement": "yes",
+    "impactARR": 61000,
+    "estimatedCustomers": null,
+    "notes": "Tax code provider",
+    "action": null
+  },
+  {
+    "id": "int-avoca-ai",
+    "name": "Avoca AI",
+    "status": "active",
+    "platforms": [
+      "pestpac"
+    ],
+    "integrationType": "customer_api",
+    "trustedStatus": "unknown",
+    "doNotApprove": false,
+    "competitiveLevel": "somewhat",
+    "commercialAgreement": "no",
+    "impactARR": null,
+    "estimatedCustomers": null,
+    "notes": "Customer Service AI bot, kind of what comm and sales center does, AI agent",
+    "action": null
+  },
+  {
+    "id": "int-azuga",
+    "name": "Azuga",
+    "status": "active",
+    "platforms": [
+      "pestpac"
+    ],
+    "integrationType": "partner_api",
+    "trustedStatus": "unknown",
+    "doNotApprove": false,
+    "competitiveLevel": "none",
+    "commercialAgreement": "yes",
+    "impactARR": 337000,
+    "estimatedCustomers": null,
+    "notes": null,
+    "action": null
+  },
+  {
+    "id": "int-baton",
+    "name": "Baton",
+    "status": "active",
+    "platforms": [
+      "pestpac"
+    ],
+    "integrationType": "customer_api",
+    "trustedStatus": "unknown",
+    "doNotApprove": false,
+    "competitiveLevel": "somewhat",
+    "commercialAgreement": "no",
+    "impactARR": null,
+    "estimatedCustomers": null,
+    "notes": null,
+    "action": null
+  },
+  {
+    "id": "int-bell-labs",
+    "name": "Bell Labs",
+    "status": "active",
+    "platforms": [
+      "pestpac"
+    ],
+    "integrationType": "partner_api",
+    "trustedStatus": "unknown",
+    "doNotApprove": false,
+    "competitiveLevel": "none",
+    "commercialAgreement": "yes",
+    "impactARR": 67000,
+    "estimatedCustomers": null,
+    "notes": null,
+    "action": null
+  },
+  {
+    "id": "int-call-tracking-metrics",
+    "name": "Call Tracking Metrics",
+    "status": "active",
+    "platforms": [
+      "pestpac"
+    ],
+    "integrationType": "partner_api",
+    "trustedStatus": "unknown",
+    "doNotApprove": false,
+    "competitiveLevel": "none",
+    "commercialAgreement": "yes",
+    "impactARR": 7000,
+    "estimatedCustomers": null,
+    "notes": "Phone Vendor, integrated with sales center",
+    "action": null
+  },
+  {
+    "id": "int-callsource",
+    "name": "CallSource",
+    "status": "active",
+    "platforms": [
+      "pestpac"
+    ],
+    "integrationType": "partner_api",
+    "trustedStatus": "unknown",
+    "doNotApprove": false,
+    "competitiveLevel": "somewhat",
+    "commercialAgreement": "yes",
+    "impactARR": null,
+    "estimatedCustomers": null,
+    "notes": "Heath",
+    "action": null
+  },
+  {
+    "id": "int-cameramatics-geotab",
+    "name": "CameraMatics/Geotab",
+    "status": "active",
+    "platforms": [
+      "pestpac"
+    ],
+    "integrationType": "partner_api",
+    "trustedStatus": "unknown",
+    "doNotApprove": false,
+    "competitiveLevel": "none",
+    "commercialAgreement": "yes",
+    "impactARR": 9000,
+    "estimatedCustomers": null,
+    "notes": null,
+    "action": null
+  },
+  {
+    "id": "int-captivated",
+    "name": "Captivated",
+    "status": "active",
+    "platforms": [
+      "realgreen"
+    ],
+    "integrationType": "partner_api",
+    "trustedStatus": "trusted",
+    "doNotApprove": false,
+    "competitiveLevel": "extremely",
+    "commercialAgreement": "yes",
+    "impactARR": 142000,
+    "estimatedCustomers": "250+",
+    "notes": "Two way communication, SMS, directly with our customer notification options and comm center. Own payment solution that our customers are using for sidecar payments specifically for collections activity and prepayments, also supposedly building CRM",
+    "action": "1) Identify if payments is currently in breach\n2) If not write an addendum for data access and payments\n2b) if so, ensure they get on path to remedy"
+  },
+  {
+    "id": "int-checkr",
+    "name": "Checkr",
+    "status": "active",
+    "platforms": [
+      "winteam"
+    ],
+    "integrationType": "partner_api",
+    "trustedStatus": "trusted",
+    "doNotApprove": false,
+    "competitiveLevel": "none",
+    "commercialAgreement": "yes",
+    "impactARR": 312000,
+    "estimatedCustomers": null,
+    "notes": null,
+    "action": null
+  },
+  {
+    "id": "int-cinch",
+    "name": "Cinch",
+    "status": "active",
+    "platforms": [
+      "pestpac"
+    ],
+    "integrationType": "customer_api",
+    "trustedStatus": "unknown",
+    "doNotApprove": false,
+    "competitiveLevel": "somewhat",
+    "commercialAgreement": "no",
+    "impactARR": null,
+    "estimatedCustomers": null,
+    "notes": null,
+    "action": null
+  },
+  {
+    "id": "int-clicki",
+    "name": "Clicki",
+    "status": "active",
+    "platforms": [
+      "pestpac",
+      "realgreen"
+    ],
+    "integrationType": "customer_api",
+    "trustedStatus": "unknown",
+    "doNotApprove": false,
+    "competitiveLevel": "somewhat",
+    "commercialAgreement": "prospect",
+    "impactARR": null,
+    "estimatedCustomers": null,
+    "notes": null,
+    "action": null
+  },
+  {
+    "id": "int-clicki-bravo",
+    "name": "Clicki/Bravo",
+    "status": "pending",
+    "platforms": [
+      "realgreen"
+    ],
+    "integrationType": "none",
+    "trustedStatus": "not_trusted",
+    "doNotApprove": false,
+    "competitiveLevel": "unknown",
+    "commercialAgreement": "no",
+    "impactARR": null,
+    "estimatedCustomers": null,
+    "notes": null,
+    "action": null
+  },
+  {
+    "id": "int-coalmarch",
+    "name": "CoalMarch",
+    "status": "active",
+    "platforms": [
+      "pestpac",
+      "realgreen"
+    ],
+    "integrationType": "partner_api",
+    "trustedStatus": "unknown",
+    "doNotApprove": false,
+    "competitiveLevel": "none",
+    "commercialAgreement": "prospect",
+    "impactARR": null,
+    "estimatedCustomers": null,
+    "notes": null,
+    "action": null
+  },
+  {
+    "id": "int-connectus",
+    "name": "ConnectUs",
+    "status": "active",
+    "platforms": [
+      "pestpac"
+    ],
+    "integrationType": "partner_api",
+    "trustedStatus": "unknown",
+    "doNotApprove": false,
+    "competitiveLevel": "none",
+    "commercialAgreement": "yes",
+    "impactARR": null,
+    "estimatedCustomers": null,
+    "notes": null,
+    "action": null
+  },
+  {
+    "id": "int-corteva",
+    "name": "Corteva",
+    "status": "active",
+    "platforms": [
+      "pestpac"
+    ],
+    "integrationType": "partner_api",
+    "trustedStatus": "unknown",
+    "doNotApprove": false,
+    "competitiveLevel": "none",
+    "commercialAgreement": "yes",
+    "impactARR": 406000,
+    "estimatedCustomers": null,
+    "notes": null,
+    "action": null
+  },
+  {
+    "id": "int-dailypay",
+    "name": "DailyPay",
+    "status": "active",
+    "platforms": [
+      "winteam"
+    ],
+    "integrationType": "partner_api",
+    "trustedStatus": "trusted",
+    "doNotApprove": false,
+    "competitiveLevel": "none",
+    "commercialAgreement": "yes",
+    "impactARR": 2050000,
+    "estimatedCustomers": null,
+    "notes": null,
+    "action": null
+  },
+  {
+    "id": "int-deep-lawn",
+    "name": "Deep Lawn",
+    "status": "active",
+    "platforms": [
+      "realgreen"
+    ],
+    "integrationType": "customer_api",
+    "trustedStatus": "not_trusted",
+    "doNotApprove": false,
+    "competitiveLevel": "extremely",
+    "commercialAgreement": "no",
+    "impactARR": null,
+    "estimatedCustomers": ">20",
+    "notes": "Competes with ServiceBot, MEA",
+    "action": null
+  },
+  {
+    "id": "int-deploi",
+    "name": "Deploi",
+    "status": "pending",
+    "platforms": [
+      "international"
+    ],
+    "integrationType": "partner_api",
+    "trustedStatus": "trusted",
+    "doNotApprove": false,
+    "competitiveLevel": "unknown",
+    "commercialAgreement": "yes",
+    "impactARR": null,
+    "estimatedCustomers": null,
+    "notes": null,
+    "action": null
+  },
+  {
+    "id": "int-deploi-uk",
+    "name": "Deploi (UK)",
+    "status": "active",
+    "platforms": [
+      "winteam"
+    ],
+    "integrationType": "partner_api",
+    "trustedStatus": "unknown",
+    "doNotApprove": false,
+    "competitiveLevel": "none",
+    "commercialAgreement": "yes",
+    "impactARR": 140000,
+    "estimatedCustomers": null,
+    "notes": null,
+    "action": null
+  },
+  {
+    "id": "int-doxim",
+    "name": "Doxim",
+    "status": "active",
+    "platforms": [
+      "winteam"
+    ],
+    "integrationType": "partner_api",
+    "trustedStatus": "unknown",
+    "doNotApprove": false,
+    "competitiveLevel": "none",
+    "commercialAgreement": "yes",
+    "impactARR": 880000,
+    "estimatedCustomers": null,
+    "notes": "We could do in House",
+    "action": null
+  },
+  {
+    "id": "int-driven",
+    "name": "Driven",
+    "status": "active",
+    "platforms": [
+      "pestpac"
+    ],
+    "integrationType": "customer_api",
+    "trustedStatus": "unknown",
+    "doNotApprove": false,
+    "competitiveLevel": "somewhat",
+    "commercialAgreement": "no",
+    "impactARR": null,
+    "estimatedCustomers": null,
+    "notes": null,
+    "action": null
+  },
+  {
+    "id": "int-efficient-hire-forms-equifax",
+    "name": "Efficient Hire/Forms(Equifax)",
+    "status": "active",
+    "platforms": [
+      "winteam"
+    ],
+    "integrationType": "partner_api",
+    "trustedStatus": "trusted",
+    "doNotApprove": false,
+    "competitiveLevel": "somewhat",
+    "commercialAgreement": "yes",
+    "impactARR": 1080000,
+    "estimatedCustomers": null,
+    "notes": "ATS competitive",
+    "action": null
+  },
+  {
+    "id": "int-employment-hero",
+    "name": "Employment Hero",
+    "status": "pending",
+    "platforms": [
+      "international"
+    ],
+    "integrationType": "partner_api",
+    "trustedStatus": "trusted",
+    "doNotApprove": false,
+    "competitiveLevel": "unknown",
+    "commercialAgreement": "yes",
+    "impactARR": null,
+    "estimatedCustomers": null,
+    "notes": null,
+    "action": null
+  },
+  {
+    "id": "int-employment-hero-uk",
+    "name": "Employment Hero (UK)",
+    "status": "active",
+    "platforms": [
+      "winteam"
+    ],
+    "integrationType": "partner_api",
+    "trustedStatus": "unknown",
+    "doNotApprove": false,
+    "competitiveLevel": "none",
+    "commercialAgreement": "yes",
+    "impactARR": null,
+    "estimatedCustomers": null,
+    "notes": null,
+    "action": null
+  },
+  {
+    "id": "int-ennis-printing",
+    "name": "Ennis Printing",
+    "status": "active",
+    "platforms": [
+      "winteam"
+    ],
+    "integrationType": "partner_api",
+    "trustedStatus": "unknown",
+    "doNotApprove": false,
+    "competitiveLevel": "none",
+    "commercialAgreement": "yes",
+    "impactARR": 277570,
+    "estimatedCustomers": null,
+    "notes": null,
+    "action": null
+  },
+  {
+    "id": "int-findd",
+    "name": "FINDD",
+    "status": "active",
+    "platforms": [
+      "winteam"
+    ],
+    "integrationType": "partner_api",
+    "trustedStatus": "questionable",
+    "doNotApprove": false,
+    "competitiveLevel": "extremely",
+    "commercialAgreement": "yes",
+    "impactARR": 28,
+    "estimatedCustomers": null,
+    "notes": "Feature parody releasing in Q3",
+    "action": "Already Terminated"
+  },
+  {
+    "id": "int-fis-worldpay",
+    "name": "FIS - WorldPay",
+    "status": "active",
+    "platforms": [
+      "realgreen"
+    ],
+    "integrationType": "partner_api",
+    "trustedStatus": "trusted",
+    "doNotApprove": false,
+    "competitiveLevel": "none",
+    "commercialAgreement": "yes",
+    "impactARR": 15000,
+    "estimatedCustomers": null,
+    "notes": null,
+    "action": null
+  },
+  {
+    "id": "int-ftni",
+    "name": "FTNI",
+    "status": "active",
+    "platforms": [
+      "winteam"
+    ],
+    "integrationType": "partner_api",
+    "trustedStatus": "unknown",
+    "doNotApprove": false,
+    "competitiveLevel": "none",
+    "commercialAgreement": "yes",
+    "impactARR": null,
+    "estimatedCustomers": null,
+    "notes": null,
+    "action": null
+  },
+  {
+    "id": "int-faceid",
+    "name": "FaceID",
+    "status": "active",
+    "platforms": [
+      "winteam"
+    ],
+    "integrationType": "partner_api",
+    "trustedStatus": "trusted",
+    "doNotApprove": false,
+    "competitiveLevel": "unknown",
+    "commercialAgreement": "yes",
+    "impactARR": null,
+    "estimatedCustomers": null,
+    "notes": null,
+    "action": null
+  },
+  {
+    "id": "int-five9",
+    "name": "Five9",
+    "status": "inactive",
+    "platforms": [
+      "pestpac"
+    ],
+    "integrationType": "none",
+    "trustedStatus": "unknown",
+    "doNotApprove": false,
+    "competitiveLevel": "none",
+    "commercialAgreement": "no",
+    "impactARR": null,
+    "estimatedCustomers": null,
+    "notes": null,
+    "action": null
+  },
+  {
+    "id": "int-greensky",
+    "name": "Greensky",
+    "status": "inactive",
+    "platforms": [
+      "realgreen"
+    ],
+    "integrationType": "none",
+    "trustedStatus": "unknown",
+    "doNotApprove": false,
+    "competitiveLevel": "none",
+    "commercialAgreement": "yes",
+    "impactARR": null,
+    "estimatedCustomers": null,
+    "notes": null,
+    "action": null
+  },
+  {
+    "id": "int-here",
+    "name": "HERE",
+    "status": "active",
+    "platforms": [
+      "pestpac"
+    ],
+    "integrationType": "none",
+    "trustedStatus": "unknown",
+    "doNotApprove": false,
+    "competitiveLevel": "unknown",
+    "commercialAgreement": "no",
+    "impactARR": null,
+    "estimatedCustomers": null,
+    "notes": null,
+    "action": null
+  },
+  {
+    "id": "int-hr3",
+    "name": "HR3",
+    "status": "active",
+    "platforms": [
+      "international"
+    ],
+    "integrationType": "partner_api",
+    "trustedStatus": "trusted",
+    "doNotApprove": false,
+    "competitiveLevel": "unknown",
+    "commercialAgreement": "no",
+    "impactARR": null,
+    "estimatedCustomers": null,
+    "notes": null,
+    "action": null
+  },
+  {
+    "id": "int-hr3-uk",
+    "name": "HR3 (UK)",
+    "status": "active",
+    "platforms": [
+      "winteam"
+    ],
+    "integrationType": "partner_api",
+    "trustedStatus": "unknown",
+    "doNotApprove": false,
+    "competitiveLevel": "none",
+    "commercialAgreement": "yes",
+    "impactARR": null,
+    "estimatedCustomers": null,
+    "notes": null,
+    "action": null
+  },
+  {
+    "id": "int-holman-small-business-solutions",
+    "name": "Holman Small Business Solutions",
+    "status": "active",
+    "platforms": [
+      "pestpac"
+    ],
+    "integrationType": "partner_api",
+    "trustedStatus": "unknown",
+    "doNotApprove": false,
+    "competitiveLevel": "none",
+    "commercialAgreement": "yes",
+    "impactARR": 3500,
+    "estimatedCustomers": null,
+    "notes": null,
+    "action": null
+  },
+  {
+    "id": "int-hubspot",
+    "name": "Hubspot",
+    "status": "active",
+    "platforms": [
+      "pestpac"
+    ],
+    "integrationType": "none",
+    "trustedStatus": "unknown",
+    "doNotApprove": false,
+    "competitiveLevel": "somewhat",
+    "commercialAgreement": "no",
+    "impactARR": null,
+    "estimatedCustomers": null,
+    "notes": "Focus on marketing",
+    "action": null
+  },
+  {
+    "id": "int-indeed",
+    "name": "Indeed",
+    "status": "active",
+    "platforms": [
+      "winteam"
+    ],
+    "integrationType": "partner_api",
+    "trustedStatus": "unknown",
+    "doNotApprove": false,
+    "competitiveLevel": "somewhat",
+    "commercialAgreement": "no",
+    "impactARR": null,
+    "estimatedCustomers": null,
+    "notes": "Job Board,",
+    "action": null
+  },
+  {
+    "id": "int-integrate-iq",
+    "name": "Integrate IQ",
+    "status": "active",
+    "platforms": [
+      "pestpac"
+    ],
+    "integrationType": "none",
+    "trustedStatus": "unknown",
+    "doNotApprove": false,
+    "competitiveLevel": "none",
+    "commercialAgreement": "yes",
+    "impactARR": null,
+    "estimatedCustomers": null,
+    "notes": "System Integrator for RouteManager",
+    "action": null
+  },
+  {
+    "id": "int-intellum",
+    "name": "Intellum",
+    "status": "active",
+    "platforms": [
+      "winteam"
+    ],
+    "integrationType": "customer_api",
+    "trustedStatus": "unknown",
+    "doNotApprove": false,
+    "competitiveLevel": "none",
+    "commercialAgreement": "no",
+    "impactARR": null,
+    "estimatedCustomers": "<5",
+    "notes": "Might be competitive if we got our own LMS",
+    "action": null
+  },
+  {
+    "id": "int-interval-ai",
+    "name": "Interval AI",
+    "status": "pending",
+    "platforms": [
+      "pestpac"
+    ],
+    "integrationType": "customer_api",
+    "trustedStatus": "unknown",
+    "doNotApprove": false,
+    "competitiveLevel": "none",
+    "commercialAgreement": "no",
+    "impactARR": null,
+    "estimatedCustomers": null,
+    "notes": null,
+    "action": null
+  },
+  {
+    "id": "int-jobtarget",
+    "name": "JobTarget",
+    "status": "inactive",
+    "platforms": [
+      "winteam"
+    ],
+    "integrationType": "partner_api",
+    "trustedStatus": "trusted",
+    "doNotApprove": false,
+    "competitiveLevel": "somewhat",
+    "commercialAgreement": "yes",
+    "impactARR": 2500,
+    "estimatedCustomers": null,
+    "notes": "On old API, probably considered inactive",
+    "action": null
+  },
+  {
+    "id": "int-life-apps-llc",
+    "name": "Life Apps LLC",
+    "status": "inactive",
+    "platforms": [
+      "pestpac"
+    ],
+    "integrationType": "none",
+    "trustedStatus": "unknown",
+    "doNotApprove": false,
+    "competitiveLevel": "none",
+    "commercialAgreement": "yes",
+    "impactARR": null,
+    "estimatedCustomers": null,
+    "notes": null,
+    "action": null
+  },
+  {
+    "id": "int-linxup",
+    "name": "Linxup",
+    "status": "active",
+    "platforms": [
+      "realgreen"
+    ],
+    "integrationType": "partner_api",
+    "trustedStatus": "questionable",
+    "doNotApprove": false,
+    "competitiveLevel": "none",
+    "commercialAgreement": "yes",
+    "impactARR": 50000,
+    "estimatedCustomers": null,
+    "notes": "Telematics provider",
+    "action": null
+  },
+  {
+    "id": "int-mb-w",
+    "name": "MB&W",
+    "status": "inactive",
+    "platforms": [
+      "pestpac"
+    ],
+    "integrationType": "none",
+    "trustedStatus": "unknown",
+    "doNotApprove": false,
+    "competitiveLevel": "none",
+    "commercialAgreement": "yes",
+    "impactARR": null,
+    "estimatedCustomers": null,
+    "notes": null,
+    "action": null
+  },
+  {
+    "id": "int-merinio",
+    "name": "Merinio",
+    "status": "active",
+    "platforms": [
+      "winteam"
+    ],
+    "integrationType": "customer_api",
+    "trustedStatus": "unknown",
+    "doNotApprove": false,
+    "competitiveLevel": "extremely",
+    "commercialAgreement": "no",
+    "impactARR": null,
+    "estimatedCustomers": "<5",
+    "notes": "Competitive with Wave Scheduling Fill",
+    "action": null
+  },
+  {
+    "id": "int-naturalforms-expedata",
+    "name": "NaturalForms/Expedata",
+    "status": "active",
+    "platforms": [
+      "pestpac"
+    ],
+    "integrationType": "none",
+    "trustedStatus": "unknown",
+    "doNotApprove": false,
+    "competitiveLevel": "unknown",
+    "commercialAgreement": "no",
+    "impactARR": null,
+    "estimatedCustomers": null,
+    "notes": null,
+    "action": null
+  },
+  {
+    "id": "int-pass-pdc",
+    "name": "PASS PDC",
+    "status": "inactive",
+    "platforms": [
+      "winteam"
+    ],
+    "integrationType": "partner_api",
+    "trustedStatus": "unknown",
+    "doNotApprove": false,
+    "competitiveLevel": "none",
+    "commercialAgreement": "yes",
+    "impactARR": 200838,
+    "estimatedCustomers": null,
+    "notes": null,
+    "action": null
+  },
+  {
+    "id": "int-pest-background-checks",
+    "name": "Pest Background Checks",
+    "status": "inactive",
+    "platforms": [
+      "pestpac"
+    ],
+    "integrationType": "none",
+    "trustedStatus": "unknown",
+    "doNotApprove": false,
+    "competitiveLevel": "none",
+    "commercialAgreement": "yes",
+    "impactARR": null,
+    "estimatedCustomers": null,
+    "notes": null,
+    "action": null
+  },
+  {
+    "id": "int-podium",
+    "name": "Podium",
+    "status": "active",
+    "platforms": [
+      "pestpac"
+    ],
+    "integrationType": "customer_api",
+    "trustedStatus": "unknown",
+    "doNotApprove": false,
+    "competitiveLevel": "extremely",
+    "commercialAgreement": "prospect",
+    "impactARR": null,
+    "estimatedCustomers": null,
+    "notes": "Marketing Platform and also Two Way communicative - Tools competitive with marketing stack or comm center, 7-10 Million ARR we make - notifications, also moving into building CRM",
+    "action": null
+  },
+  {
+    "id": "int-profit-rhino",
+    "name": "Profit Rhino",
+    "status": "inactive",
+    "platforms": [
+      "pestpac"
+    ],
+    "integrationType": "partner_api",
+    "trustedStatus": "unknown",
+    "doNotApprove": false,
+    "competitiveLevel": "none",
+    "commercialAgreement": "yes",
+    "impactARR": null,
+    "estimatedCustomers": null,
+    "notes": "Servman",
+    "action": null
+  },
+  {
+    "id": "int-quacito-dream",
+    "name": "Quacito/Dream",
+    "status": "inactive",
+    "platforms": [
+      "pestpac"
+    ],
+    "integrationType": "none",
+    "trustedStatus": "unknown",
+    "doNotApprove": false,
+    "competitiveLevel": "extremely",
+    "commercialAgreement": "yes",
+    "impactARR": null,
+    "estimatedCustomers": null,
+    "notes": "They exhibit at PestWorld, straight competitor, look at agreement?",
+    "action": null
+  },
+  {
+    "id": "int-ringcentral",
+    "name": "RingCentral",
+    "status": "active",
+    "platforms": [
+      "pestpac"
+    ],
+    "integrationType": "customer_api",
+    "trustedStatus": "unknown",
+    "doNotApprove": false,
+    "competitiveLevel": "somewhat",
+    "commercialAgreement": "no",
+    "impactARR": null,
+    "estimatedCustomers": null,
+    "notes": "Comm center integrated with phone, options to compete with comm center",
+    "action": null
+  },
+  {
+    "id": "int-sage-itas-uk-akuna-aus",
+    "name": "Sage(ITAS UK/Akuna AUS)",
+    "status": "active",
+    "platforms": [
+      "winteam",
+      "international"
+    ],
+    "integrationType": "partner_api",
+    "trustedStatus": "trusted",
+    "doNotApprove": false,
+    "competitiveLevel": "none",
+    "commercialAgreement": "yes",
+    "impactARR": null,
+    "estimatedCustomers": null,
+    "notes": null,
+    "action": null
+  },
+  {
+    "id": "int-sales-builder-pro",
+    "name": "Sales Builder Pro",
+    "status": "inactive",
+    "platforms": [
+      "pestpac"
+    ],
+    "integrationType": "partner_api",
+    "trustedStatus": "unknown",
+    "doNotApprove": false,
+    "competitiveLevel": "none",
+    "commercialAgreement": "yes",
+    "impactARR": null,
+    "estimatedCustomers": null,
+    "notes": "Servman",
+    "action": null
+  },
+  {
+    "id": "int-sales-rabbit",
+    "name": "Sales Rabbit",
+    "status": "active",
+    "platforms": [
+      "pestpac"
+    ],
+    "integrationType": "customer_api",
+    "trustedStatus": "unknown",
+    "doNotApprove": false,
+    "competitiveLevel": "somewhat",
+    "commercialAgreement": "yes",
+    "impactARR": null,
+    "estimatedCustomers": "<10",
+    "notes": "Deeper on door knocking, uniquely defined",
+    "action": null
+  },
+  {
+    "id": "int-salesforce",
+    "name": "Salesforce",
+    "status": "active",
+    "platforms": [
+      "pestpac"
+    ],
+    "integrationType": "none",
+    "trustedStatus": "unknown",
+    "doNotApprove": false,
+    "competitiveLevel": "extremely",
+    "commercialAgreement": "no",
+    "impactARR": null,
+    "estimatedCustomers": null,
+    "notes": "Senski lost to Salesforce, has mobile app for field techs",
+    "action": null
+  },
+  {
+    "id": "int-sameday",
+    "name": "Sameday",
+    "status": "active",
+    "platforms": [
+      "pestpac"
+    ],
+    "integrationType": "customer_api",
+    "trustedStatus": "unknown",
+    "doNotApprove": false,
+    "competitiveLevel": "somewhat",
+    "commercialAgreement": "no",
+    "impactARR": null,
+    "estimatedCustomers": null,
+    "notes": "Customer Service AI bot, kind of what comm and sales center does, AI agent",
+    "action": null
+  },
+  {
+    "id": "int-scantrak-data-systems",
+    "name": "Scantrak Data Systems",
+    "status": "inactive",
+    "platforms": [
+      "pestpac"
+    ],
+    "integrationType": "none",
+    "trustedStatus": "unknown",
+    "doNotApprove": false,
+    "competitiveLevel": "none",
+    "commercialAgreement": "yes",
+    "impactARR": null,
+    "estimatedCustomers": null,
+    "notes": null,
+    "action": null
+  },
+  {
+    "id": "int-schedule-engine",
+    "name": "Schedule Engine",
+    "status": "active",
+    "platforms": [
+      "pestpac"
+    ],
+    "integrationType": "partner_api",
+    "trustedStatus": "unknown",
+    "doNotApprove": false,
+    "competitiveLevel": "none",
+    "commercialAgreement": "yes",
+    "impactARR": 28468,
+    "estimatedCustomers": null,
+    "notes": null,
+    "action": null
+  },
+  {
+    "id": "int-sellify-ai",
+    "name": "Sellify AI",
+    "status": "active",
+    "platforms": [
+      "pestpac",
+      "realgreen"
+    ],
+    "integrationType": "customer_api",
+    "trustedStatus": "unknown",
+    "doNotApprove": false,
+    "competitiveLevel": "extremely",
+    "commercialAgreement": "prospect",
+    "impactARR": null,
+    "estimatedCustomers": "50+",
+    "notes": "AI Voice agents that do sales, maybe we should be doing the things they are doing, unless they are sucking data in and making dashboards we should be making. We have no offering at WW right now that",
+    "action": null
+  },
+  {
+    "id": "int-slingshot-pronto",
+    "name": "Slingshot/Pronto",
+    "status": "active",
+    "platforms": [
+      "pestpac",
+      "realgreen"
+    ],
+    "integrationType": "partner_api",
+    "trustedStatus": "unknown",
+    "doNotApprove": false,
+    "competitiveLevel": "none",
+    "commercialAgreement": "yes",
+    "impactARR": 1000000,
+    "estimatedCustomers": null,
+    "notes": "Probably not much",
+    "action": null
+  },
+  {
+    "id": "int-smarter-launch",
+    "name": "Smarter Launch",
+    "status": "active",
+    "platforms": [
+      "pestpac"
+    ],
+    "integrationType": "customer_api",
+    "trustedStatus": "unknown",
+    "doNotApprove": false,
+    "competitiveLevel": "extremely",
+    "commercialAgreement": "prospect",
+    "impactARR": null,
+    "estimatedCustomers": "30+",
+    "notes": "Competitive to our Forms product, Sales Center, Door to Door and Smarter Launch is supposedly also creating their own CRM.",
+    "action": null
+  },
+  {
+    "id": "int-spectrum-analytic-inc",
+    "name": "Spectrum Analytic Inc",
+    "status": "active",
+    "platforms": [
+      "realgreen"
+    ],
+    "integrationType": "partner_api",
+    "trustedStatus": "unknown",
+    "doNotApprove": false,
+    "competitiveLevel": "none",
+    "commercialAgreement": "yes",
+    "impactARR": null,
+    "estimatedCustomers": null,
+    "notes": null,
+    "action": null
+  },
+  {
+    "id": "int-sterling",
+    "name": "Sterling",
+    "status": "active",
+    "platforms": [
+      "winteam"
+    ],
+    "integrationType": "partner_api",
+    "trustedStatus": "trusted",
+    "doNotApprove": false,
+    "competitiveLevel": "none",
+    "commercialAgreement": "yes",
+    "impactARR": 800000,
+    "estimatedCustomers": null,
+    "notes": null,
+    "action": null
+  },
+  {
+    "id": "int-synergi",
+    "name": "Synergi",
+    "status": "active",
+    "platforms": [
+      "winteam"
+    ],
+    "integrationType": "partner_api",
+    "trustedStatus": "unknown",
+    "doNotApprove": false,
+    "competitiveLevel": "none",
+    "commercialAgreement": "yes",
+    "impactARR": null,
+    "estimatedCustomers": null,
+    "notes": null,
+    "action": null
+  },
+  {
+    "id": "int-tcn",
+    "name": "TCN",
+    "status": "active",
+    "platforms": [
+      "realgreen"
+    ],
+    "integrationType": "partner_api",
+    "trustedStatus": "trusted",
+    "doNotApprove": false,
+    "competitiveLevel": "none",
+    "commercialAgreement": "yes",
+    "impactARR": 18000,
+    "estimatedCustomers": null,
+    "notes": "Automated dialer",
+    "action": null
+  },
+  {
+    "id": "int-trg-solutions",
+    "name": "TRG Solutions",
+    "status": "active",
+    "platforms": [
+      "pestpac"
+    ],
+    "integrationType": "none",
+    "trustedStatus": "unknown",
+    "doNotApprove": false,
+    "competitiveLevel": "unknown",
+    "commercialAgreement": "no",
+    "impactARR": null,
+    "estimatedCustomers": null,
+    "notes": null,
+    "action": null
+  },
+  {
+    "id": "int-target-specialty-products",
+    "name": "Target Specialty Products",
+    "status": "active",
+    "platforms": [
+      "pestpac"
+    ],
+    "integrationType": "partner_api",
+    "trustedStatus": "unknown",
+    "doNotApprove": false,
+    "competitiveLevel": "none",
+    "commercialAgreement": "yes",
+    "impactARR": 2245,
+    "estimatedCustomers": null,
+    "notes": null,
+    "action": null
+  },
+  {
+    "id": "int-textrequest-llc",
+    "name": "TextRequest LLC",
+    "status": "active",
+    "platforms": [
+      "winteam"
+    ],
+    "integrationType": "partner_api",
+    "trustedStatus": "unknown",
+    "doNotApprove": false,
+    "competitiveLevel": "extremely",
+    "commercialAgreement": "yes",
+    "impactARR": 21000,
+    "estimatedCustomers": null,
+    "notes": "SMS Marketing, sales, messaging, text to pay with Authvia for digital wallet, own merchant.",
+    "action": null
+  },
+  {
+    "id": "int-traktik",
+    "name": "Traktik",
+    "status": "active",
+    "platforms": [
+      "winteam"
+    ],
+    "integrationType": "customer_api",
+    "trustedStatus": "unknown",
+    "doNotApprove": false,
+    "competitiveLevel": "extremely",
+    "commercialAgreement": "no",
+    "impactARR": null,
+    "estimatedCustomers": null,
+    "notes": "Customer acquired by Allied",
+    "action": null
+  },
+  {
+    "id": "int-transworld-systems-collections",
+    "name": "Transworld Systems (collections)",
+    "status": "active",
+    "platforms": [
+      "pestpac"
+    ],
+    "integrationType": "partner_api",
+    "trustedStatus": "unknown",
+    "doNotApprove": false,
+    "competitiveLevel": "none",
+    "commercialAgreement": "yes",
+    "impactARR": null,
+    "estimatedCustomers": null,
+    "notes": null,
+    "action": null
+  },
+  {
+    "id": "int-twilio",
+    "name": "Twilio",
+    "status": "active",
+    "platforms": [
+      "pestpac",
+      "realgreen"
+    ],
+    "integrationType": "partner_api",
+    "trustedStatus": "unknown",
+    "doNotApprove": false,
+    "competitiveLevel": "none",
+    "commercialAgreement": "yes",
+    "impactARR": null,
+    "estimatedCustomers": null,
+    "notes": null,
+    "action": null
+  },
+  {
+    "id": "int-upland-software",
+    "name": "Upland Software",
+    "status": "active",
+    "platforms": [
+      "winteam"
+    ],
+    "integrationType": "partner_api",
+    "trustedStatus": "trusted",
+    "doNotApprove": false,
+    "competitiveLevel": "none",
+    "commercialAgreement": "yes",
+    "impactARR": 1100000,
+    "estimatedCustomers": null,
+    "notes": null,
+    "action": null
+  },
+  {
+    "id": "int-verizon-connect",
+    "name": "Verizon Connect",
+    "status": "active",
+    "platforms": [
+      "pestpac"
+    ],
+    "integrationType": "partner_api",
+    "trustedStatus": "unknown",
+    "doNotApprove": false,
+    "competitiveLevel": "none",
+    "commercialAgreement": "yes",
+    "impactARR": null,
+    "estimatedCustomers": null,
+    "notes": null,
+    "action": null
+  },
+  {
+    "id": "int-voice-for-pest",
+    "name": "Voice For Pest",
+    "status": "active",
+    "platforms": [
+      "pestpac",
+      "realgreen"
+    ],
+    "integrationType": "customer_api",
+    "trustedStatus": "unknown",
+    "doNotApprove": false,
+    "competitiveLevel": "somewhat",
+    "commercialAgreement": "yes",
+    "impactARR": 400000,
+    "estimatedCustomers": null,
+    "notes": "Capturing calls on our system, we need data back, they want more data.",
+    "action": null
+  },
+  {
+    "id": "int-wagestream",
+    "name": "Wagestream",
+    "status": "active",
+    "platforms": [
+      "international"
+    ],
+    "integrationType": "partner_api",
+    "trustedStatus": "trusted",
+    "doNotApprove": false,
+    "competitiveLevel": "unknown",
+    "commercialAgreement": "yes",
+    "impactARR": null,
+    "estimatedCustomers": null,
+    "notes": null,
+    "action": null
+  },
+  {
+    "id": "int-wagestream-uk",
+    "name": "Wagestream (UK)",
+    "status": "active",
+    "platforms": [
+      "winteam"
+    ],
+    "integrationType": "partner_api",
+    "trustedStatus": "unknown",
+    "doNotApprove": false,
+    "competitiveLevel": "none",
+    "commercialAgreement": "yes",
+    "impactARR": 168746,
+    "estimatedCustomers": null,
+    "notes": null,
+    "action": null
+  },
+  {
+    "id": "int-waypoint-analytical",
+    "name": "Waypoint Analytical",
+    "status": "active",
+    "platforms": [
+      "realgreen"
+    ],
+    "integrationType": "partner_api",
+    "trustedStatus": "unknown",
+    "doNotApprove": false,
+    "competitiveLevel": "none",
+    "commercialAgreement": "yes",
+    "impactARR": null,
+    "estimatedCustomers": null,
+    "notes": null,
+    "action": null
+  },
+  {
+    "id": "int-wisetack",
+    "name": "Wisetack",
+    "status": "active",
+    "platforms": [
+      "pestpac"
+    ],
+    "integrationType": "partner_api",
+    "trustedStatus": "unknown",
+    "doNotApprove": false,
+    "competitiveLevel": "none",
+    "commercialAgreement": "yes",
+    "impactARR": 180000,
+    "estimatedCustomers": null,
+    "notes": null,
+    "action": null
+  },
+  {
+    "id": "int-xero",
+    "name": "Xero",
+    "status": "pending",
+    "platforms": [
+      "international"
+    ],
+    "integrationType": "partner_api",
+    "trustedStatus": "trusted",
+    "doNotApprove": false,
+    "competitiveLevel": "unknown",
+    "commercialAgreement": "yes",
+    "impactARR": null,
+    "estimatedCustomers": null,
+    "notes": null,
+    "action": null
+  },
+  {
+    "id": "int-xero-uk",
+    "name": "Xero (UK)",
+    "status": "active",
+    "platforms": [
+      "winteam"
+    ],
+    "integrationType": "partner_api",
+    "trustedStatus": "unknown",
+    "doNotApprove": false,
+    "competitiveLevel": "none",
+    "commercialAgreement": "yes",
+    "impactARR": null,
+    "estimatedCustomers": null,
+    "notes": null,
+    "action": null
+  },
+  {
+    "id": "int-youlend",
+    "name": "YouLend",
+    "status": "active",
+    "platforms": [
+      "pestpac",
+      "realgreen"
+    ],
+    "integrationType": "partner_api",
+    "trustedStatus": "questionable",
+    "doNotApprove": false,
+    "competitiveLevel": "none",
+    "commercialAgreement": "yes",
+    "impactARR": 90000,
+    "estimatedCustomers": null,
+    "notes": null,
+    "action": null
+  },
+  {
+    "id": "int-ziprecruiter",
+    "name": "ZipRecruiter",
+    "status": "active",
+    "platforms": [
+      "winteam"
+    ],
+    "integrationType": "partner_api",
+    "trustedStatus": "unknown",
+    "doNotApprove": false,
+    "competitiveLevel": "none",
+    "commercialAgreement": "yes",
+    "impactARR": null,
+    "estimatedCustomers": null,
+    "notes": null,
+    "action": null
+  }
+]

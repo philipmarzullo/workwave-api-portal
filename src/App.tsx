@@ -17,6 +17,7 @@ import {
   Lock,
   Radar,
   BookOpen,
+  ShieldCheck,
 } from 'lucide-react'
 import { store } from '@/data/store'
 import type { ViewMode, CustomerUser } from '@/data/types'
@@ -34,6 +35,7 @@ import { DeveloperRiskProfiles } from '@/views/DeveloperRiskProfiles'
 import { ApplicationsDashboard } from '@/views/ApplicationsDashboard'
 import { UsageIntelligence } from '@/views/UsageIntelligence'
 import { ApiCatalog } from '@/views/ApiCatalog'
+import { TrustedIntegrators } from '@/views/TrustedIntegrators'
 
 // ── Product labels ──────────────────────────────────────────────
 
@@ -294,6 +296,7 @@ export default function App() {
   // Customer nav items
   const customerNav = [
     { path: '/', label: 'Partner Directory', icon: Globe },
+    { path: '/trusted-integrators', label: 'Trusted Integrators', icon: ShieldCheck },
     { path: '/my-integrations', label: 'My Integrations', icon: Layers },
     { path: '/check-status', label: 'Check Status', icon: Search },
   ]
@@ -303,6 +306,7 @@ export default function App() {
     { path: '/reviewer', label: 'Review Queue', icon: ClipboardList },
     { path: '/reviewer/active-access', label: 'Active Access', icon: Layers },
     { path: '/reviewer/partners', label: 'Partner Directory', icon: Globe },
+    { path: '/reviewer/integrators', label: 'Integrators', icon: ShieldCheck },
     { path: '/reviewer/risk-profiles', label: 'Risk Profiles', icon: ShieldAlert },
     { path: '/reviewer/applications', label: 'Applications', icon: FileText },
     { path: '/reviewer/analytics', label: 'Analytics', icon: BarChart3 },
@@ -440,6 +444,7 @@ export default function App() {
           <Routes>
             {/* Customer routes */}
             <Route path="/" element={<Directory activeUser={activeUser} />} />
+            <Route path="/trusted-integrators" element={<TrustedIntegrators />} />
             <Route path="/request/:partnerId?" element={<RequestForm activeUser={activeUser} onSubmit={refresh} />} />
             <Route path="/confirmation/:requestId" element={<Confirmation />} />
             <Route path="/my-integrations" element={<MyIntegrations activeUser={activeUser} />} />
@@ -451,6 +456,7 @@ export default function App() {
             <Route path="/reviewer/request/:requestId" element={<ReviewerRequestDetail onRefresh={refresh} />} />
             <Route path="/reviewer/partners" element={<Directory activeUser={activeUser} isReviewerView />} />
             <Route path="/reviewer/partner/:partnerId" element={<PartnerDetail />} />
+            <Route path="/reviewer/integrators" element={<TrustedIntegrators isReviewerView />} />
             <Route path="/reviewer/risk-profiles" element={<DeveloperRiskProfiles />} />
             <Route path="/reviewer/applications" element={<HistoricalApplications />} />
             <Route path="/reviewer/analytics" element={<ApplicationsDashboard />} />

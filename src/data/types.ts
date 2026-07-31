@@ -376,5 +376,29 @@ export interface CatalogEndpoint {
   triggerType: TriggerType
 }
 
+// ── Trusted Integrators & Partners ──────────────────────────
+
+export type IntegratorPlatform = 'pestpac' | 'realgreen' | 'winteam' | 'international'
+export type IntegratorStatus = 'active' | 'inactive' | 'pending'
+export type IntegratorApiType = 'partner_api' | 'customer_api' | 'manual' | 'none'
+export type TrustedLevel = 'trusted' | 'questionable' | 'not_trusted' | 'unknown'
+export type CompetitiveLevel = 'extremely' | 'somewhat' | 'none' | 'unknown'
+
+export interface TrustedIntegrator {
+  id: string
+  name: string
+  status: IntegratorStatus
+  platforms: IntegratorPlatform[]
+  integrationType: IntegratorApiType
+  trustedStatus: TrustedLevel
+  doNotApprove: boolean
+  competitiveLevel: CompetitiveLevel
+  commercialAgreement: 'yes' | 'no' | 'prospect'
+  impactARR: number | null
+  estimatedCustomers: string | null
+  notes: string | null
+  action: string | null
+}
+
 // Session context
 export type ViewMode = 'customer' | 'reviewer'
