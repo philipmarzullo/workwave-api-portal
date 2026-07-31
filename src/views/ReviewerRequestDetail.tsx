@@ -31,6 +31,10 @@ import {
   Tag,
   Briefcase,
   TriangleAlert,
+  Pause,
+  Play,
+  Swords,
+  Ban,
 } from 'lucide-react'
 import type { ApprovalStage, ApprovalDecision, ApiPricing, VolumeTier, ApiCategory, SupportPackage } from '@/data/types'
 import { store, VOLUME_TIERS, suggestTier } from '@/data/store'
@@ -276,6 +280,7 @@ export function ReviewerRequestDetail({ onRefresh }: { onRefresh: () => void }) 
 
   const stageOptions: { value: ApprovalStage; label: string; role: string }[] = [
     { value: 'initial_review', label: 'Initial Review', role: STAGE_REVIEWER_ROLES.initial_review.role },
+    { value: 'competitive_review', label: 'Competitive Review', role: STAGE_REVIEWER_ROLES.competitive_review.role },
     { value: 'security_review', label: 'Security Review', role: STAGE_REVIEWER_ROLES.security_review.role },
     { value: 'legal_review', label: 'Legal Review', role: STAGE_REVIEWER_ROLES.legal_review.role },
     { value: 'sandbox_approval', label: 'Sandbox Approval', role: STAGE_REVIEWER_ROLES.sandbox_approval.role },
@@ -326,7 +331,28 @@ export function ReviewerRequestDetail({ onRefresh }: { onRefresh: () => void }) 
                   <span className="text-amber-600 font-mono">Timeline: {TIMELINE_LABELS[request.targetTimeline] ?? request.targetTimeline}</span>
                 </>
               )}
+              {request.salesforceCaseId && (
+                <>
+                  <span className="text-ww-gray-300">|</span>
+                  <span className="text-ww-primary font-mono">SF: {request.salesforceCaseId}</span>
+                </>
+              )}
             </div>
+            {/* Resell Intent */}
+            {(request.customerIntendToResell !== null || request.developerIntendToResell !== null) && (
+              <div className="flex items-center gap-4 mt-3 text-xs flex-wrap">
+                {request.customerIntendToResell !== null && (
+                  <span className={`inline-flex px-2 py-0.5 rounded font-medium ${request.customerIntendToResell ? 'bg-amber-100 text-amber-700' : 'bg-gray-100 text-gray-600'}`}>
+                    Customer resell: {request.customerIntendToResell ? 'Yes' : 'No'}
+                  </span>
+                )}
+                {request.developerIntendToResell !== null && (
+                  <span className={`inline-flex px-2 py-0.5 rounded font-medium ${request.developerIntendToResell ? 'bg-amber-100 text-amber-700' : 'bg-gray-100 text-gray-600'}`}>
+                    Developer resell: {request.developerIntendToResell ? 'Yes' : 'No'}
+                  </span>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Partner Info */}
@@ -822,13 +848,77 @@ export function ReviewerRequestDetail({ onRefresh }: { onRefresh: () => void }) 
         {/* Right column: Review Panel */}
         <div className="lg:col-span-1">
           <div className="sticky top-24 space-y-6">
+            {/* Hold Banner */}
+            {request.status === 'on_hold' && (
+              <div className="bg-orange-50 rounded-md border border-orange-300 p-5">
+                <div className="flex items-center gap-2 mb-2">
+                  <Pause size={16} className="text-orange-700" />
+                  <h3 className="text-sm font-display font-semibold text-orange-800">On Hold</h3>
+                </div>
+                {request.holdReason && (
+                  <p className="text-xs text-orange-700 mb-2">{request.holdReason}</p>
+                )}
+                <div className="flex items-center gap-2 text-[10px] font-mono text-orange-600 mb-3">
+                  {request.holdPlacedBy && <span>Held by {request.holdPlacedBy}</span>}
+                  {request.holdPlacedAt && <span>&middot; {formatDate(request.holdPlacedAt)}</span>}
+                </div>
+                <button
+                  onClick={() => {
+                    if (!requestId) return
+                    store.releaseHold(requestId)
+                    onRefresh()
+                    window.location.reload()
+                  }}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-orange-700 text-white text-xs font-medium hover:bg-orange-800 transition-colors"
+                >
+                  <Play size={12} />
+                  Release Hold
+                </button>
+              </div>
+            )}
+
             {/* Flags Section */}
-            {(isUnlisted || isUnapproved || request.dataLeavesEnvironment) && (
+            {(isUnlisted || isUnapproved || partner?.tier === 'blocked' || partner?.competitiveFlag || request.dataLeavesEnvironment || store.hasContradictoryResellIntent(request)) && (
               <div className="bg-white rounded-md border border-ww-gray-200 p-5 space-y-3">
                 <h3 className="text-sm font-display font-mono font-semibold text-ww-gray-900 uppercase tracking-wide flex items-center gap-2">
                   <Flag size={14} className="text-ww-amber" />
                   Review Flags
                 </h3>
+                {partner?.tier === 'blocked' && (
+                  <div className="flex items-start gap-2 p-3 rounded-md bg-red-100 border border-red-300">
+                    <Ban size={16} className="text-red-800 shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-sm font-semibold text-red-900">Vendor Blocked</p>
+                      <p className="text-xs text-red-700 mt-0.5">{partner.blockedReason || 'This vendor has been blocked from all API access.'}</p>
+                    </div>
+                  </div>
+                )}
+                {partner?.competitiveFlag && partner.tier !== 'blocked' && (
+                  <div className="flex items-start gap-2 p-3 rounded-md bg-red-50 border border-red-200">
+                    <Swords size={16} className="text-red-700 shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-sm font-semibold text-red-800">Competitive Concern</p>
+                      <p className="text-xs text-red-700 mt-0.5">{partner.competitiveFlagReason || 'Flagged for potential competitive conflict.'}</p>
+                      {partner.competitiveFlaggedBy && (
+                        <p className="text-[10px] text-red-500 mt-1 font-mono">
+                          Flagged by {partner.competitiveFlaggedBy}
+                          {partner.competitiveFlaggedAt && ` on ${formatDate(partner.competitiveFlaggedAt)}`}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                )}
+                {store.hasContradictoryResellIntent(request) && (
+                  <div className="flex items-start gap-2 p-3 rounded-md bg-amber-50 border border-amber-200">
+                    <TriangleAlert size={16} className="text-amber-700 shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-sm font-semibold text-amber-800">Contradictory Resell Intent</p>
+                      <p className="text-xs text-amber-700 mt-0.5">
+                        Customer says {request.customerIntendToResell ? 'Yes' : 'No'} to reselling, but developer says {request.developerIntendToResell ? 'Yes' : 'No'}.
+                      </p>
+                    </div>
+                  </div>
+                )}
                 {isUnlisted && (
                   <div className="flex items-start gap-2 p-3 rounded-md bg-amber-50 border border-amber-200">
                     <AlertTriangle size={16} className="text-ww-amber shrink-0 mt-0.5" />
@@ -856,6 +946,31 @@ export function ReviewerRequestDetail({ onRefresh }: { onRefresh: () => void }) 
                     </div>
                   </div>
                 )}
+              </div>
+            )}
+
+            {/* Hold Action — for pending requests not already on hold */}
+            {(request.status === 'pending_review' || request.status === 'pending_production_review') && (
+              <div className="bg-white rounded-md border border-ww-gray-200 p-5">
+                <h3 className="text-sm font-display font-mono font-semibold text-ww-gray-900 uppercase tracking-wide mb-3 flex items-center gap-2">
+                  <Pause size={14} className="text-orange-600" />
+                  Place On Hold
+                </h3>
+                <p className="text-xs text-ww-gray-500 mb-3">Hold this request for competitive review or leadership decision.</p>
+                <button
+                  onClick={() => {
+                    if (!requestId) return
+                    const reason = prompt('Hold reason:')
+                    if (!reason) return
+                    store.holdRequest(requestId, reason, 'Reviewer')
+                    onRefresh()
+                    window.location.reload()
+                  }}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-orange-100 text-orange-800 text-xs font-semibold hover:bg-orange-200 transition-colors"
+                >
+                  <Pause size={12} />
+                  Place On Hold
+                </button>
               </div>
             )}
 

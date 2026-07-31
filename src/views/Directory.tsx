@@ -26,6 +26,7 @@ const TIER_SECTIONS: { key: PartnerTier; label: string; accent: string }[] = [
   { key: 'approved', label: 'APPROVED', accent: 'border-l-ww-teal' },
   { key: 'under_review', label: 'UNDER REVIEW', accent: 'border-l-ww-amber' },
   { key: 'unapproved', label: 'NOT APPROVED', accent: 'border-l-ww-red' },
+  { key: 'blocked', label: 'BLOCKED', accent: 'border-l-red-700' },
 ]
 
 // ── Props ───────────────────────────────────────────────────────
@@ -57,6 +58,7 @@ export function Directory({ activeUser, isReviewerView = false }: DirectoryProps
     approved: false,
     under_review: false,
     unapproved: false,
+    blocked: false,
   })
 
   const toggleSection = (tier: PartnerTier) => {
@@ -91,6 +93,7 @@ export function Directory({ activeUser, isReviewerView = false }: DirectoryProps
       approved: [],
       under_review: [],
       unapproved: [],
+      blocked: [],
     }
     for (const partner of filteredPartners) {
       groups[partner.tier]?.push(partner)

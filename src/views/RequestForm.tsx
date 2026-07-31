@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import {
   Lock, ChevronRight, ChevronLeft, CheckCircle2,
   Building2, Settings2, Server, FileCheck,
-  Send, Globe, Mail, AlertTriangle, ExternalLink, Info, Phone,
+  Send, Globe, Mail, AlertTriangle, ExternalLink, Info, Phone, Swords,
 } from 'lucide-react'
 import type { CustomerUser, WorkWaveProduct, BuilderType, UseCase, DataCategory, Environment, RequestType, LegacyAccessMethod } from '@/data/types'
 import { store } from '@/data/store'
@@ -159,6 +159,10 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
   const [listedPartnerContactName, setListedPartnerContactName] = useState('')
   const [listedPartnerContactEmail, setListedPartnerContactEmail] = useState('')
 
+  // Resell intent
+  const [customerIntendToResell, setCustomerIntendToResell] = useState<boolean | null>(null)
+  const [developerIntendToResell, setDeveloperIntendToResell] = useState<boolean | null>(null)
+
   // Step 3: Environment
   const [environment, setEnvironment] = useState<Environment | ''>('')
 
@@ -185,6 +189,34 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
             Contact your admin to request API access permissions. Your current account does
             not have the required role to submit API access requests.
           </p>
+        </div>
+      </div>
+    )
+  }
+
+  // ── Blocked partner check ──────────────────────────────────────
+  if (partner?.tier === 'blocked') {
+    return (
+      <div className="max-w-[720px] mx-auto py-10">
+        <div className="bg-white rounded-md border border-red-200 p-12 text-center">
+          <div className="w-16 h-16 rounded-md bg-red-100 flex items-center justify-center mx-auto mb-6">
+            <Lock size={28} className="text-red-600" />
+          </div>
+          <h2 className="font-display text-xl font-semibold text-red-800 mb-3">
+            Vendor Blocked
+          </h2>
+          <p className="text-sm text-ww-gray-600 max-w-md mx-auto leading-relaxed mb-2">
+            <strong>{partner.name}</strong> has been blocked from API access and new applications cannot be submitted.
+          </p>
+          {partner.blockedReason && (
+            <p className="text-xs text-red-600 max-w-md mx-auto">{partner.blockedReason}</p>
+          )}
+          <button
+            onClick={() => navigate('/')}
+            className="mt-6 px-4 py-2 rounded-md bg-ww-navy text-white text-sm font-medium hover:bg-ww-navy-light transition-colors"
+          >
+            Back to Directory
+          </button>
         </div>
       </div>
     )
@@ -320,6 +352,8 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
         environment: environment as Environment,
         requestType: requestType as RequestType,
         migratingFrom: requestType === 'migration' ? (migratingFrom as LegacyAccessMethod) : null,
+        customerIntendToResell,
+        developerIntendToResell,
       })
 
       store.signAgreement(newRequest.id)
@@ -565,6 +599,27 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
                   className="w-full px-4 py-2.5 rounded-lg border border-ww-gray-300 text-sm text-ww-gray-800 placeholder:text-ww-gray-400 focus:outline-none focus:ring-2 focus:ring-ww-primary focus:border-transparent transition-shadow"
                 />
                 {renderError(fieldError('partnerContact', !!partnerContact.trim()))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Competitive flag warning */}
+        {partner?.competitiveFlag && (
+          <div className="bg-red-50 border-l-4 border-red-400 p-4 rounded-r-lg">
+            <div className="flex gap-3">
+              <Swords size={18} className="text-red-500 shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm font-medium text-red-800 mb-1">
+                  Competitive Concern
+                </p>
+                <p className="text-xs text-red-700 leading-relaxed">
+                  This partner has been flagged for competitive concerns. Your request will undergo
+                  additional review by the Partnerships team and may require leadership approval.
+                  {partner.competitiveFlagReason && (
+                    <span className="block mt-1 font-medium">{partner.competitiveFlagReason}</span>
+                  )}
+                </p>
               </div>
             </div>
           </div>
@@ -952,6 +1007,91 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
           {touched.dataLeavesEnvironment && dataLeavesEnvironment === null && renderError('This field is required')}
         </div>
 
+        {/* Resell Intent — Customer */}
+        <div>
+          <label className="block text-sm font-semibold text-ww-gray-700 mb-1.5">
+            Will your company resell or redistribute data accessed through this API?
+          </label>
+          <p className="text-xs text-ww-gray-500 mb-3">
+            This includes offering WorkWave data as part of a paid service, report, or product sold to others.
+          </p>
+          <div className="flex gap-3">
+            {[
+              { value: false, label: 'No' },
+              { value: true, label: 'Yes' },
+            ].map(opt => (
+              <label
+                key={`cust-resell-${String(opt.value)}`}
+                className={`flex items-center gap-3 px-5 py-3.5 rounded-md border-2 cursor-pointer transition-all ${
+                  customerIntendToResell === opt.value
+                    ? 'border-ww-primary bg-ww-sky/30'
+                    : 'border-ww-gray-200 bg-white hover:border-ww-gray-300'
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="customerIntendToResell"
+                  checked={customerIntendToResell === opt.value}
+                  onChange={() => setCustomerIntendToResell(opt.value)}
+                  className="sr-only"
+                />
+                <RadioDot selected={customerIntendToResell === opt.value} />
+                <span
+                  className={`text-sm font-medium ${
+                    customerIntendToResell === opt.value ? 'text-ww-gray-800' : 'text-ww-gray-700'
+                  }`}
+                >
+                  {opt.label}
+                </span>
+              </label>
+            ))}
+          </div>
+        </div>
+
+        {/* Resell Intent — Developer / Partner */}
+        {builderType === 'partner' && (
+          <div>
+            <label className="block text-sm font-semibold text-ww-gray-700 mb-1.5">
+              To your knowledge, does the integration partner intend to resell or redistribute this data?
+            </label>
+            <p className="text-xs text-ww-gray-500 mb-3">
+              If the partner plans to offer WorkWave data as part of their own product or service.
+            </p>
+            <div className="flex gap-3">
+              {[
+                { value: false, label: 'No' },
+                { value: true, label: 'Yes' },
+                { value: null, label: 'Not sure' },
+              ].map(opt => (
+                <label
+                  key={`dev-resell-${String(opt.value)}`}
+                  className={`flex items-center gap-3 px-5 py-3.5 rounded-md border-2 cursor-pointer transition-all ${
+                    developerIntendToResell === opt.value
+                      ? 'border-ww-primary bg-ww-sky/30'
+                      : 'border-ww-gray-200 bg-white hover:border-ww-gray-300'
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="developerIntendToResell"
+                    checked={developerIntendToResell === opt.value}
+                    onChange={() => setDeveloperIntendToResell(opt.value)}
+                    className="sr-only"
+                  />
+                  <RadioDot selected={developerIntendToResell === opt.value} />
+                  <span
+                    className={`text-sm font-medium ${
+                      developerIntendToResell === opt.value ? 'text-ww-gray-800' : 'text-ww-gray-700'
+                    }`}
+                  >
+                    {opt.label}
+                  </span>
+                </label>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Third-Party Tool (only for partner builder type) */}
         {builderType === 'partner' && (
           <div>
@@ -1330,6 +1470,34 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
                 <span className="text-sm text-ww-gray-400">--</span>
               )}
             </div>
+            {customerIntendToResell !== null && (
+              <div className="flex py-2">
+                <span className="text-[13px] text-ww-gray-500 w-44 shrink-0">Customer Resell Intent</span>
+                {customerIntendToResell ? (
+                  <span className="bg-amber-100 text-amber-800 text-xs px-2 py-0.5 rounded font-medium">Yes</span>
+                ) : (
+                  <span className="bg-ww-gray-100 text-ww-gray-700 text-xs px-2 py-0.5 rounded font-mono">No</span>
+                )}
+              </div>
+            )}
+            {developerIntendToResell !== null && (
+              <div className="flex py-2">
+                <span className="text-[13px] text-ww-gray-500 w-44 shrink-0">Partner Resell Intent</span>
+                {developerIntendToResell ? (
+                  <span className="bg-amber-100 text-amber-800 text-xs px-2 py-0.5 rounded font-medium">Yes</span>
+                ) : (
+                  <span className="bg-ww-gray-100 text-ww-gray-700 text-xs px-2 py-0.5 rounded font-mono">No</span>
+                )}
+              </div>
+            )}
+            {customerIntendToResell !== null && developerIntendToResell !== null && customerIntendToResell !== developerIntendToResell && (
+              <div className="flex items-start gap-2 p-3 rounded-md bg-amber-50 border border-amber-200 mt-1">
+                <AlertTriangle size={14} className="text-amber-500 shrink-0 mt-0.5" />
+                <p className="text-xs text-amber-700 leading-relaxed">
+                  The customer and partner resell intent answers differ. This will be flagged for additional review.
+                </p>
+              </div>
+            )}
           </div>
         </div>
 

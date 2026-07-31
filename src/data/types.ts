@@ -2,16 +2,16 @@
 export type WorkWaveProduct = 'pestpac' | 'realgreen' | 'winteam' | 'lighthouse' | 'timegate_plus' | 'route_manager' | 'hire'
 
 // Partner tiers
-export type PartnerTier = 'approved' | 'under_review' | 'unapproved'
+export type PartnerTier = 'approved' | 'under_review' | 'unapproved' | 'blocked'
 
 // Integration types
 export type IntegrationType = 'scheduling' | 'crm' | 'accounting' | 'payments' | 'fleet' | 'reporting' | 'hr' | 'marketing' | 'field_service' | 'custom'
 
 // Request statuses
-export type RequestStatus = 'draft' | 'pending_agreement' | 'pending_review' | 'sandbox_approved' | 'sandbox_denied' | 'pending_production_review' | 'production_approved' | 'production_denied' | 'revoked'
+export type RequestStatus = 'draft' | 'pending_agreement' | 'pending_review' | 'on_hold' | 'sandbox_approved' | 'sandbox_denied' | 'pending_production_review' | 'production_approved' | 'production_denied' | 'revoked'
 
 // Approval stages
-export type ApprovalStage = 'initial_review' | 'security_review' | 'legal_review' | 'sandbox_approval' | 'production_approval'
+export type ApprovalStage = 'initial_review' | 'competitive_review' | 'security_review' | 'legal_review' | 'sandbox_approval' | 'production_approval'
 
 export type ApprovalDecision = 'approved' | 'denied' | 'needs_info'
 
@@ -67,6 +67,13 @@ export interface Partner {
   contractRef: string | null
   website: string
   category: string
+  // Competitive watchlist fields
+  competitiveFlag?: boolean           // flagged for competitive concern
+  competitiveFlagReason?: string      // why flagged (e.g. "Competes with WorkWave Sales Center")
+  competitiveFlaggedBy?: string       // who flagged (e.g. "Jerry Hsu")
+  competitiveFlaggedAt?: string       // ISO date
+  blockedReason?: string              // reason for blocking (when tier === 'blocked')
+  salesforceCaseId?: string           // SF case reference for contract tracking
 }
 
 export interface Customer {
@@ -167,6 +174,13 @@ export interface ApiRequest {
   gatewayPlatform: GatewayPlatform | null
   estimatedMonthlyVolume: number | null
   apiCategories: ApiCategory[] | null
+  // Competitive / compliance fields
+  salesforceCaseId: string | null     // SF case record reference
+  customerIntendToResell: boolean | null   // customer says they'll resell to other WW customers?
+  developerIntendToResell: boolean | null  // developer says they'll resell to other WW customers?
+  holdReason: string | null           // why the request is on hold
+  holdPlacedBy: string | null         // who placed the hold
+  holdPlacedAt: string | null         // when hold was placed
   createdAt: string
   updatedAt: string
 }

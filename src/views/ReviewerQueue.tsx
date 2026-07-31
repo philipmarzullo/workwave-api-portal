@@ -10,19 +10,21 @@ import {
   FlaskConical,
   ArrowUpDown,
   ChevronRight,
+  Pause,
+  Swords,
 } from 'lucide-react'
 import type { ApiRequest } from '@/data/types'
 import { store } from '@/data/store'
 import { PRODUCT_LABELS, STATUS_LABELS, TIER_LABELS, USE_CASE_LABELS } from '@/App'
 
-type FilterTab = 'all' | 'pending_review' | 'production_review' | 'flagged'
+type FilterTab = 'all' | 'pending_review' | 'production_review' | 'on_hold' | 'flagged'
 type SortMode = 'newest' | 'flagged'
 
 function isFlagged(req: ApiRequest): boolean {
   if (req.partnerId === null) return true
   const partner = store.getPartner(req.partnerId)
   if (!partner) return true
-  return partner.tier === 'unapproved'
+  return partner.tier === 'unapproved' || partner.tier === 'blocked' || !!partner.competitiveFlag
 }
 
 function formatDate(iso: string): string {
@@ -43,11 +45,13 @@ export function ReviewerQueue() {
   const stats = useMemo(() => {
     const sandbox = pendingRequests.filter(r => r.status === 'pending_review')
     const production = pendingRequests.filter(r => r.status === 'pending_production_review')
+    const onHold = pendingRequests.filter(r => r.status === 'on_hold')
     const flagged = pendingRequests.filter(r => isFlagged(r))
     return {
       total: pendingRequests.length,
       sandbox: sandbox.length,
       production: production.length,
+      onHold: onHold.length,
       flagged: flagged.length,
     }
   }, [pendingRequests])
@@ -61,6 +65,9 @@ export function ReviewerQueue() {
         break
       case 'production_review':
         filtered = filtered.filter(r => r.status === 'pending_production_review')
+        break
+      case 'on_hold':
+        filtered = filtered.filter(r => r.status === 'on_hold')
         break
       case 'flagged':
         filtered = filtered.filter(r => isFlagged(r))
@@ -85,6 +92,7 @@ export function ReviewerQueue() {
     { key: 'all', label: 'All', count: stats.total },
     { key: 'pending_review', label: 'Pending Review', count: stats.sandbox },
     { key: 'production_review', label: 'Production Review', count: stats.production },
+    { key: 'on_hold', label: 'On Hold', count: stats.onHold },
     { key: 'flagged', label: 'Flagged', count: stats.flagged },
   ]
 
@@ -107,7 +115,7 @@ export function ReviewerQueue() {
       </div>
 
       {/* Stats Row */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
         <div className="bg-white rounded-md border border-ww-gray-200 p-4">
           <div className="flex items-center gap-2 mb-1">
             <Clock size={14} className="text-ww-gray-400" />
@@ -128,6 +136,13 @@ export function ReviewerQueue() {
             <span className="text-xs font-mono font-medium text-ww-gray-500 uppercase tracking-[0.06em]">Production</span>
           </div>
           <p className="text-2xl font-display font-bold text-purple-600">{stats.production}</p>
+        </div>
+        <div className="bg-white rounded-md border border-ww-gray-200 p-4">
+          <div className="flex items-center gap-2 mb-1">
+            <Pause size={14} className="text-orange-600" />
+            <span className="text-xs font-mono font-medium text-ww-gray-500 uppercase tracking-[0.06em]">On Hold</span>
+          </div>
+          <p className="text-2xl font-display font-bold text-orange-600">{stats.onHold}</p>
         </div>
         <div className="bg-white rounded-md border border-ww-gray-200 p-4">
           <div className="flex items-center gap-2 mb-1">
@@ -259,7 +274,24 @@ export function ReviewerQueue() {
 
                       {/* Flags */}
                       <div className="flex items-center gap-3 mt-2 flex-wrap">
-                        {flagged && (
+                        {req.status === 'on_hold' && (
+                          <span className="inline-flex items-center gap-1 text-xs font-semibold text-orange-700">
+                            <Pause size={12} />
+                            On Hold
+                          </span>
+                        )}
+                        {partner?.competitiveFlag && (
+                          <span className="inline-flex items-center gap-1 text-xs font-semibold text-red-700">
+                            <Swords size={12} />
+                            Competitive Concern
+                          </span>
+                        )}
+                        {partner?.tier === 'blocked' && (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold bg-red-200 text-red-900">
+                            Vendor Blocked
+                          </span>
+                        )}
+                        {flagged && req.status !== 'on_hold' && (
                           <span className="inline-flex items-center gap-1 text-xs font-medium text-ww-amber">
                             <Flag size={12} className="text-ww-amber" />
                             Requires Full Review
@@ -269,6 +301,12 @@ export function ReviewerQueue() {
                           <span className="inline-flex items-center gap-1 text-xs font-medium text-ww-red">
                             <ShieldAlert size={12} className="text-ww-red" />
                             Data leaves environment
+                          </span>
+                        )}
+                        {store.hasContradictoryResellIntent(req) && (
+                          <span className="inline-flex items-center gap-1 text-xs font-semibold text-amber-700">
+                            <AlertTriangle size={12} />
+                            Contradictory Resell Intent
                           </span>
                         )}
                       </div>

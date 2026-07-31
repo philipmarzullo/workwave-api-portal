@@ -40,12 +40,14 @@ export const TIER_LABELS: Record<string, { label: string; color: string }> = {
   approved: { label: 'Approved', color: 'bg-emerald-100 text-emerald-700' },
   under_review: { label: 'Under Review', color: 'bg-amber-100 text-amber-700' },
   unapproved: { label: 'Not Approved', color: 'bg-red-100 text-red-700' },
+  blocked: { label: 'Blocked', color: 'bg-red-200 text-red-900' },
 }
 
 export const STATUS_LABELS: Record<string, { label: string; color: string }> = {
   draft: { label: 'Draft', color: 'bg-gray-100 text-gray-600' },
   pending_agreement: { label: 'Pending Agreement', color: 'bg-amber-100 text-amber-700' },
   pending_review: { label: 'Pending Review', color: 'bg-blue-100 text-blue-700' },
+  on_hold: { label: 'On Hold', color: 'bg-orange-100 text-orange-800' },
   sandbox_approved: { label: 'Sandbox Approved', color: 'bg-emerald-100 text-emerald-700' },
   sandbox_denied: { label: 'Sandbox Denied', color: 'bg-red-100 text-red-700' },
   pending_production_review: { label: 'Production Review', color: 'bg-purple-100 text-purple-700' },
@@ -69,6 +71,7 @@ export const USE_CASE_LABELS: Record<string, string> = {
 
 export const STAGE_LABELS: Record<string, string> = {
   initial_review: 'Initial Review',
+  competitive_review: 'Competitive Review',
   security_review: 'Security Review',
   legal_review: 'Legal Review',
   sandbox_approval: 'Sandbox Approval',
@@ -77,6 +80,7 @@ export const STAGE_LABELS: Record<string, string> = {
 
 export const STAGE_REVIEWER_ROLES: Record<string, { role: string; team: string }> = {
   initial_review: { role: 'CSM', team: 'Customer Success' },
+  competitive_review: { role: 'Partnerships Lead', team: 'Partnerships' },
   security_review: { role: 'Security Analyst', team: 'InfoSec' },
   legal_review: { role: 'Legal Counsel', team: 'Legal' },
   sandbox_approval: { role: 'API Engineer', team: 'API Team' },

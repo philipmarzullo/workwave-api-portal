@@ -37,7 +37,7 @@ import {
 
 // ── Storage helpers ──────────────────────────────────────────────
 
-const SEED_VERSION = '9'
+const SEED_VERSION = '10'
 const PREFIX = 'ww-api-portal:'
 
 function key(name: string): string {
@@ -203,7 +203,7 @@ export const store = {
   },
 
   getPendingRequests(): ApiRequest[] {
-    const pendingStatuses: RequestStatus[] = ['pending_review', 'pending_production_review']
+    const pendingStatuses: RequestStatus[] = ['pending_review', 'pending_production_review', 'on_hold']
     return this.getRequests().filter(r => pendingStatuses.includes(r.status))
   },
 
@@ -220,7 +220,7 @@ export const store = {
     return `WW-API-${String(max + 1).padStart(4, '0')}`
   },
 
-  createRequest(req: Omit<ApiRequest, 'id' | 'caseNumber' | 'createdAt' | 'updatedAt' | 'status' | 'agreementSignedAt' | 'pricing' | 'supportPackage' | 'endpointsApproved' | 'reviewerNotes' | 'provisioningChecklist' | 'gatewayPlatform' | 'estimatedMonthlyVolume' | 'apiCategories'>): ApiRequest {
+  createRequest(req: Omit<ApiRequest, 'id' | 'caseNumber' | 'createdAt' | 'updatedAt' | 'status' | 'agreementSignedAt' | 'pricing' | 'supportPackage' | 'endpointsApproved' | 'reviewerNotes' | 'provisioningChecklist' | 'gatewayPlatform' | 'estimatedMonthlyVolume' | 'apiCategories' | 'salesforceCaseId' | 'holdReason' | 'holdPlacedBy' | 'holdPlacedAt'>): ApiRequest {
     const requests = this.getRequests()
     const newReq: ApiRequest = {
       ...req,
@@ -236,6 +236,10 @@ export const store = {
       gatewayPlatform: null,
       estimatedMonthlyVolume: null,
       apiCategories: null,
+      salesforceCaseId: null,
+      holdReason: null,
+      holdPlacedBy: null,
+      holdPlacedAt: null,
       createdAt: now(),
       updatedAt: now(),
     }
@@ -466,6 +470,96 @@ export const store = {
     }
 
     return newApproval
+  },
+
+  // ── Hold / Competitive Review ──────────────────────────────────
+
+  holdRequest(requestId: string, reason: string, placedBy: string): ApiRequest | undefined {
+    const requests = this.getRequests()
+    const idx = requests.findIndex(r => r.id === requestId)
+    if (idx === -1) return undefined
+    requests[idx] = {
+      ...requests[idx],
+      status: 'on_hold',
+      holdReason: reason,
+      holdPlacedBy: placedBy,
+      holdPlacedAt: now(),
+      updatedAt: now(),
+    }
+    save('requests', requests)
+    return requests[idx]
+  },
+
+  releaseHold(requestId: string): ApiRequest | undefined {
+    const requests = this.getRequests()
+    const idx = requests.findIndex(r => r.id === requestId)
+    if (idx === -1) return undefined
+    requests[idx] = {
+      ...requests[idx],
+      status: 'pending_review',
+      updatedAt: now(),
+    }
+    save('requests', requests)
+    return requests[idx]
+  },
+
+  // ── Partner Blocking ──────────────────────────────────────────
+
+  blockPartner(partnerId: string, reason: string): Partner | undefined {
+    const partners = this.getPartners()
+    const idx = partners.findIndex(p => p.id === partnerId)
+    if (idx === -1) return undefined
+    partners[idx] = { ...partners[idx], tier: 'blocked', blockedReason: reason }
+    save('partners', partners)
+    return partners[idx]
+  },
+
+  unblockPartner(partnerId: string): Partner | undefined {
+    const partners = this.getPartners()
+    const idx = partners.findIndex(p => p.id === partnerId)
+    if (idx === -1) return undefined
+    partners[idx] = { ...partners[idx], tier: 'under_review', blockedReason: undefined }
+    save('partners', partners)
+    return partners[idx]
+  },
+
+  toggleCompetitiveFlag(partnerId: string, flaggedBy: string, reason: string): Partner | undefined {
+    const partners = this.getPartners()
+    const idx = partners.findIndex(p => p.id === partnerId)
+    if (idx === -1) return undefined
+    const p = partners[idx]
+    if (p.competitiveFlag) {
+      partners[idx] = { ...p, competitiveFlag: false, competitiveFlagReason: undefined, competitiveFlaggedBy: undefined, competitiveFlaggedAt: undefined }
+    } else {
+      partners[idx] = { ...p, competitiveFlag: true, competitiveFlagReason: reason, competitiveFlaggedBy: flaggedBy, competitiveFlaggedAt: now() }
+    }
+    save('partners', partners)
+    return partners[idx]
+  },
+
+  // ── Cross-reference queries ───────────────────────────────────
+
+  getCustomersByPartner(partnerId: string): { customer: import('./types').Customer; links: PartnerCustomer[]; requests: ApiRequest[] }[] {
+    const links = this.getLinksForPartner(partnerId)
+    const requests = this.getRequestsForPartner(partnerId)
+    const customerIds = new Set([
+      ...links.map(l => l.customerId),
+      ...requests.map(r => r.customerId),
+    ])
+    return Array.from(customerIds).map(cid => ({
+      customer: this.getCustomer(cid)!,
+      links: links.filter(l => l.customerId === cid),
+      requests: requests.filter(r => r.customerId === cid),
+    })).filter(entry => entry.customer)
+  },
+
+  getCompetitiveFlaggedPartners(): Partner[] {
+    return this.getPartners().filter(p => p.competitiveFlag || p.tier === 'blocked')
+  },
+
+  hasContradictoryResellIntent(request: ApiRequest): boolean {
+    if (request.customerIntendToResell === null || request.developerIntendToResell === null) return false
+    return request.customerIntendToResell !== request.developerIntendToResell
   },
 
   // ── View Mode ────────────────────────────────────────────────
