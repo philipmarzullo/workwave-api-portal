@@ -160,7 +160,7 @@ export const API_SUB_CATEGORY_LABELS: Record<string, string> = {
 
 // ── Password gate ───────────────────────────────────────────────
 
-const PASS_HASH = 'd8cbbc006b81a091bc537e4554fe382f7ab82b721912bae670f44616a45cbb99'
+const PASS_HASH = '8750271a5c68aabcc93e9bd8cc742b205914e1b0d1ba49049d49d9a0950364ae'
 
 async function sha256(text: string): Promise<string> {
   const data = new TextEncoder().encode(text)
