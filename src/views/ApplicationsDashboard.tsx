@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useRef, useEffect } from 'react'
 import {
   BarChart3,
   AlertTriangle,
@@ -6,6 +6,11 @@ import {
   ChevronUp,
   ShieldAlert,
   Eye,
+  Bot,
+  Send,
+  Loader2,
+  X,
+  Trash2,
 } from 'lucide-react'
 import type { HistoricalApplication } from '@/data/types'
 import { COMPETITIVE_VENDORS } from '@/data/types'
@@ -173,42 +178,230 @@ export function ApplicationsDashboard() {
     return { contradictory, lowConfidence, noDeveloper }
   }, [])
 
+  // ── Agent state ──
+  const [agentOpen, setAgentOpen] = useState(false)
+  const [agentQuestion, setAgentQuestion] = useState('')
+  const [agentMessages, setAgentMessages] = useState<{ role: 'user' | 'assistant'; text: string }[]>([])
+  const [agentLoading, setAgentLoading] = useState(false)
+  const [agentError, setAgentError] = useState('')
+  const [agentUsage, setAgentUsage] = useState<{ dailySpentCents: number; dailyBudgetCents: number } | null>(null)
+  const agentInputRef = useRef<HTMLTextAreaElement>(null)
+  const agentScrollRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (agentScrollRef.current) {
+      agentScrollRef.current.scrollTop = agentScrollRef.current.scrollHeight
+    }
+  }, [agentMessages, agentLoading])
+
+  const askAgent = async () => {
+    const q = agentQuestion.trim()
+    if (!q || agentLoading) return
+    setAgentMessages(prev => [...prev, { role: 'user', text: q }])
+    setAgentQuestion('')
+    setAgentLoading(true)
+    setAgentError('')
+    try {
+      const res = await fetch('/api/ask', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question: q }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setAgentError(data.error || 'Request failed')
+      } else {
+        setAgentMessages(prev => [...prev, { role: 'assistant', text: data.answer }])
+        if (data.usage) setAgentUsage(data.usage)
+      }
+    } catch {
+      setAgentError('Failed to connect to server')
+    } finally {
+      setAgentLoading(false)
+      setTimeout(() => agentInputRef.current?.focus(), 50)
+    }
+  }
+
+  // ── Section refs for card click-through ──
+  const competitiveRef = useRef<HTMLElement>(null)
+  const chartsRef = useRef<HTMLElement>(null)
+  const riskRef = useRef<HTMLElement>(null)
+
+  const scrollTo = (ref: React.RefObject<HTMLElement | null>) => {
+    ref.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+
   return (
     <div className="py-8 space-y-8">
       {/* Header */}
-      <div>
-        <div className="flex items-center gap-2 mb-1">
-          <BarChart3 size={20} className="text-ww-primary" />
-          <h1 className="text-xl font-display font-bold text-ww-navy">
-            Applications Analytics
-          </h1>
+      <div className="flex items-start justify-between">
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            <BarChart3 size={20} className="text-ww-primary" />
+            <h1 className="text-xl font-display font-bold text-ww-navy">
+              Applications Analytics
+            </h1>
+          </div>
+          <p className="text-sm text-ww-gray-500">
+            Competitive risk analysis and application distribution insights
+          </p>
         </div>
-        <p className="text-sm text-ww-gray-500">
-          Competitive risk analysis and application distribution insights
-        </p>
+        <button
+          onClick={() => {
+            setAgentOpen(o => !o)
+            if (!agentOpen) setTimeout(() => agentInputRef.current?.focus(), 100)
+          }}
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-sm font-medium transition-all ${
+            agentOpen
+              ? 'bg-ww-primary text-white border-ww-primary'
+              : 'border-ww-primary/30 text-ww-primary bg-ww-primary/5 hover:bg-ww-primary/10'
+          }`}
+        >
+          <Bot size={15} />
+          Ask the Agent
+        </button>
       </div>
 
       {/* A. Summary Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-        <SummaryCard label="Total Applications" value={stats.total} />
-        <SummaryCard label="Unique Customers" value={stats.customers} />
-        <SummaryCard label="Unique Partners" value={stats.developers} />
+        <SummaryCard label="Total Applications" value={stats.total} onClick={() => scrollTo(chartsRef)} />
+        <SummaryCard label="Unique Customers" value={stats.customers} onClick={() => scrollTo(chartsRef)} />
+        <SummaryCard label="Unique Partners" value={stats.developers} onClick={() => scrollTo(chartsRef)} />
         <SummaryCard
           label="Competitive Vendor"
           value={`${stats.competitive}`}
           sub={`${stats.competitivePct}%`}
           variant="danger"
+          onClick={() => scrollTo(competitiveRef)}
         />
         <SummaryCard
           label="Resell Intent (Yes)"
           value={`${stats.resellYes}`}
           sub={`${stats.resellPct}%`}
           variant="warning"
+          onClick={() => scrollTo(riskRef)}
         />
       </div>
 
+      {/* Ask the Agent panel */}
+      {agentOpen && (
+        <div className="rounded-lg border border-ww-primary/30 bg-white overflow-hidden flex flex-col" style={{ maxHeight: '480px' }}>
+          <div className="flex items-center justify-between px-4 py-2 bg-ww-primary/5 border-b border-ww-primary/10 shrink-0">
+            <div className="flex items-center gap-2">
+              <Bot size={14} className="text-ww-primary" />
+              <span className="text-sm font-display font-bold text-ww-navy">Ask the Agent</span>
+              {agentUsage && (
+                <span className="text-[10px] font-mono text-ww-gray-400">
+                  ${((agentUsage.dailyBudgetCents - agentUsage.dailySpentCents) / 100).toFixed(2)} remaining today
+                </span>
+              )}
+            </div>
+            <div className="flex items-center gap-1">
+              {agentMessages.length > 0 && (
+                <button
+                  onClick={() => { setAgentMessages([]); setAgentError('') }}
+                  className="p-1 rounded hover:bg-ww-gray-100 text-ww-gray-400 hover:text-ww-gray-600 transition-colors"
+                  title="Clear conversation"
+                >
+                  <Trash2 size={13} />
+                </button>
+              )}
+              <button
+                onClick={() => setAgentOpen(false)}
+                className="p-1 rounded hover:bg-ww-gray-100 text-ww-gray-400 hover:text-ww-gray-600 transition-colors"
+              >
+                <X size={14} />
+              </button>
+            </div>
+          </div>
+
+          <div ref={agentScrollRef} className="flex-1 overflow-y-auto min-h-0">
+            {agentMessages.length === 0 && !agentLoading ? (
+              <div className="p-4">
+                <p className="text-xs text-ww-gray-400 mb-2">Try a question:</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {[
+                    'Which competitive vendors have the most applications?',
+                    'What products are competitive vendors targeting?',
+                    'Summarize the resell intent patterns',
+                    'Which risk flags should I prioritize?',
+                  ].map(q => (
+                    <button
+                      key={q}
+                      onClick={() => {
+                        setAgentQuestion(q)
+                        setTimeout(() => agentInputRef.current?.focus(), 50)
+                      }}
+                      className="text-[11px] px-2 py-1 rounded-full border border-ww-gray-200 text-ww-gray-500 hover:border-ww-primary/30 hover:text-ww-primary hover:bg-ww-primary/5 transition-colors"
+                    >
+                      {q}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className="p-3 space-y-3">
+                {agentMessages.map((msg, i) => (
+                  <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                    <div
+                      className={`max-w-[85%] rounded-lg px-3 py-2 text-sm ${
+                        msg.role === 'user'
+                          ? 'bg-ww-primary text-white'
+                          : 'bg-ww-gray-50 border border-ww-gray-200 text-ww-gray-700'
+                      }`}
+                    >
+                      <div className="whitespace-pre-wrap leading-relaxed">{msg.text}</div>
+                    </div>
+                  </div>
+                ))}
+                {agentLoading && (
+                  <div className="flex justify-start">
+                    <div className="bg-ww-gray-50 border border-ww-gray-200 rounded-lg px-3 py-2 flex items-center gap-2 text-sm text-ww-gray-400">
+                      <Loader2 size={14} className="animate-spin" />
+                      Analyzing {applications.length} applications...
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {agentError && (
+            <div className="mx-3 mb-2 px-3 py-2 rounded bg-red-50 border border-red-200 text-sm text-red-700 shrink-0">
+              {agentError}
+            </div>
+          )}
+
+          <div className="border-t border-ww-gray-100 px-3 py-2 shrink-0">
+            <div className="flex gap-2">
+              <textarea
+                ref={agentInputRef}
+                value={agentQuestion}
+                onChange={e => setAgentQuestion(e.target.value)}
+                onKeyDown={e => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault()
+                    askAgent()
+                  }
+                }}
+                placeholder={agentMessages.length > 0 ? 'Ask a follow-up...' : 'Ask about the analytics data...'}
+                rows={1}
+                className="flex-1 px-3 py-2 text-sm border border-ww-gray-200 rounded resize-none focus:ring-2 focus:ring-ww-primary/30 focus:border-ww-primary outline-none"
+              />
+              <button
+                onClick={askAgent}
+                disabled={agentLoading || !agentQuestion.trim()}
+                className="px-3 py-2 rounded bg-ww-primary text-white text-sm hover:bg-ww-primary-light disabled:opacity-40 disabled:cursor-not-allowed transition-colors flex items-center gap-1.5 self-end"
+              >
+                {agentLoading ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* B. Competitive Vendor Breakdown */}
-      <section>
+      <section ref={competitiveRef}>
         <div className="flex items-center gap-2 mb-3">
           <AlertTriangle size={16} className="text-ww-red" />
           <h2 className="text-lg font-display font-bold text-ww-navy">
@@ -219,7 +412,7 @@ export function ApplicationsDashboard() {
       </section>
 
       {/* C. Distribution Charts */}
-      <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <section ref={chartsRef} className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* By Product */}
         <div className="border border-ww-gray-200 rounded-lg p-4 bg-white">
           <h3 className="text-sm font-display font-bold text-ww-navy mb-3">By Product</h3>
@@ -269,7 +462,7 @@ export function ApplicationsDashboard() {
       </section>
 
       {/* D. Risk Flags */}
-      <section>
+      <section ref={riskRef}>
         <div className="flex items-center gap-2 mb-3">
           <ShieldAlert size={16} className="text-ww-amber" />
           <h2 className="text-lg font-display font-bold text-ww-navy">Risk Flags</h2>
@@ -307,18 +500,20 @@ function SummaryCard({
   value,
   sub,
   variant,
+  onClick,
 }: {
   label: string
   value: string | number
   sub?: string
   variant?: 'danger' | 'warning'
+  onClick?: () => void
 }) {
   const borderClass =
     variant === 'danger'
-      ? 'border-ww-red/30 bg-red-50'
+      ? 'border-ww-red/30 bg-red-50 hover:bg-red-100'
       : variant === 'warning'
-        ? 'border-ww-amber/30 bg-amber-50'
-        : 'border-ww-gray-200 bg-white'
+        ? 'border-ww-amber/30 bg-amber-50 hover:bg-amber-100'
+        : 'border-ww-gray-200 bg-white hover:bg-ww-gray-50 hover:border-ww-gray-300'
   const textClass =
     variant === 'danger'
       ? 'text-ww-red'
@@ -327,13 +522,13 @@ function SummaryCard({
         : 'text-ww-navy'
 
   return (
-    <div className={`rounded-lg border px-4 py-3 ${borderClass}`}>
+    <button onClick={onClick} className={`rounded-lg border px-4 py-3 text-left transition-all ${borderClass}`}>
       <p className="text-[11px] font-mono text-ww-gray-400 uppercase tracking-wider">{label}</p>
       <div className="flex items-baseline gap-1.5 mt-0.5">
         <p className={`text-xl font-display font-bold ${textClass}`}>{value}</p>
         {sub && <span className="text-sm text-ww-gray-400">{sub}</span>}
       </div>
-    </div>
+    </button>
   )
 }
 
