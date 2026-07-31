@@ -18,9 +18,14 @@ import {
   X,
   Trash2,
 } from 'lucide-react'
-import type { ApiRequest } from '@/data/types'
+import type { ApiRequest, CatalogEndpoint } from '@/data/types'
 import { store } from '@/data/store'
 import { PRODUCT_LABELS, STATUS_LABELS, TIER_LABELS, USE_CASE_LABELS } from '@/App'
+import rawCatalog from '@/data/winteam-api-catalog.json'
+import { DOMAIN_LABELS, GENERATION_LABELS } from '@/data/catalog-labels'
+import { getDomainBadges, matchEndpointsRequested } from '@/data/catalog-matcher'
+
+const catalog = rawCatalog as CatalogEndpoint[]
 
 type FilterTab = 'all' | 'pending_review' | 'production_review' | 'on_hold' | 'flagged'
 type SortMode = 'newest' | 'flagged'
@@ -492,6 +497,11 @@ export function ReviewerQueue() {
                           </span>
                         )}
                       </div>
+
+                      {/* Domain badges + endpoint count (WinTeam only) */}
+                      {req.product === 'winteam' && req.endpointsRequested && (
+                        <EndpointSummaryBadges text={req.endpointsRequested} />
+                      )}
                     </div>
 
                     {/* Right arrow */}
@@ -505,6 +515,46 @@ export function ReviewerQueue() {
           })}
         </div>
       )}
+    </div>
+  )
+}
+
+// ── Endpoint summary badges for queue cards ────────────────────
+
+function EndpointSummaryBadges({ text }: { text: string }) {
+  const results = useMemo(
+    () => matchEndpointsRequested(text, catalog),
+    [text],
+  )
+
+  const badges = useMemo(
+    () => getDomainBadges(text, catalog, DOMAIN_LABELS),
+    [text],
+  )
+
+  if (results.matchResults.length === 0) return null
+
+  const genLabels = results.generations.map(g => GENERATION_LABELS[g].label)
+
+  return (
+    <div className="flex items-center gap-2 mt-2 flex-wrap">
+      <span className="text-[10px] font-mono font-medium text-ww-gray-500">
+        {results.matchResults.length} endpoint{results.matchResults.length !== 1 ? 's' : ''}
+      </span>
+      {genLabels.length > 0 && (
+        <>
+          <span className="text-ww-gray-300 text-[10px]">&middot;</span>
+          <span className="text-[10px] font-mono text-ww-gray-400">{genLabels.join(' + ')}</span>
+        </>
+      )}
+      {badges.map(b => (
+        <span
+          key={b.domain}
+          className="inline-flex px-1.5 py-0.5 rounded text-[9px] font-medium bg-sky-50 text-sky-700 border border-sky-100"
+        >
+          {b.label}
+        </span>
+      ))}
     </div>
   )
 }

@@ -35,9 +35,18 @@ import {
   Play,
   Swords,
   Ban,
+  Search,
+  Eye,
+  EyeOff,
 } from 'lucide-react'
-import type { ApprovalStage, ApprovalDecision, ApiPricing, VolumeTier, ApiCategory, SupportPackage } from '@/data/types'
+import type { ApprovalStage, ApprovalDecision, ApiPricing, VolumeTier, ApiCategory, SupportPackage, CatalogEndpoint, CatalogDomain } from '@/data/types'
 import { store, VOLUME_TIERS, suggestTier } from '@/data/store'
+import rawCatalog from '@/data/winteam-api-catalog.json'
+import { DOMAIN_LABELS, GENERATION_LABELS, METHOD_COLORS } from '@/data/catalog-labels'
+import { matchEndpointsRequested } from '@/data/catalog-matcher'
+import type { MatchResults } from '@/data/catalog-matcher'
+
+const catalog = rawCatalog as CatalogEndpoint[]
 import {
   PRODUCT_LABELS,
   STATUS_LABELS,
@@ -594,12 +603,7 @@ export function ReviewerRequestDetail({ onRefresh }: { onRefresh: () => void }) 
               <p className="text-sm text-ww-gray-700 leading-relaxed">{request.useCaseDetail}</p>
             </div>
             {request.endpointsRequested && (
-              <div className="mt-4">
-                <p className="text-xs text-ww-gray-400 font-medium font-mono uppercase tracking-wide mb-1">Endpoints Requested</p>
-                <pre className="text-sm text-ww-gray-700 leading-relaxed font-mono whitespace-pre-wrap bg-ww-gray-50 border border-ww-gray-100 rounded-md p-3">
-                  {request.endpointsRequested}
-                </pre>
-              </div>
+              <EndpointsRequestedPanel text={request.endpointsRequested} />
             )}
           </div>
 
@@ -1110,46 +1114,15 @@ export function ReviewerRequestDetail({ onRefresh }: { onRefresh: () => void }) 
 
             {/* Endpoints Approved Panel */}
             {request.endpointsRequested && (
-              <div className="bg-white rounded-md border border-ww-gray-200 p-5">
-                <h3 className="text-sm font-display font-mono font-semibold text-ww-gray-900 uppercase tracking-wide mb-4 flex items-center gap-2">
-                  <FileText size={14} className="text-ww-navy" />
-                  Endpoints Approved
-                </h3>
-
-                {/* Read-only reference of requested endpoints */}
-                <div className="mb-4">
-                  <p className="text-xs text-ww-gray-400 font-medium font-mono uppercase tracking-wide mb-1">Requested</p>
-                  <pre className="text-xs text-ww-gray-600 leading-relaxed font-mono whitespace-pre-wrap bg-ww-gray-50 border border-ww-gray-100 rounded-md p-2.5">
-                    {request.endpointsRequested}
-                  </pre>
-                </div>
-
-                {/* Editable approved endpoints */}
-                <div className="space-y-3">
-                  <div>
-                    <label className="block text-xs font-medium text-ww-gray-600 mb-1">Approved Endpoints</label>
-                    <textarea
-                      value={endpointsApprovedText}
-                      onChange={e => setEndpointsApprovedText(e.target.value)}
-                      placeholder="Enter approved endpoints (one per line)..."
-                      rows={4}
-                      className="w-full px-2.5 py-1.5 rounded-md border border-ww-gray-200 text-sm text-ww-gray-900 placeholder:text-ww-gray-400 focus:outline-none focus:ring-2 focus:ring-ww-primary/30 focus:border-ww-primary resize-none font-mono"
-                    />
-                  </div>
-                  <button
-                    onClick={handleSaveEndpointsApproved}
-                    disabled={!endpointsApprovedText.trim()}
-                    className={`w-full flex items-center justify-center gap-1.5 py-2 rounded-md text-sm font-semibold transition-colors ${
-                      endpointsApprovedText.trim()
-                        ? 'bg-ww-navy text-white hover:bg-ww-navy-light'
-                        : 'bg-ww-gray-200 text-ww-gray-400 cursor-not-allowed'
-                    }`}
-                  >
-                    <Save size={14} />
-                    {endpointsApprovedSaved ? 'Saved!' : request.endpointsApproved ? 'Update Approved Endpoints' : 'Save Approved Endpoints'}
-                  </button>
-                </div>
-              </div>
+              <EndpointsApprovedPanel
+                requestId={requestId!}
+                endpointsRequested={request.endpointsRequested}
+                endpointsApprovedText={endpointsApprovedText}
+                setEndpointsApprovedText={setEndpointsApprovedText}
+                onSave={handleSaveEndpointsApproved}
+                saved={endpointsApprovedSaved}
+                hasExisting={!!request.endpointsApproved}
+              />
             )}
 
             {/* Internal Notes Panel */}
@@ -1528,6 +1501,364 @@ export function ReviewerRequestDetail({ onRefresh }: { onRefresh: () => void }) 
           </div>
         </div>
       </div>
+    </div>
+  )
+}
+
+// ── Endpoints Requested Panel ──────────────────────────────────
+
+function EndpointsRequestedPanel({ text }: { text: string }) {
+  const [showRaw, setShowRaw] = useState(false)
+
+  const results = useMemo<MatchResults>(
+    () => matchEndpointsRequested(text, catalog),
+    [text],
+  )
+
+  const genLabels = results.generations.map(g => GENERATION_LABELS[g].label)
+  const domainLabels = results.domains.map(d => DOMAIN_LABELS[d])
+
+  return (
+    <div className="mt-4">
+      <div className="flex items-center justify-between mb-2">
+        <p className="text-xs text-ww-gray-400 font-medium font-mono uppercase tracking-wide">Endpoints Requested</p>
+        <button
+          onClick={() => setShowRaw(!showRaw)}
+          className="flex items-center gap-1 text-[11px] text-ww-gray-400 hover:text-ww-gray-600 transition-colors"
+        >
+          {showRaw ? <EyeOff size={12} /> : <Eye size={12} />}
+          {showRaw ? 'Show enriched' : 'Show raw'}
+        </button>
+      </div>
+
+      {/* Summary bar */}
+      <div className="flex items-center gap-2 flex-wrap mb-3 text-[11px]">
+        <span className="font-medium text-ww-gray-600">
+          {results.matchResults.length} endpoint{results.matchResults.length !== 1 ? 's' : ''}
+        </span>
+        <span className="text-ww-gray-300">&middot;</span>
+        <span className="text-emerald-600 font-medium">{results.matchedCount} matched</span>
+        {results.unmatchedCount > 0 && (
+          <>
+            <span className="text-ww-gray-300">&middot;</span>
+            <span className="text-amber-600 font-medium">{results.unmatchedCount} unmatched</span>
+          </>
+        )}
+        {domainLabels.length > 0 && (
+          <>
+            <span className="text-ww-gray-300">&middot;</span>
+            <span className="text-ww-gray-500">Domains: {domainLabels.join(', ')}</span>
+          </>
+        )}
+        {genLabels.length > 0 && (
+          <>
+            <span className="text-ww-gray-300">&middot;</span>
+            <span className="text-ww-gray-500">{genLabels.join(' + ')}</span>
+          </>
+        )}
+      </div>
+
+      {showRaw ? (
+        <pre className="text-sm text-ww-gray-700 leading-relaxed font-mono whitespace-pre-wrap bg-ww-gray-50 border border-ww-gray-100 rounded-md p-3">
+          {text}
+        </pre>
+      ) : (
+        <div className="space-y-1.5">
+          {results.matchResults.map((r, i) => {
+            if (r.match) {
+              const ep = r.match
+              const genInfo = GENERATION_LABELS[ep.generation]
+              return (
+                <div
+                  key={i}
+                  className="flex items-start gap-2 px-3 py-2 rounded-md bg-white border border-ww-gray-100 hover:border-ww-gray-200 transition-colors"
+                >
+                  {ep.method && (
+                    <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded shrink-0 mt-0.5 ${METHOD_COLORS[ep.method]}`}>
+                      {ep.method}
+                    </span>
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-[12px] font-semibold text-ww-navy truncate">{ep.functionName}</span>
+                      <span className={`text-[9px] font-medium px-1 py-0.5 rounded ${genInfo.color} shrink-0`}>
+                        {genInfo.label}
+                      </span>
+                    </div>
+                    <code className="text-[11px] font-mono text-ww-gray-500 block truncate">{ep.route}</code>
+                    {ep.purpose && (
+                      <p className="text-[11px] text-ww-gray-400 line-clamp-1 mt-0.5">{ep.purpose}</p>
+                    )}
+                  </div>
+                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-ww-gray-50 text-ww-gray-400 shrink-0 mt-0.5">
+                    {DOMAIN_LABELS[ep.domain]}
+                  </span>
+                </div>
+              )
+            }
+            // Unmatched line
+            return (
+              <div
+                key={i}
+                className="flex items-center gap-2 px-3 py-2 rounded-md bg-amber-50/50 border border-amber-100"
+              >
+                <code className="text-[12px] font-mono text-ww-gray-600 flex-1 truncate">{r.parsed.raw}</code>
+                <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-amber-100 text-amber-700 shrink-0">
+                  Unmatched
+                </span>
+              </div>
+            )
+          })}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ── Endpoints Approved Panel ───────────────────────────────────
+
+function EndpointsApprovedPanel({
+  requestId,
+  endpointsRequested,
+  endpointsApprovedText,
+  setEndpointsApprovedText,
+  onSave,
+  saved,
+  hasExisting,
+}: {
+  requestId: string
+  endpointsRequested: string
+  endpointsApprovedText: string
+  setEndpointsApprovedText: (text: string) => void
+  onSave: () => void
+  saved: boolean
+  hasExisting: boolean
+}) {
+  const [activeTab, setActiveTab] = useState<'picker' | 'freetext'>('picker')
+  const [pickerSearch, setPickerSearch] = useState('')
+  const [pickerDomain, setPickerDomain] = useState<CatalogDomain | 'all'>('all')
+
+  // Parse currently approved lines into a set for the picker
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(() => {
+    const text = endpointsApprovedText || endpointsRequested
+    const { matchResults } = matchEndpointsRequested(text, catalog)
+    return new Set(matchResults.filter(r => r.match).map(r => r.match!.id))
+  })
+
+  // Cross-reference: how many other approved requests share domains
+  const crossRefCount = useMemo(() => {
+    const { domains } = matchEndpointsRequested(endpointsRequested, catalog)
+    if (domains.length === 0) return 0
+    const allRequests = store.getRequests()
+    let count = 0
+    for (const req of allRequests) {
+      if (req.id === requestId) continue
+      if (!req.endpointsApproved) continue
+      const { domains: reqDomains } = matchEndpointsRequested(req.endpointsApproved, catalog)
+      if (reqDomains.some(d => domains.includes(d))) count++
+    }
+    return count
+  }, [requestId, endpointsRequested])
+
+  // HTTP catalog endpoints grouped by project, filtered
+  const pickerGroups = useMemo(() => {
+    let eps = catalog.filter(e => e.triggerType === 'http')
+    if (pickerDomain !== 'all') {
+      eps = eps.filter(e => e.domain === pickerDomain)
+    }
+    if (pickerSearch.trim()) {
+      const q = pickerSearch.toLowerCase().trim()
+      eps = eps.filter(
+        e =>
+          e.functionName.toLowerCase().includes(q) ||
+          e.route.toLowerCase().includes(q) ||
+          (e.purpose && e.purpose.toLowerCase().includes(q)) ||
+          e.projectName.toLowerCase().includes(q),
+      )
+    }
+    const map = new Map<string, CatalogEndpoint[]>()
+    for (const ep of eps) {
+      if (!map.has(ep.projectName)) map.set(ep.projectName, [])
+      map.get(ep.projectName)!.push(ep)
+    }
+    return Array.from(map.entries()).sort((a, b) => a[0].localeCompare(b[0]))
+  }, [pickerSearch, pickerDomain])
+
+  const activeDomains = useMemo(() => {
+    const set = new Set<CatalogDomain>()
+    for (const ep of catalog) {
+      if (ep.triggerType === 'http') set.add(ep.domain)
+    }
+    return Array.from(set).sort()
+  }, [])
+
+  const toggleEndpoint = (id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+
+  const handleSaveFromPicker = () => {
+    // Serialize selected catalog endpoints back to the expected line format
+    const lines: string[] = []
+    for (const ep of catalog) {
+      if (selectedIds.has(ep.id) && ep.triggerType === 'http') {
+        lines.push(`${ep.projectName} ${ep.functionName} ${ep.method ?? 'GET'}`)
+      }
+    }
+    setEndpointsApprovedText(lines.join('\n'))
+    // Trigger save after state update
+    setTimeout(() => onSave(), 0)
+  }
+
+  return (
+    <div className="bg-white rounded-md border border-ww-gray-200 p-5">
+      <h3 className="text-sm font-display font-mono font-semibold text-ww-gray-900 uppercase tracking-wide mb-4 flex items-center gap-2">
+        <FileText size={14} className="text-ww-navy" />
+        Endpoints Approved
+      </h3>
+
+      {/* Tab switcher */}
+      <div className="flex items-center gap-1 bg-ww-gray-100 rounded-lg p-0.5 mb-4">
+        <button
+          onClick={() => setActiveTab('picker')}
+          className={`flex-1 px-3 py-1.5 rounded-md text-[12px] font-medium transition-colors ${
+            activeTab === 'picker' ? 'bg-white text-ww-navy shadow-sm' : 'text-ww-gray-500 hover:text-ww-gray-700'
+          }`}
+        >
+          Catalog Picker
+        </button>
+        <button
+          onClick={() => setActiveTab('freetext')}
+          className={`flex-1 px-3 py-1.5 rounded-md text-[12px] font-medium transition-colors ${
+            activeTab === 'freetext' ? 'bg-white text-ww-navy shadow-sm' : 'text-ww-gray-500 hover:text-ww-gray-700'
+          }`}
+        >
+          Free Text
+        </button>
+      </div>
+
+      {crossRefCount > 0 && (
+        <div className="mb-3 px-3 py-2 rounded-md bg-sky-50 border border-sky-200 text-[11px] text-sky-700">
+          {crossRefCount} other approved request{crossRefCount !== 1 ? 's' : ''} include{crossRefCount === 1 ? 's' : ''} endpoints from {crossRefCount === 1 ? 'this' : 'these'} domain{crossRefCount !== 1 ? 's' : ''}
+        </div>
+      )}
+
+      {activeTab === 'picker' ? (
+        <div>
+          {/* Search + domain filter */}
+          <div className="flex gap-2 mb-3">
+            <div className="relative flex-1">
+              <Search size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-ww-gray-400" />
+              <input
+                type="text"
+                value={pickerSearch}
+                onChange={e => setPickerSearch(e.target.value)}
+                placeholder="Search endpoints..."
+                className="w-full pl-7 pr-2 py-1.5 text-[12px] border border-ww-gray-200 rounded-md focus:ring-2 focus:ring-ww-primary/30 focus:border-ww-primary outline-none"
+              />
+            </div>
+            <select
+              value={pickerDomain}
+              onChange={e => setPickerDomain(e.target.value as CatalogDomain | 'all')}
+              className="text-[12px] border border-ww-gray-200 rounded-md px-2 py-1.5 bg-white focus:ring-2 focus:ring-ww-primary/30 outline-none"
+            >
+              <option value="all">All Domains</option>
+              {activeDomains.map(d => (
+                <option key={d} value={d}>{DOMAIN_LABELS[d]}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Selected count */}
+          <div className="text-[11px] text-ww-gray-500 mb-2">
+            {selectedIds.size} endpoint{selectedIds.size !== 1 ? 's' : ''} selected
+          </div>
+
+          {/* Grouped list */}
+          <div className="max-h-64 overflow-y-auto border border-ww-gray-100 rounded-md divide-y divide-ww-gray-50">
+            {pickerGroups.map(([projectName, eps]) => (
+              <div key={projectName}>
+                <div className="sticky top-0 bg-ww-gray-50 px-3 py-1.5 text-[10px] font-mono font-semibold text-ww-gray-500 uppercase tracking-wider">
+                  {projectName}
+                </div>
+                {eps.map(ep => {
+                  const checked = selectedIds.has(ep.id)
+                  return (
+                    <label
+                      key={ep.id}
+                      className={`flex items-center gap-2 px-3 py-1.5 cursor-pointer hover:bg-ww-gray-50/50 transition-colors ${
+                        checked ? 'bg-ww-primary/5' : ''
+                      }`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={checked}
+                        onChange={() => toggleEndpoint(ep.id)}
+                        className="w-3.5 h-3.5 rounded border-ww-gray-300 shrink-0"
+                      />
+                      {ep.method && (
+                        <span className={`text-[9px] font-bold px-1 py-0.5 rounded ${METHOD_COLORS[ep.method]} shrink-0`}>
+                          {ep.method}
+                        </span>
+                      )}
+                      <span className="text-[11px] text-ww-gray-700 truncate flex-1">{ep.functionName}</span>
+                      <code className="text-[10px] font-mono text-ww-gray-400 truncate max-w-[150px] hidden sm:block">{ep.route}</code>
+                    </label>
+                  )
+                })}
+              </div>
+            ))}
+            {pickerGroups.length === 0 && (
+              <div className="px-3 py-6 text-center text-[12px] text-ww-gray-400">
+                No endpoints match the search
+              </div>
+            )}
+          </div>
+
+          {/* Save from picker */}
+          <button
+            onClick={handleSaveFromPicker}
+            disabled={selectedIds.size === 0}
+            className={`w-full flex items-center justify-center gap-1.5 py-2 mt-3 rounded-md text-sm font-semibold transition-colors ${
+              selectedIds.size > 0
+                ? 'bg-ww-navy text-white hover:bg-ww-navy-light'
+                : 'bg-ww-gray-200 text-ww-gray-400 cursor-not-allowed'
+            }`}
+          >
+            <Save size={14} />
+            {saved ? 'Saved!' : hasExisting ? 'Update Approved Endpoints' : 'Save Approved Endpoints'}
+          </button>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          <div>
+            <label className="block text-xs font-medium text-ww-gray-600 mb-1">Approved Endpoints</label>
+            <textarea
+              value={endpointsApprovedText}
+              onChange={e => setEndpointsApprovedText(e.target.value)}
+              placeholder="Enter approved endpoints (one per line)..."
+              rows={4}
+              className="w-full px-2.5 py-1.5 rounded-md border border-ww-gray-200 text-sm text-ww-gray-900 placeholder:text-ww-gray-400 focus:outline-none focus:ring-2 focus:ring-ww-primary/30 focus:border-ww-primary resize-none font-mono"
+            />
+          </div>
+          <button
+            onClick={onSave}
+            disabled={!endpointsApprovedText.trim()}
+            className={`w-full flex items-center justify-center gap-1.5 py-2 rounded-md text-sm font-semibold transition-colors ${
+              endpointsApprovedText.trim()
+                ? 'bg-ww-navy text-white hover:bg-ww-navy-light'
+                : 'bg-ww-gray-200 text-ww-gray-400 cursor-not-allowed'
+            }`}
+          >
+            <Save size={14} />
+            {saved ? 'Saved!' : hasExisting ? 'Update Approved Endpoints' : 'Save Approved Endpoints'}
+          </button>
+        </div>
+      )}
     </div>
   )
 }

@@ -20,41 +20,11 @@ import {
 } from 'lucide-react'
 import type { CatalogEndpoint, CatalogDomain, ApiGeneration, HttpMethod, TriggerType } from '@/data/types'
 import rawCatalog from '@/data/winteam-api-catalog.json'
+import { DOMAIN_LABELS, GENERATION_LABELS, METHOD_COLORS } from '@/data/catalog-labels'
+import { getCatalogUsageCounts } from '@/data/catalog-matcher'
+import { store } from '@/data/store'
 
 const catalog = rawCatalog as CatalogEndpoint[]
-
-// ── Label maps ──────────────────────────────────────────────
-
-const DOMAIN_LABELS: Record<CatalogDomain, string> = {
-  employees_hr: 'Employees / HR',
-  scheduling: 'Scheduling',
-  jobs: 'Jobs',
-  accounting: 'Accounting',
-  payroll: 'Payroll',
-  time_tracking: 'Time Tracking',
-  work_schedules: 'Work Schedules',
-  customers: 'Customers',
-  inventory: 'Inventory',
-  system_admin: 'System / Admin',
-  connectors: 'Connectors',
-  compliance: 'Compliance',
-  contacts: 'Contacts',
-  documents: 'Documents',
-}
-
-const GENERATION_LABELS: Record<ApiGeneration, { label: string; color: string }> = {
-  legacy: { label: 'Legacy', color: 'bg-gray-100 text-gray-600' },
-  csa: { label: 'CSA', color: 'bg-sky-100 text-sky-700' },
-  connector: { label: 'Connector', color: 'bg-teal-100 text-teal-700' },
-}
-
-const METHOD_COLORS: Record<HttpMethod, string> = {
-  GET: 'bg-emerald-100 text-emerald-700',
-  POST: 'bg-blue-100 text-blue-700',
-  PATCH: 'bg-purple-100 text-purple-700',
-  DELETE: 'bg-red-100 text-red-700',
-  PUT: 'bg-amber-100 text-amber-700',
-}
 
 const TRIGGER_ICONS: Record<TriggerType, typeof Zap> = {
   http: Zap,
@@ -119,6 +89,13 @@ export function ApiCatalog() {
       documented: documented.length,
       documentedPct: httpEndpoints.length > 0 ? Math.round((documented.length / httpEndpoints.length) * 100) : 0,
     }
+  }, [])
+
+  // ── Usage counts per project (from approved requests) ──
+
+  const usageCounts = useMemo(() => {
+    const allRequests = store.getRequests()
+    return getCatalogUsageCounts(allRequests, catalog)
   }, [])
 
   // ── Filtered endpoints ──
@@ -512,6 +489,7 @@ export function ApiCatalog() {
         {grouped.map(([projectName, { endpoints: projectEndpoints, generation }]) => {
           const isExpanded = expandedProjects.has(projectName)
           const genInfo = GENERATION_LABELS[generation]
+          const usage = usageCounts.get(projectName)
 
           return (
             <div key={projectName} className="border border-ww-gray-200 rounded-lg overflow-hidden bg-white">
@@ -529,6 +507,11 @@ export function ApiCatalog() {
                 <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded ${genInfo.color} shrink-0`}>
                   {genInfo.label}
                 </span>
+                {usage && usage > 0 && (
+                  <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700 shrink-0">
+                    Used by {usage} request{usage !== 1 ? 's' : ''}
+                  </span>
+                )}
                 <span className="text-[12px] text-ww-gray-400 ml-auto shrink-0">
                   {projectEndpoints.length} endpoint{projectEndpoints.length !== 1 ? 's' : ''}
                 </span>
