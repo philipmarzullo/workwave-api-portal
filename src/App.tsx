@@ -11,6 +11,8 @@ import {
   Layers,
   ChevronDown,
   User,
+  FileText,
+  BarChart3,
 } from 'lucide-react'
 import { store } from '@/data/store'
 import type { ViewMode, CustomerUser } from '@/data/types'
@@ -23,6 +25,8 @@ import { ReviewerRequestDetail } from '@/views/ReviewerRequestDetail'
 import { PartnerDetail } from '@/views/PartnerDetail'
 import { MyIntegrations } from '@/views/MyIntegrations'
 import { ReviewerActiveAccess } from '@/views/ReviewerActiveAccess'
+import { HistoricalApplications } from '@/views/HistoricalApplications'
+import { ApplicationsDashboard } from '@/views/ApplicationsDashboard'
 
 // ── Product labels ──────────────────────────────────────────────
 
@@ -216,6 +220,8 @@ export default function App() {
     { path: '/reviewer', label: 'Review Queue', icon: ClipboardList },
     { path: '/reviewer/active-access', label: 'Active Access', icon: Layers },
     { path: '/reviewer/partners', label: 'Partner Directory', icon: Globe },
+    { path: '/reviewer/applications', label: 'Applications', icon: FileText },
+    { path: '/reviewer/analytics', label: 'Analytics', icon: BarChart3 },
   ]
 
   const navItems = viewMode === 'customer' ? customerNav : reviewerNav
@@ -358,6 +364,8 @@ export default function App() {
             <Route path="/reviewer/request/:requestId" element={<ReviewerRequestDetail onRefresh={refresh} />} />
             <Route path="/reviewer/partners" element={<Directory activeUser={activeUser} isReviewerView />} />
             <Route path="/reviewer/partner/:partnerId" element={<PartnerDetail />} />
+            <Route path="/reviewer/applications" element={<HistoricalApplications />} />
+            <Route path="/reviewer/analytics" element={<ApplicationsDashboard />} />
           </Routes>
         </div>
       </main>

@@ -1,0 +1,13 @@
+{
+  "name": "workwave-api-portal-scripts",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.39.0"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.0",
+    "typescript": "~6.0.2",
+    "@types/node": "^24.13.2"
+  }
+}

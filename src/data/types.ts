@@ -211,5 +211,58 @@ export interface Approval {
   decidedAt: string
 }
 
+// ── Historical Application (extracted from PDF) ──────────────────
+export type FormVersion = 'v1_legacy' | 'v2_fillable' | 'v3_dual_app' | 'unknown'
+export type ExtractionConfidence = 'high' | 'medium' | 'low'
+
+export interface HistoricalApplication {
+  id: string
+  sourceFile: string
+  sfCaseNumber: string | null
+  sfObjectId: string | null
+
+  // Customer (applicant) fields
+  customerName: string | null
+  customerContactName: string | null
+  customerContactEmail: string | null
+  customerContactPhone: string | null
+  customerAddress: string | null
+  customerCompanyKey: string | null
+  subsidiaries: string | null
+
+  // Developer / Partner fields
+  developerName: string | null
+  developerContactName: string | null
+  developerContactEmail: string | null
+  developerContactPhone: string | null
+  externalProduct: string | null
+
+  // Application details
+  wwProduct: string | null
+  isWwCustomer: boolean | null
+  useCase: string | null
+  customerIntendToResell: boolean | null
+  developerIntendToResell: boolean | null
+  targetLaunchDate: string | null
+  signatureDate: string | null
+
+  // Extraction metadata
+  formVersion: FormVersion | null
+  extractionConfidence: ExtractionConfidence
+  extractionNotes: string | null
+  extractedAt: string
+}
+
+export const COMPETITIVE_VENDORS = [
+  'Sellify AI',
+  'Smarter Launch',
+  'Clicki',
+  'Avoca AI',
+  'Podium',
+  'Applause',
+  'Captivated',
+  'Cinch',
+] as const
+
 // Session context
 export type ViewMode = 'customer' | 'reviewer'
