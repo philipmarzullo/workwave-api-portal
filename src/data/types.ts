@@ -355,5 +355,26 @@ function detectPrimaryProduct(lower: string): string {
   return entries[0][0]
 }
 
+// ── WinTeam API Catalog ──────────────────────────────────────
+export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
+export type ApiGeneration = 'legacy' | 'csa' | 'connector'
+export type TriggerType = 'http' | 'service_bus' | 'event_grid' | 'timer' | 'queue' | 'blob'
+export type CatalogDomain =
+  | 'employees_hr' | 'scheduling' | 'jobs' | 'accounting' | 'payroll'
+  | 'time_tracking' | 'work_schedules' | 'customers' | 'inventory'
+  | 'system_admin' | 'connectors' | 'compliance' | 'contacts' | 'documents'
+
+export interface CatalogEndpoint {
+  id: string
+  method: HttpMethod | null      // null for non-HTTP triggers
+  route: string                  // /api/... path or trigger name
+  functionName: string
+  purpose: string | null         // null if undocumented ("—")
+  projectName: string            // e.g. "employees-api", "EmployeeAPI"
+  generation: ApiGeneration
+  domain: CatalogDomain
+  triggerType: TriggerType
+}
+
 // Session context
 export type ViewMode = 'customer' | 'reviewer'

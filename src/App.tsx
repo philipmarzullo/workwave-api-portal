@@ -16,6 +16,7 @@ import {
   BarChart3,
   Lock,
   Radar,
+  BookOpen,
 } from 'lucide-react'
 import { store } from '@/data/store'
 import type { ViewMode, CustomerUser } from '@/data/types'
@@ -32,6 +33,7 @@ import { HistoricalApplications } from '@/views/HistoricalApplications'
 import { DeveloperRiskProfiles } from '@/views/DeveloperRiskProfiles'
 import { ApplicationsDashboard } from '@/views/ApplicationsDashboard'
 import { UsageIntelligence } from '@/views/UsageIntelligence'
+import { ApiCatalog } from '@/views/ApiCatalog'
 
 // ── Product labels ──────────────────────────────────────────────
 
@@ -305,6 +307,7 @@ export default function App() {
     { path: '/reviewer/applications', label: 'Applications', icon: FileText },
     { path: '/reviewer/analytics', label: 'Analytics', icon: BarChart3 },
     { path: '/reviewer/usage-intelligence', label: 'Usage Intelligence', icon: Radar },
+    { path: '/reviewer/api-catalog', label: 'API Catalog', icon: BookOpen },
   ]
 
   const navItems = viewMode === 'customer' ? customerNav : reviewerNav
@@ -452,6 +455,7 @@ export default function App() {
             <Route path="/reviewer/applications" element={<HistoricalApplications />} />
             <Route path="/reviewer/analytics" element={<ApplicationsDashboard />} />
             <Route path="/reviewer/usage-intelligence" element={<UsageIntelligence />} />
+            <Route path="/reviewer/api-catalog" element={<ApiCatalog />} />
           </Routes>
         </div>
       </main>
