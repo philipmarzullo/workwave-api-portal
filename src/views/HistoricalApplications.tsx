@@ -8,7 +8,7 @@ import {
   AlertTriangle,
   Filter,
   FileText,
-  MessageSquare,
+  Bot,
   Send,
   Loader2,
   X,
@@ -217,14 +217,30 @@ export function HistoricalApplications() {
   return (
     <div className="py-8 space-y-6">
       {/* Header */}
-      <div>
-        <div className="flex items-center gap-2 mb-1">
-          <FileText size={20} className="text-ww-primary" />
-          <h1 className="text-xl font-display font-bold text-ww-navy">Historical Applications</h1>
+      <div className="flex items-start justify-between">
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            <FileText size={20} className="text-ww-primary" />
+            <h1 className="text-xl font-display font-bold text-ww-navy">Historical Applications</h1>
+          </div>
+          <p className="text-sm text-ww-gray-500">
+            {applications.length} API Developer Applications extracted from Salesforce
+          </p>
         </div>
-        <p className="text-sm text-ww-gray-500">
-          {applications.length} API Developer Applications extracted from Salesforce
-        </p>
+        <button
+          onClick={() => {
+            setAgentOpen(o => !o)
+            if (!agentOpen) setTimeout(() => agentInputRef.current?.focus(), 100)
+          }}
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-sm font-medium transition-all ${
+            agentOpen
+              ? 'bg-ww-primary text-white border-ww-primary'
+              : 'border-ww-primary/30 text-ww-primary bg-ww-primary/5 hover:bg-ww-primary/10'
+          }`}
+        >
+          <Bot size={15} />
+          Ask the Agent
+        </button>
       </div>
 
       {/* Stats bar */}
@@ -259,25 +275,13 @@ export function HistoricalApplications() {
         ))}
       </div>
 
-      {/* Ask the Agent */}
-      {!agentOpen ? (
-        <button
-          onClick={() => {
-            setAgentOpen(true)
-            setTimeout(() => agentInputRef.current?.focus(), 100)
-          }}
-          className="w-full flex items-center gap-2 px-4 py-3 rounded-lg border border-ww-primary/20 bg-ww-primary/5 hover:bg-ww-primary/10 transition-colors text-left"
-        >
-          <MessageSquare size={16} className="text-ww-primary shrink-0" />
-          <span className="text-sm font-medium text-ww-primary">Ask the Agent</span>
-          <span className="text-sm text-ww-gray-400 ml-1">— Query this data with AI</span>
-        </button>
-      ) : (
+      {/* Ask the Agent panel */}
+      {agentOpen && (
         <div className="rounded-lg border border-ww-primary/30 bg-white overflow-hidden">
-          {/* Header */}
+          {/* Panel header */}
           <div className="flex items-center justify-between px-4 py-2 bg-ww-primary/5 border-b border-ww-primary/10">
             <div className="flex items-center gap-2">
-              <MessageSquare size={14} className="text-ww-primary" />
+              <Bot size={14} className="text-ww-primary" />
               <span className="text-sm font-display font-bold text-ww-navy">Ask the Agent</span>
               {agentUsage && (
                 <span className="text-[10px] font-mono text-ww-gray-400">
