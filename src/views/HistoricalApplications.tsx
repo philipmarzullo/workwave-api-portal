@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef } from 'react'
+import { useState, useMemo, useRef, useEffect } from 'react'
 import {
   Search,
   ChevronDown,
@@ -12,6 +12,7 @@ import {
   Send,
   Loader2,
   X,
+  Trash2,
 } from 'lucide-react'
 import type { HistoricalApplication } from '@/data/types'
 import { COMPETITIVE_VENDORS } from '@/data/types'
@@ -67,18 +68,26 @@ export function HistoricalApplications() {
   // Agent state
   const [agentOpen, setAgentOpen] = useState(false)
   const [agentQuestion, setAgentQuestion] = useState('')
-  const [agentAnswer, setAgentAnswer] = useState('')
+  const [agentMessages, setAgentMessages] = useState<{ role: 'user' | 'assistant'; text: string }[]>([])
   const [agentLoading, setAgentLoading] = useState(false)
   const [agentError, setAgentError] = useState('')
   const [agentUsage, setAgentUsage] = useState<{ dailySpentCents: number; dailyBudgetCents: number } | null>(null)
   const agentInputRef = useRef<HTMLTextAreaElement>(null)
+  const agentScrollRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (agentScrollRef.current) {
+      agentScrollRef.current.scrollTop = agentScrollRef.current.scrollHeight
+    }
+  }, [agentMessages, agentLoading])
 
   const askAgent = async () => {
     const q = agentQuestion.trim()
     if (!q || agentLoading) return
+    setAgentMessages(prev => [...prev, { role: 'user', text: q }])
+    setAgentQuestion('')
     setAgentLoading(true)
     setAgentError('')
-    setAgentAnswer('')
     try {
       const res = await fetch('/api/ask', {
         method: 'POST',
@@ -89,13 +98,14 @@ export function HistoricalApplications() {
       if (!res.ok) {
         setAgentError(data.error || 'Request failed')
       } else {
-        setAgentAnswer(data.answer)
+        setAgentMessages(prev => [...prev, { role: 'assistant', text: data.answer }])
         if (data.usage) setAgentUsage(data.usage)
       }
     } catch {
       setAgentError('Failed to connect to server')
     } finally {
       setAgentLoading(false)
+      setTimeout(() => agentInputRef.current?.focus(), 50)
     }
   }
 
@@ -277,9 +287,9 @@ export function HistoricalApplications() {
 
       {/* Ask the Agent panel */}
       {agentOpen && (
-        <div className="rounded-lg border border-ww-primary/30 bg-white overflow-hidden">
+        <div className="rounded-lg border border-ww-primary/30 bg-white overflow-hidden flex flex-col" style={{ maxHeight: '480px' }}>
           {/* Panel header */}
-          <div className="flex items-center justify-between px-4 py-2 bg-ww-primary/5 border-b border-ww-primary/10">
+          <div className="flex items-center justify-between px-4 py-2 bg-ww-primary/5 border-b border-ww-primary/10 shrink-0">
             <div className="flex items-center gap-2">
               <Bot size={14} className="text-ww-primary" />
               <span className="text-sm font-display font-bold text-ww-navy">Ask the Agent</span>
@@ -289,16 +299,88 @@ export function HistoricalApplications() {
                 </span>
               )}
             </div>
-            <button
-              onClick={() => setAgentOpen(false)}
-              className="p-1 rounded hover:bg-ww-gray-100 text-ww-gray-400 hover:text-ww-gray-600 transition-colors"
-            >
-              <X size={14} />
-            </button>
+            <div className="flex items-center gap-1">
+              {agentMessages.length > 0 && (
+                <button
+                  onClick={() => { setAgentMessages([]); setAgentError('') }}
+                  className="p-1 rounded hover:bg-ww-gray-100 text-ww-gray-400 hover:text-ww-gray-600 transition-colors"
+                  title="Clear conversation"
+                >
+                  <Trash2 size={13} />
+                </button>
+              )}
+              <button
+                onClick={() => setAgentOpen(false)}
+                className="p-1 rounded hover:bg-ww-gray-100 text-ww-gray-400 hover:text-ww-gray-600 transition-colors"
+              >
+                <X size={14} />
+              </button>
+            </div>
           </div>
 
-          {/* Input */}
-          <div className="p-4">
+          {/* Conversation area */}
+          <div ref={agentScrollRef} className="flex-1 overflow-y-auto min-h-0">
+            {agentMessages.length === 0 && !agentLoading ? (
+              /* Quick questions — shown only when empty */
+              <div className="p-4">
+                <p className="text-xs text-ww-gray-400 mb-2">Try a question:</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {[
+                    'List all competitive vendor applications',
+                    'Which customers have resell intent?',
+                    'Summarize the top 10 developers by volume',
+                    'Any customers working with multiple competitors?',
+                  ].map(q => (
+                    <button
+                      key={q}
+                      onClick={() => {
+                        setAgentQuestion(q)
+                        setTimeout(() => agentInputRef.current?.focus(), 50)
+                      }}
+                      className="text-[11px] px-2 py-1 rounded-full border border-ww-gray-200 text-ww-gray-500 hover:border-ww-primary/30 hover:text-ww-primary hover:bg-ww-primary/5 transition-colors"
+                    >
+                      {q}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              /* Chat messages */
+              <div className="p-3 space-y-3">
+                {agentMessages.map((msg, i) => (
+                  <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                    <div
+                      className={`max-w-[85%] rounded-lg px-3 py-2 text-sm ${
+                        msg.role === 'user'
+                          ? 'bg-ww-primary text-white'
+                          : 'bg-ww-gray-50 border border-ww-gray-200 text-ww-gray-700'
+                      }`}
+                    >
+                      <div className="whitespace-pre-wrap leading-relaxed">{msg.text}</div>
+                    </div>
+                  </div>
+                ))}
+                {agentLoading && (
+                  <div className="flex justify-start">
+                    <div className="bg-ww-gray-50 border border-ww-gray-200 rounded-lg px-3 py-2 flex items-center gap-2 text-sm text-ww-gray-400">
+                      <Loader2 size={14} className="animate-spin" />
+                      Analyzing {applications.length} applications...
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Error */}
+          {agentError && (
+            <div className="mx-3 mb-2 px-3 py-2 rounded bg-red-50 border border-red-200 text-sm text-red-700 shrink-0">
+              {agentError}
+            </div>
+          )}
+
+          {/* Input — always at bottom */}
+          <div className="border-t border-ww-gray-100 px-3 py-2 shrink-0">
             <div className="flex gap-2">
               <textarea
                 ref={agentInputRef}
@@ -310,65 +392,19 @@ export function HistoricalApplications() {
                     askAgent()
                   }
                 }}
-                placeholder="e.g. Which customers are using Smarter Launch? List all competitive vendor applications with resell intent..."
-                rows={2}
+                placeholder={agentMessages.length > 0 ? 'Ask a follow-up...' : 'Ask about the application data...'}
+                rows={1}
                 className="flex-1 px-3 py-2 text-sm border border-ww-gray-200 rounded resize-none focus:ring-2 focus:ring-ww-primary/30 focus:border-ww-primary outline-none"
               />
               <button
                 onClick={askAgent}
                 disabled={agentLoading || !agentQuestion.trim()}
-                className="px-4 py-2 rounded bg-ww-primary text-white font-medium text-sm hover:bg-ww-primary-light disabled:opacity-40 disabled:cursor-not-allowed transition-colors flex items-center gap-1.5 self-end"
+                className="px-3 py-2 rounded bg-ww-primary text-white text-sm hover:bg-ww-primary-light disabled:opacity-40 disabled:cursor-not-allowed transition-colors flex items-center gap-1.5 self-end"
               >
                 {agentLoading ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
-                Ask
               </button>
             </div>
-
-            {/* Quick questions */}
-            <div className="flex flex-wrap gap-1.5 mt-2">
-              {[
-                'List all competitive vendor applications',
-                'Which customers have resell intent?',
-                'Summarize the top 10 developers by volume',
-                'Any customers working with multiple competitors?',
-              ].map(q => (
-                <button
-                  key={q}
-                  onClick={() => {
-                    setAgentQuestion(q)
-                    setTimeout(() => agentInputRef.current?.focus(), 50)
-                  }}
-                  className="text-[11px] px-2 py-1 rounded-full border border-ww-gray-200 text-ww-gray-500 hover:border-ww-primary/30 hover:text-ww-primary hover:bg-ww-primary/5 transition-colors"
-                >
-                  {q}
-                </button>
-              ))}
-            </div>
           </div>
-
-          {/* Error */}
-          {agentError && (
-            <div className="mx-4 mb-4 px-3 py-2 rounded bg-red-50 border border-red-200 text-sm text-red-700">
-              {agentError}
-            </div>
-          )}
-
-          {/* Answer */}
-          {(agentAnswer || agentLoading) && (
-            <div className="border-t border-ww-gray-100 px-4 py-4">
-              {agentLoading && !agentAnswer && (
-                <div className="flex items-center gap-2 text-sm text-ww-gray-400">
-                  <Loader2 size={14} className="animate-spin" />
-                  Analyzing {applications.length} applications...
-                </div>
-              )}
-              {agentAnswer && (
-                <div className="text-sm text-ww-gray-700 whitespace-pre-wrap leading-relaxed">
-                  {agentAnswer}
-                </div>
-              )}
-            </div>
-          )}
         </div>
       )}
 
