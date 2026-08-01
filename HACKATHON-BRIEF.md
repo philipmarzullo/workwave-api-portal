@@ -5,8 +5,8 @@
 - **Hackathon entry**: API Access Platform
 - **Working sessions**: Monday & Tuesday
 - **Pitch**: Wednesday
-- **POC URL**: _(paste URL here)_
-- **Password**: `Philip one two three!`
+- **POC URL**: https://ww-api-portal.onrender.com/
+- **Password**: `Philip123!`
 
 ---
 
