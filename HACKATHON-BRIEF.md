@@ -97,11 +97,9 @@ No database, no auth service, no cloud deployment — this is a self-contained P
 
 ### Before Pitch (Wednesday)
 
-- [ ] Review all views for polish — typos, alignment, edge cases
-- [ ] Test persona switching across all customer views
 - [ ] Prepare 2-3 demo scenarios to walk through
 - [ ] Disable feedback widget for pitch (`?feedback=off`)
-- [ ] Capture any feedback from Monday/Tuesday sessions
+- [ ] Incorporate feedback from Monday/Tuesday sessions
 
 ### Near-Term (Post-Hackathon)
 
@@ -122,18 +120,26 @@ No database, no auth service, no cloud deployment — this is a self-contained P
 
 ---
 
-## Providing Feedback
+## What We Need From You
+
+We're not looking for typo reports or UI polish — we need your perspective on whether this can actually work in practice. As you browse the POC, think about:
+
+- **Where does this break down?** — What part of the current process does this fail to account for? What would make someone say "that's not how it actually works"?
+- **What would it take to adopt this?** — What would need to be true for your team to actually use this instead of the current process? What dependencies or prerequisites are we missing?
+- **"This only works if..."** — What conditions, integrations, or organizational buy-in would need to exist for this to be viable beyond a POC?
+- **What's the biggest risk?** — If we invested in building this out, what's the most likely reason it fails or gets shelved?
+- **What's missing for your role?** — From your specific vantage point (partnerships, engineering, customer success, etc.), what critical piece is absent?
+
+### How to Leave Feedback
 
 The POC has a built-in feedback widget:
 
 1. Look for the **amber chat button** in the bottom-right corner of every page
 2. Click it to open the feedback panel
-3. Enter your name (remembered for the session) and your comment
-4. Feedback is tagged with the current page and view mode
-5. All feedback is stored locally in the browser
+3. Enter your name and your comment
+4. Your feedback is tied to the specific page and view you're on, so we'll know exactly what you're reacting to
 
-To **hide the feedback widget** (e.g., for the pitch): add `?feedback=off` to the URL.
-To **re-enable**: add `?feedback=on` to the URL.
+Please leave feedback as you browse — don't wait for the live sessions. The more input we have going in, the more productive our Monday/Tuesday sessions will be.
 
 ---
 
