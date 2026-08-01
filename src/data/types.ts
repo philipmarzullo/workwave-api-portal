@@ -400,5 +400,16 @@ export interface TrustedIntegrator {
   action: string | null
 }
 
+// ── Hackathon Feedback ───────────────────────────────────────
+
+export interface FeedbackItem {
+  id: string
+  page: string          // route path when feedback was submitted
+  viewMode: ViewMode    // customer or reviewer
+  author: string        // free-text name
+  comment: string
+  createdAt: string     // ISO date
+}
+
 // Session context
 export type ViewMode = 'customer' | 'reviewer'

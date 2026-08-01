@@ -36,6 +36,7 @@ import { ApplicationsDashboard } from '@/views/ApplicationsDashboard'
 import { UsageIntelligence } from '@/views/UsageIntelligence'
 import { ApiCatalog } from '@/views/ApiCatalog'
 import { TrustedIntegrators } from '@/views/TrustedIntegrators'
+import { FeedbackWidget } from '@/components/FeedbackWidget'
 
 // ── Product labels ──────────────────────────────────────────────
 
@@ -250,6 +251,15 @@ export default function App() {
   const [viewMode, setViewMode] = useState<ViewMode>(store.getViewMode())
   const [refreshKey, setRefreshKey] = useState(0)
   const [personaOpen, setPersonaOpen] = useState(false)
+
+  // Feedback toggle: ?feedback=off in URL disables it, ?feedback=on re-enables
+  const [feedbackEnabled] = useState(() => {
+    const params = new URLSearchParams(window.location.search)
+    const fbParam = params.get('feedback')
+    if (fbParam === 'off') { store.setFeedbackEnabled(false); return false }
+    if (fbParam === 'on') { store.setFeedbackEnabled(true); return true }
+    return store.isFeedbackEnabled()
+  })
 
   // Persona / active user state
   const [activeUser, setActiveUser] = useState<CustomerUser | undefined>(() => {
@@ -482,6 +492,7 @@ export default function App() {
         </div>
       </footer>
     </div>
+    {feedbackEnabled && <FeedbackWidget viewMode={viewMode} />}
     </AuthGate>
   )
 }

@@ -24,6 +24,7 @@ import type {
   VolumeTierDefinition,
   ApiCategory,
   SupportPackage,
+  FeedbackItem,
 } from './types'
 
 import {
@@ -586,6 +587,41 @@ export const store = {
   getActiveUser(): CustomerUser | undefined {
     const id = this.getActiveUserId()
     return id ? this.getCustomerUser(id) : undefined
+  },
+
+  // ── Feedback ─────────────────────────────────────────────────
+
+  getFeedback(): FeedbackItem[] {
+    return load<FeedbackItem[]>('feedback', [])
+  },
+
+  addFeedback(item: Omit<FeedbackItem, 'id' | 'createdAt'>): FeedbackItem {
+    const items = this.getFeedback()
+    const newItem: FeedbackItem = {
+      ...item,
+      id: `fb-${uid()}`,
+      createdAt: now(),
+    }
+    items.push(newItem)
+    save('feedback', items)
+    return newItem
+  },
+
+  deleteFeedback(id: string): void {
+    const items = this.getFeedback().filter(f => f.id !== id)
+    save('feedback', items)
+  },
+
+  clearFeedback(): void {
+    save('feedback', [])
+  },
+
+  isFeedbackEnabled(): boolean {
+    return localStorage.getItem(key('feedback-enabled')) !== '0'
+  },
+
+  setFeedbackEnabled(enabled: boolean): void {
+    localStorage.setItem(key('feedback-enabled'), enabled ? '1' : '0')
   },
 
   // ── Reset ────────────────────────────────────────────────────
