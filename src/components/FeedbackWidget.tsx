@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
-import { MessageSquarePlus, X, Send, Trash2, ChevronDown, ChevronUp, MessageCircle } from 'lucide-react'
+import { MessageSquarePlus, X, Send, Trash2, ChevronDown, ChevronUp, MessageCircle, Lock } from 'lucide-react'
 import { store } from '@/data/store'
 import type { FeedbackItem, ViewMode } from '@/data/types'
+
+const FEEDBACK_DELETE_PASSWORD = '3125508501'
 
 // ── Route → friendly page name ────────────────────────────────
 function pageName(path: string): string {
@@ -69,8 +71,17 @@ export function FeedbackWidget({ viewMode }: FeedbackWidgetProps) {
   }
 
   const handleDelete = (id: string) => {
+    const pw = prompt('Enter admin password to delete:')
+    if (pw !== FEEDBACK_DELETE_PASSWORD) return
     store.deleteFeedback(id)
     setItems(store.getFeedback())
+  }
+
+  const handleClearAll = () => {
+    const pw = prompt('Enter admin password to clear all feedback:')
+    if (pw !== FEEDBACK_DELETE_PASSWORD) return
+    store.clearFeedback()
+    setItems([])
   }
 
   const formatTime = (iso: string) => {
@@ -209,10 +220,10 @@ export function FeedbackWidget({ viewMode }: FeedbackWidgetProps) {
               <div className="px-5 py-3 border-t border-ww-gray-100 flex items-center justify-between">
                 <span className="text-[11px] text-ww-gray-400 font-mono">{items.length} total</span>
                 <button
-                  onClick={() => { store.clearFeedback(); setItems([]) }}
-                  className="text-[11px] text-red-500 hover:text-red-700 font-medium transition-colors"
+                  onClick={handleClearAll}
+                  className="flex items-center gap-1 text-[11px] text-red-500 hover:text-red-700 font-medium transition-colors"
                 >
-                  Clear all
+                  <Lock size={9} /> Clear all
                 </button>
               </div>
             )}
@@ -251,9 +262,10 @@ function FeedbackCard({
         </div>
         <button
           onClick={() => onDelete(item.id)}
-          className="opacity-0 group-hover:opacity-100 text-ww-gray-400 hover:text-red-500 transition-all p-0.5"
-          title="Delete"
+          className="opacity-0 group-hover:opacity-100 text-ww-gray-400 hover:text-red-500 transition-all p-0.5 flex items-center gap-0.5"
+          title="Delete (password required)"
         >
+          <Lock size={8} />
           <Trash2 size={12} />
         </button>
       </div>
