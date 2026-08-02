@@ -34,7 +34,7 @@ const REQUEST_TYPE_COLORS: Record<string, string> = {
   expand_access: 'bg-blue-100 text-blue-700',
 }
 
-export function ReviewerActiveAccess() {
+export function ReviewerActiveAccess({ hideHeader = false }: { hideHeader?: boolean }) {
   const navigate = useNavigate()
   const [productFilter, setProductFilter] = useState<WorkWaveProduct | ''>('')
   const [gatewayFilter, setGatewayFilter] = useState<GatewayPlatform | ''>('')
@@ -134,6 +134,7 @@ export function ReviewerActiveAccess() {
   return (
     <div className="mx-auto py-8">
       {/* Header */}
+      {!hideHeader && (
       <div className="flex items-start justify-between mb-6">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-md bg-ww-navy flex items-center justify-center">
@@ -159,6 +160,7 @@ export function ReviewerActiveAccess() {
           Ask the Agent
         </button>
       </div>
+      )}
 
       {/* Stats Row */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">

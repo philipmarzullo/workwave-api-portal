@@ -9,17 +9,13 @@ const FEEDBACK_DELETE_PASSWORD = '3125508501'
 // ── Route → friendly page name ────────────────────────────────
 function pageName(path: string): string {
   const map: Record<string, string> = {
-    '/': 'Partner Directory',
-    '/trusted-integrators': 'Trusted Integrators',
+    '/': 'Partners',
     '/my-integrations': 'My Integrations',
     '/check-status': 'Check Status',
-    '/reviewer': 'Review Queue',
-    '/reviewer/active-access': 'Active Access',
-    '/reviewer/partners': 'Partner Directory (Reviewer)',
-    '/reviewer/integrators': 'Integrators',
+    '/reviewer': 'Requests',
+    '/reviewer/partners': 'Partners (Reviewer)',
     '/reviewer/risk-profiles': 'Risk Profiles',
     '/reviewer/applications': 'Applications',
-    '/reviewer/analytics': 'Analytics',
     '/reviewer/usage-intelligence': 'Usage Intelligence',
     '/reviewer/api-catalog': 'API Catalog',
   }

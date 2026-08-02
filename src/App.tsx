@@ -13,29 +13,25 @@ import {
   ChevronDown,
   User,
   FileText,
-  BarChart3,
   Lock,
   Radar,
   BookOpen,
-  ShieldCheck,
 } from 'lucide-react'
 import { store } from '@/data/store'
 import type { ViewMode, CustomerUser } from '@/data/types'
-import { Directory } from '@/views/Directory'
 import { RequestForm } from '@/views/RequestForm'
 import { Confirmation } from '@/views/Confirmation'
 import { CheckStatus } from '@/views/CheckStatus'
-import { ReviewerQueue } from '@/views/ReviewerQueue'
 import { ReviewerRequestDetail } from '@/views/ReviewerRequestDetail'
 import { PartnerDetail } from '@/views/PartnerDetail'
 import { MyIntegrations } from '@/views/MyIntegrations'
-import { ReviewerActiveAccess } from '@/views/ReviewerActiveAccess'
-import { HistoricalApplications } from '@/views/HistoricalApplications'
 import { DeveloperRiskProfiles } from '@/views/DeveloperRiskProfiles'
-import { ApplicationsDashboard } from '@/views/ApplicationsDashboard'
 import { UsageIntelligence } from '@/views/UsageIntelligence'
 import { ApiCatalog } from '@/views/ApiCatalog'
-import { TrustedIntegrators } from '@/views/TrustedIntegrators'
+import { ReviewerRequests } from '@/views/ReviewerRequests'
+import { ReviewerPartners } from '@/views/ReviewerPartners'
+import { CustomerPartners } from '@/views/CustomerPartners'
+import { ReviewerApplications } from '@/views/ReviewerApplications'
 import { FeedbackWidget } from '@/components/FeedbackWidget'
 
 // ── Product labels ──────────────────────────────────────────────
@@ -305,21 +301,17 @@ export default function App() {
 
   // Customer nav items
   const customerNav = [
-    { path: '/', label: 'Partner Directory', icon: Globe },
-    { path: '/trusted-integrators', label: 'Trusted Integrators', icon: ShieldCheck },
+    { path: '/', label: 'Partners', icon: Globe },
     { path: '/my-integrations', label: 'My Integrations', icon: Layers },
     { path: '/check-status', label: 'Check Status', icon: Search },
   ]
 
   // Reviewer nav items
   const reviewerNav = [
-    { path: '/reviewer', label: 'Review Queue', icon: ClipboardList },
-    { path: '/reviewer/active-access', label: 'Active Access', icon: Layers },
-    { path: '/reviewer/partners', label: 'Partner Directory', icon: Globe },
-    { path: '/reviewer/integrators', label: 'Integrators', icon: ShieldCheck },
+    { path: '/reviewer', label: 'Requests', icon: ClipboardList },
+    { path: '/reviewer/partners', label: 'Partners', icon: Globe },
     { path: '/reviewer/risk-profiles', label: 'Risk Profiles', icon: ShieldAlert },
     { path: '/reviewer/applications', label: 'Applications', icon: FileText },
-    { path: '/reviewer/analytics', label: 'Analytics', icon: BarChart3 },
     { path: '/reviewer/usage-intelligence', label: 'Usage Intelligence', icon: Radar },
     { path: '/reviewer/api-catalog', label: 'API Catalog', icon: BookOpen },
   ]
@@ -453,23 +445,19 @@ export default function App() {
         <div className="w-full max-w-[1200px] mx-auto px-8">
           <Routes>
             {/* Customer routes */}
-            <Route path="/" element={<Directory activeUser={activeUser} />} />
-            <Route path="/trusted-integrators" element={<TrustedIntegrators />} />
+            <Route path="/" element={<CustomerPartners activeUser={activeUser} />} />
             <Route path="/request/:partnerId?" element={<RequestForm activeUser={activeUser} onSubmit={refresh} />} />
             <Route path="/confirmation/:requestId" element={<Confirmation />} />
             <Route path="/my-integrations" element={<MyIntegrations activeUser={activeUser} />} />
             <Route path="/check-status" element={<CheckStatus />} />
 
             {/* Reviewer routes */}
-            <Route path="/reviewer" element={<ReviewerQueue />} />
-            <Route path="/reviewer/active-access" element={<ReviewerActiveAccess />} />
+            <Route path="/reviewer" element={<ReviewerRequests />} />
             <Route path="/reviewer/request/:requestId" element={<ReviewerRequestDetail onRefresh={refresh} />} />
-            <Route path="/reviewer/partners" element={<Directory activeUser={activeUser} isReviewerView />} />
+            <Route path="/reviewer/partners" element={<ReviewerPartners activeUser={activeUser} />} />
             <Route path="/reviewer/partner/:partnerId" element={<PartnerDetail />} />
-            <Route path="/reviewer/integrators" element={<TrustedIntegrators isReviewerView />} />
             <Route path="/reviewer/risk-profiles" element={<DeveloperRiskProfiles />} />
-            <Route path="/reviewer/applications" element={<HistoricalApplications />} />
-            <Route path="/reviewer/analytics" element={<ApplicationsDashboard />} />
+            <Route path="/reviewer/applications" element={<ReviewerApplications />} />
             <Route path="/reviewer/usage-intelligence" element={<UsageIntelligence />} />
             <Route path="/reviewer/api-catalog" element={<ApiCatalog />} />
           </Routes>

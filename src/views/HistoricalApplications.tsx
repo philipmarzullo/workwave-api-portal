@@ -53,7 +53,7 @@ function uniqueValues(field: keyof HistoricalApplication): string[] {
   return Array.from(set).sort()
 }
 
-export function HistoricalApplications() {
+export function HistoricalApplications({ hideHeader = false }: { hideHeader?: boolean }) {
   const [searchQuery, setSearchQuery] = useState('')
   const [productFilter, setProductFilter] = useState('')
   const [developerFilter, setDeveloperFilter] = useState('')
@@ -233,6 +233,7 @@ export function HistoricalApplications() {
   return (
     <div className="py-8 space-y-6">
       {/* Header */}
+      {!hideHeader && (
       <div className="flex items-start justify-between">
         <div>
           <div className="flex items-center gap-2 mb-1">
@@ -258,6 +259,7 @@ export function HistoricalApplications() {
           Ask the Agent
         </button>
       </div>
+      )}
 
       {/* Stats bar */}
       <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">

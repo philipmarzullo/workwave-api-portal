@@ -30,7 +30,7 @@ function matchCompetitiveVendor(name: string | null): string | null {
   return COMPETITIVE_VENDORS.find(v => lower.includes(v.toLowerCase())) ?? null
 }
 
-export function ApplicationsDashboard() {
+export function ApplicationsDashboard({ hideHeader = false }: { hideHeader?: boolean }) {
   // ── Summary stats ──
   const stats = useMemo(() => {
     const customerSet = new Set<string>()
@@ -234,6 +234,7 @@ export function ApplicationsDashboard() {
   return (
     <div className="py-8 space-y-8">
       {/* Header */}
+      {!hideHeader && (
       <div className="flex items-start justify-between">
         <div>
           <div className="flex items-center gap-2 mb-1">
@@ -261,6 +262,7 @@ export function ApplicationsDashboard() {
           Ask the Agent
         </button>
       </div>
+      )}
 
       {/* A. Summary Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">

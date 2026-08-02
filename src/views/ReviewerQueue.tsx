@@ -45,7 +45,7 @@ function formatDate(iso: string): string {
   })
 }
 
-export function ReviewerQueue() {
+export function ReviewerQueue({ hideHeader = false }: { hideHeader?: boolean }) {
   const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState<FilterTab>('all')
   const [sortMode, setSortMode] = useState<SortMode>('newest')
@@ -153,6 +153,7 @@ export function ReviewerQueue() {
   return (
     <div className="mx-auto py-8">
       {/* Header */}
+      {!hideHeader && (
       <div className="flex items-start justify-between mb-6">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-md bg-ww-navy flex items-center justify-center">
@@ -183,6 +184,7 @@ export function ReviewerQueue() {
           Ask the Agent
         </button>
       </div>
+      )}
 
       {/* Stats Row */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">

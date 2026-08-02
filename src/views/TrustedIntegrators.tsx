@@ -66,7 +66,7 @@ const INTEGRATION_TYPE_LABELS: Record<string, string> = {
 
 // ── Main component ──────────────────────────────────────────
 
-export function TrustedIntegrators({ isReviewerView = false }: { isReviewerView?: boolean }) {
+export function TrustedIntegrators({ isReviewerView = false, hideHeader = false }: { isReviewerView?: boolean; hideHeader?: boolean }) {
   const [searchQuery, setSearchQuery] = useState('')
   const [platformFilter, setPlatformFilter] = useState<IntegratorPlatform | 'all'>('all')
   const [competitiveFilter, setCompetitiveFilter] = useState<CompetitiveLevel | 'all'>('all')
@@ -153,6 +153,7 @@ export function TrustedIntegrators({ isReviewerView = false }: { isReviewerView?
   return (
     <div className="py-8 space-y-6">
       {/* Header */}
+      {!hideHeader && (
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-lg bg-ww-primary/10 flex items-center justify-center">
@@ -171,6 +172,7 @@ export function TrustedIntegrators({ isReviewerView = false }: { isReviewerView?
           </div>
         </div>
       </div>
+      )}
 
       {/* Stat cards (reviewer only) */}
       {isReviewerView && (

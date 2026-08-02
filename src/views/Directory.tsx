@@ -34,11 +34,12 @@ const TIER_SECTIONS: { key: PartnerTier; label: string; accent: string }[] = [
 interface DirectoryProps {
   activeUser?: CustomerUser
   isReviewerView?: boolean
+  hideHeader?: boolean
 }
 
 // ── Component ───────────────────────────────────────────────────
 
-export function Directory({ activeUser, isReviewerView = false }: DirectoryProps) {
+export function Directory({ activeUser, isReviewerView = false, hideHeader = false }: DirectoryProps) {
   const navigate = useNavigate()
 
   // Agent state (customer view only)
@@ -414,7 +415,7 @@ export function Directory({ activeUser, isReviewerView = false }: DirectoryProps
   if (!isReviewerView) {
     return (
       <div className="pb-12">
-        {renderHeader()}
+        {!hideHeader && renderHeader()}
 
         {/* Ask the Agent panel */}
         {agentOpen && (
@@ -548,7 +549,7 @@ export function Directory({ activeUser, isReviewerView = false }: DirectoryProps
 
   return (
     <div className="pb-12">
-      {renderHeader()}
+      {!hideHeader && renderHeader()}
 
       {filteredPartners.length === 0 ? (
         renderEmpty()
