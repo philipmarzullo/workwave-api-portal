@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
-import { MessageSquarePlus, X, Send, Trash2, ChevronDown, ChevronUp, MessageCircle, Lock } from 'lucide-react'
+import { MessageSquarePlus, X, Send, Trash2, ChevronDown, ChevronUp, MessageCircle, Lock, Reply } from 'lucide-react'
 import { store } from '@/data/store'
 import type { FeedbackItem, ViewMode } from '@/data/types'
 
@@ -70,6 +70,13 @@ export function FeedbackWidget({ viewMode }: FeedbackWidgetProps) {
     const pw = prompt('Enter admin password to delete:')
     if (pw !== FEEDBACK_DELETE_PASSWORD) return
     store.deleteFeedback(id)
+    setItems(store.getFeedback())
+  }
+
+  const handleReply = (feedbackId: string, replyComment: string) => {
+    const name = author.trim() || 'Anonymous'
+    localStorage.setItem('ww-api-portal:feedback-author', name)
+    store.addReply(feedbackId, { author: name, comment: replyComment })
     setItems(store.getFeedback())
   }
 
@@ -182,7 +189,7 @@ export function FeedbackWidget({ viewMode }: FeedbackWidgetProps) {
                       </p>
                       <div className="space-y-2">
                         {pageItems.map(item => (
-                          <FeedbackCard key={item.id} item={item} onDelete={handleDelete} formatTime={formatTime} />
+                          <FeedbackCard key={item.id} item={item} onDelete={handleDelete} onReply={handleReply} formatTime={formatTime} />
                         ))}
                       </div>
                     </div>
@@ -201,7 +208,7 @@ export function FeedbackWidget({ viewMode }: FeedbackWidgetProps) {
                       {showAll && (
                         <div className="space-y-2">
                           {otherItems.map(item => (
-                            <FeedbackCard key={item.id} item={item} onDelete={handleDelete} formatTime={formatTime} showPage />
+                            <FeedbackCard key={item.id} item={item} onDelete={handleDelete} onReply={handleReply} formatTime={formatTime} showPage />
                           ))}
                         </div>
                       )}
@@ -235,14 +242,28 @@ export function FeedbackWidget({ viewMode }: FeedbackWidgetProps) {
 function FeedbackCard({
   item,
   onDelete,
+  onReply,
   formatTime,
   showPage,
 }: {
   item: FeedbackItem
   onDelete: (id: string) => void
+  onReply: (feedbackId: string, comment: string) => void
   formatTime: (iso: string) => string
   showPage?: boolean
 }) {
+  const [replyOpen, setReplyOpen] = useState(false)
+  const [replyText, setReplyText] = useState('')
+
+  const handleSubmitReply = () => {
+    if (!replyText.trim()) return
+    onReply(item.id, replyText.trim())
+    setReplyText('')
+    setReplyOpen(false)
+  }
+
+  const replies = item.replies ?? []
+
   return (
     <div className="bg-ww-gray-50 rounded-lg px-3 py-2.5 group">
       <div className="flex items-start justify-between gap-2">
@@ -256,15 +277,61 @@ function FeedbackCard({
           )}
           <p className="text-sm text-ww-gray-700 mt-1 whitespace-pre-wrap">{item.comment}</p>
         </div>
-        <button
-          onClick={() => onDelete(item.id)}
-          className="opacity-0 group-hover:opacity-100 text-ww-gray-400 hover:text-red-500 transition-all p-0.5 flex items-center gap-0.5"
-          title="Delete (password required)"
-        >
-          <Lock size={8} />
-          <Trash2 size={12} />
-        </button>
+        <div className="flex items-center gap-0.5 shrink-0">
+          <button
+            onClick={() => setReplyOpen(!replyOpen)}
+            className="opacity-0 group-hover:opacity-100 text-ww-gray-400 hover:text-amber-600 transition-all p-0.5"
+            title="Reply"
+          >
+            <Reply size={12} />
+          </button>
+          <button
+            onClick={() => onDelete(item.id)}
+            className="opacity-0 group-hover:opacity-100 text-ww-gray-400 hover:text-red-500 transition-all p-0.5 flex items-center gap-0.5"
+            title="Delete (password required)"
+          >
+            <Lock size={8} />
+            <Trash2 size={12} />
+          </button>
+        </div>
       </div>
+
+      {/* Replies */}
+      {replies.length > 0 && (
+        <div className="mt-2 ml-3 border-l-2 border-amber-200 pl-2.5 space-y-1.5">
+          {replies.map(reply => (
+            <div key={reply.id}>
+              <div className="flex items-center gap-1.5">
+                <span className="text-[11px] font-medium text-ww-navy">{reply.author}</span>
+                <span className="text-[9px] text-ww-gray-400 font-mono">{formatTime(reply.createdAt)}</span>
+              </div>
+              <p className="text-[13px] text-ww-gray-600 whitespace-pre-wrap">{reply.comment}</p>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Reply input */}
+      {replyOpen && (
+        <div className="mt-2 flex gap-1.5">
+          <input
+            type="text"
+            value={replyText}
+            onChange={e => setReplyText(e.target.value)}
+            onKeyDown={e => { if (e.key === 'Enter') handleSubmitReply() }}
+            placeholder="Reply..."
+            autoFocus
+            className="flex-1 px-2 py-1 text-[12px] border border-ww-gray-200 rounded focus:ring-1 focus:ring-amber-300 focus:border-amber-400 outline-none"
+          />
+          <button
+            onClick={handleSubmitReply}
+            disabled={!replyText.trim()}
+            className="px-2 py-1 rounded bg-amber-500 text-white hover:bg-amber-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+          >
+            <Send size={10} />
+          </button>
+        </div>
+      )}
     </div>
   )
 }

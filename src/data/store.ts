@@ -607,6 +607,20 @@ export const store = {
     return newItem
   },
 
+  addReply(feedbackId: string, reply: { author: string; comment: string }): void {
+    const items = this.getFeedback()
+    const item = items.find(f => f.id === feedbackId)
+    if (!item) return
+    if (!item.replies) item.replies = []
+    item.replies.push({
+      id: `re-${uid()}`,
+      author: reply.author,
+      comment: reply.comment,
+      createdAt: now(),
+    })
+    save('feedback', items)
+  },
+
   deleteFeedback(id: string): void {
     const items = this.getFeedback().filter(f => f.id !== id)
     save('feedback', items)

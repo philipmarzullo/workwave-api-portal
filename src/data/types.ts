@@ -402,6 +402,13 @@ export interface TrustedIntegrator {
 
 // ── Hackathon Feedback ───────────────────────────────────────
 
+export interface FeedbackReply {
+  id: string
+  author: string
+  comment: string
+  createdAt: string     // ISO date
+}
+
 export interface FeedbackItem {
   id: string
   page: string          // route path when feedback was submitted
@@ -409,6 +416,7 @@ export interface FeedbackItem {
   author: string        // free-text name
   comment: string
   createdAt: string     // ISO date
+  replies?: FeedbackReply[]
 }
 
 // Session context
