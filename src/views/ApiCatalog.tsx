@@ -22,16 +22,19 @@ import { WaiveIcon } from '@/components/WaiveIcon'
 import type { CatalogEndpoint, CatalogDomain, ApiGeneration, HttpMethod, TriggerType } from '@/data/types'
 import rawWinteamCatalog from '@/data/winteam-api-catalog.json'
 import rawRealgreenCatalog from '@/data/realgreen-api-catalog.json'
+import rawPestpacCatalog from '@/data/pestpac-api-catalog.json'
 import { DOMAIN_LABELS, GENERATION_LABELS, METHOD_COLORS } from '@/data/catalog-labels'
 import { getCatalogUsageCounts } from '@/data/catalog-matcher'
 import { store } from '@/data/store'
 
 const winteamCatalog = rawWinteamCatalog as CatalogEndpoint[]
 const realgreenCatalog = rawRealgreenCatalog as CatalogEndpoint[]
+const pestpacCatalog = rawPestpacCatalog as CatalogEndpoint[]
 
 const PLATFORM_CATALOGS: Partial<Record<PlatformKey, CatalogEndpoint[]>> = {
   winteam: winteamCatalog,
   realgreen: realgreenCatalog,
+  pestpac: pestpacCatalog,
 }
 
 const TRIGGER_ICONS: Record<TriggerType, typeof Zap> = {
@@ -67,7 +70,7 @@ interface PlatformDef {
 
 const PLATFORMS: PlatformDef[] = [
   { key: 'winteam', label: 'WinTeam', gateway: 'Concourse (Azure APIM)', available: true, endpointCount: null, description: 'Janitorial, security, and facilities management' },
-  { key: 'pestpac', label: 'PestPac', gateway: 'Apigee', available: false, endpointCount: null, description: 'Pest control operations and field service' },
+  { key: 'pestpac', label: 'PestPac', gateway: 'Apigee', available: true, endpointCount: null, description: 'Pest control operations and field service' },
   { key: 'realgreen', label: 'RealGreen', gateway: 'Apigee', available: true, endpointCount: null, description: 'Lawn care and landscaping management' },
   { key: 'route_manager', label: 'RouteManager', gateway: 'Apigee', available: false, endpointCount: null, description: 'Route optimization and fleet management' },
   { key: 'lighthouse', label: 'Lighthouse', gateway: 'TBD', available: false, endpointCount: null, description: 'Business intelligence and reporting' },
