@@ -20,12 +20,19 @@ import {
   Lock,
 } from 'lucide-react'
 import type { CatalogEndpoint, CatalogDomain, ApiGeneration, HttpMethod, TriggerType } from '@/data/types'
-import rawCatalog from '@/data/winteam-api-catalog.json'
+import rawWinteamCatalog from '@/data/winteam-api-catalog.json'
+import rawRealgreenCatalog from '@/data/realgreen-api-catalog.json'
 import { DOMAIN_LABELS, GENERATION_LABELS, METHOD_COLORS } from '@/data/catalog-labels'
 import { getCatalogUsageCounts } from '@/data/catalog-matcher'
 import { store } from '@/data/store'
 
-const catalog = rawCatalog as CatalogEndpoint[]
+const winteamCatalog = rawWinteamCatalog as CatalogEndpoint[]
+const realgreenCatalog = rawRealgreenCatalog as CatalogEndpoint[]
+
+const PLATFORM_CATALOGS: Partial<Record<PlatformKey, CatalogEndpoint[]>> = {
+  winteam: winteamCatalog,
+  realgreen: realgreenCatalog,
+}
 
 const TRIGGER_ICONS: Record<TriggerType, typeof Zap> = {
   http: Zap,
@@ -61,7 +68,7 @@ interface PlatformDef {
 const PLATFORMS: PlatformDef[] = [
   { key: 'winteam', label: 'WinTeam', gateway: 'Concourse (Azure APIM)', available: true, endpointCount: null, description: 'Janitorial, security, and facilities management' },
   { key: 'pestpac', label: 'PestPac', gateway: 'Apigee', available: false, endpointCount: null, description: 'Pest control operations and field service' },
-  { key: 'realgreen', label: 'RealGreen', gateway: 'Apigee', available: false, endpointCount: null, description: 'Lawn care and landscaping management' },
+  { key: 'realgreen', label: 'RealGreen', gateway: 'Apigee', available: true, endpointCount: null, description: 'Lawn care and landscaping management' },
   { key: 'route_manager', label: 'RouteManager', gateway: 'Apigee', available: false, endpointCount: null, description: 'Route optimization and fleet management' },
   { key: 'lighthouse', label: 'Lighthouse', gateway: 'TBD', available: false, endpointCount: null, description: 'Business intelligence and reporting' },
   { key: 'timegate_plus', label: 'Timegate+', gateway: 'TBD', available: false, endpointCount: null, description: 'Workforce and time management (UK/ANZ)' },
@@ -103,28 +110,35 @@ export function ApiCatalog() {
   const agentScrollRef = useRef<HTMLDivElement>(null)
 
   const currentPlatform = PLATFORMS.find(p => p.key === activePlatform)!
+  const catalog = PLATFORM_CATALOGS[activePlatform] ?? []
 
   // ── Computed stats ──
 
   const stats = useMemo(() => {
     const httpEndpoints = catalog.filter(e => e.triggerType === 'http')
     const documented = httpEndpoints.filter(e => e.purpose !== null)
+    // Count by generation (varies per platform)
+    const genCounts: Record<string, number> = {}
+    for (const e of httpEndpoints) {
+      genCounts[e.generation] = (genCounts[e.generation] || 0) + 1
+    }
     return {
       total: httpEndpoints.length,
-      legacy: httpEndpoints.filter(e => e.generation === 'legacy').length,
-      csa: httpEndpoints.filter(e => e.generation === 'csa').length,
-      connector: httpEndpoints.filter(e => e.generation === 'connector').length,
+      legacy: genCounts['legacy'] || 0,
+      csa: genCounts['csa'] || 0,
+      connector: genCounts['connector'] || 0,
+      rest: genCounts['rest'] || 0,
       documented: documented.length,
       documentedPct: httpEndpoints.length > 0 ? Math.round((documented.length / httpEndpoints.length) * 100) : 0,
     }
-  }, [])
+  }, [catalog])
 
   // ── Usage counts per project (from approved requests) ──
 
   const usageCounts = useMemo(() => {
     const allRequests = store.getRequests()
     return getCatalogUsageCounts(allRequests, catalog)
-  }, [])
+  }, [catalog])
 
   // ── Filtered endpoints ──
 
@@ -163,7 +177,7 @@ export function ApiCatalog() {
     }
 
     return result
-  }, [searchQuery, generationFilter, methodFilter, domainFilter, httpOnly])
+  }, [catalog, searchQuery, generationFilter, methodFilter, domainFilter, httpOnly])
 
   // ── Grouped by project ──
 
@@ -192,7 +206,7 @@ export function ApiCatalog() {
       domains.add(ep.domain)
     }
     return Array.from(domains).sort()
-  }, [httpOnly])
+  }, [catalog, httpOnly])
 
   // ── Accordion controls ──
 
@@ -293,7 +307,16 @@ export function ApiCatalog() {
         {PLATFORMS.map(p => (
           <button
             key={p.key}
-            onClick={() => p.available && setActivePlatform(p.key)}
+            onClick={() => {
+              if (!p.available || p.key === activePlatform) return
+              setActivePlatform(p.key)
+              setSearchQuery('')
+              setGenerationFilter('all')
+              setMethodFilter('all')
+              setDomainFilter('all')
+              setExpandedProjects(new Set())
+              setAllExpanded(false)
+            }}
             className={`relative flex items-center gap-2 px-4 py-2.5 rounded-lg text-[13px] font-medium transition-all whitespace-nowrap ${
               activePlatform === p.key
                 ? 'bg-ww-navy text-white shadow-sm'
@@ -309,7 +332,7 @@ export function ApiCatalog() {
                   ? 'bg-white/20 text-white'
                   : 'bg-emerald-100 text-emerald-700'
               }`}>
-                {stats.total}
+                {(PLATFORM_CATALOGS[p.key]?.filter(e => e.triggerType === 'http').length) ?? 0}
               </span>
             ) : (
               <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-ww-gray-100 text-ww-gray-400">
@@ -333,38 +356,72 @@ export function ApiCatalog() {
           </div>
 
           {/* Section B: Stat Cards */}
-          <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-            <StatCard
-              label="Total Endpoints"
-              value={stats.total}
-              active={generationFilter === 'all'}
-              onClick={() => handleStatClick('all')}
-            />
-            <StatCard
-              label="Legacy (v1)"
-              value={stats.legacy}
-              active={generationFilter === 'legacy'}
-              onClick={() => handleStatClick('legacy')}
-            />
-            <StatCard
-              label="CSA (NextGen)"
-              value={stats.csa}
-              active={generationFilter === 'csa'}
-              onClick={() => handleStatClick('csa')}
-            />
-            <StatCard
-              label="Connectors"
-              value={stats.connector}
-              active={generationFilter === 'connector'}
-              onClick={() => handleStatClick('connector')}
-            />
-            <StatCard
-              label="Documented"
-              value={stats.documented}
-              sub={`${stats.documentedPct}%`}
-              active={false}
-            />
-          </div>
+          {activePlatform === 'winteam' ? (
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+              <StatCard
+                label="Total Endpoints"
+                value={stats.total}
+                active={generationFilter === 'all'}
+                onClick={() => handleStatClick('all')}
+              />
+              <StatCard
+                label="Legacy (v1)"
+                value={stats.legacy}
+                active={generationFilter === 'legacy'}
+                onClick={() => handleStatClick('legacy')}
+              />
+              <StatCard
+                label="CSA (NextGen)"
+                value={stats.csa}
+                active={generationFilter === 'csa'}
+                onClick={() => handleStatClick('csa')}
+              />
+              <StatCard
+                label="Connectors"
+                value={stats.connector}
+                active={generationFilter === 'connector'}
+                onClick={() => handleStatClick('connector')}
+              />
+              <StatCard
+                label="Documented"
+                value={stats.documented}
+                sub={`${stats.documentedPct}%`}
+                active={false}
+              />
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+              <StatCard
+                label="Total Endpoints"
+                value={stats.total}
+                active={generationFilter === 'all'}
+                onClick={() => handleStatClick('all')}
+              />
+              <StatCard
+                label="GET"
+                value={catalog.filter(e => e.method === 'GET').length}
+                active={methodFilter === 'GET'}
+                onClick={() => { setMethodFilter(methodFilter === 'GET' ? 'all' : 'GET'); setGenerationFilter('all') }}
+              />
+              <StatCard
+                label="POST"
+                value={catalog.filter(e => e.method === 'POST').length}
+                active={methodFilter === 'POST'}
+                onClick={() => { setMethodFilter(methodFilter === 'POST' ? 'all' : 'POST'); setGenerationFilter('all') }}
+              />
+              <StatCard
+                label="Tags"
+                value={new Set(catalog.map(e => e.projectName)).size}
+                active={false}
+              />
+              <StatCard
+                label="Documented"
+                value={stats.documented}
+                sub={`${stats.documentedPct}%`}
+                active={false}
+              />
+            </div>
+          )}
 
           {/* Section C: Agent Panel */}
           {agentOpen && (
@@ -507,16 +564,18 @@ export function ApiCatalog() {
                 <Filter size={13} className="text-ww-gray-400" />
               </div>
 
-              <select
-                value={generationFilter}
-                onChange={e => setGenerationFilter(e.target.value as ApiGeneration | 'all')}
-                className="text-sm border border-ww-gray-200 rounded-lg px-3 py-2 bg-white focus:ring-2 focus:ring-ww-primary/30 focus:border-ww-primary outline-none"
-              >
-                <option value="all">All Generations</option>
-                <option value="legacy">Legacy</option>
-                <option value="csa">CSA / NextGen</option>
-                <option value="connector">Connector</option>
-              </select>
+              {activePlatform === 'winteam' && (
+                <select
+                  value={generationFilter}
+                  onChange={e => setGenerationFilter(e.target.value as ApiGeneration | 'all')}
+                  className="text-sm border border-ww-gray-200 rounded-lg px-3 py-2 bg-white focus:ring-2 focus:ring-ww-primary/30 focus:border-ww-primary outline-none"
+                >
+                  <option value="all">All Generations</option>
+                  <option value="legacy">Legacy</option>
+                  <option value="csa">CSA / NextGen</option>
+                  <option value="connector">Connector</option>
+                </select>
+              )}
 
               <select
                 value={methodFilter}
@@ -531,15 +590,17 @@ export function ApiCatalog() {
                 <option value="PUT">PUT</option>
               </select>
 
-              <label className="flex items-center gap-1.5 text-[12px] text-ww-gray-600 cursor-pointer select-none whitespace-nowrap">
-                <input
-                  type="checkbox"
-                  checked={httpOnly}
-                  onChange={e => setHttpOnly(e.target.checked)}
-                  className="rounded border-ww-gray-300"
-                />
-                HTTP only
-              </label>
+              {activePlatform === 'winteam' && (
+                <label className="flex items-center gap-1.5 text-[12px] text-ww-gray-600 cursor-pointer select-none whitespace-nowrap">
+                  <input
+                    type="checkbox"
+                    checked={httpOnly}
+                    onChange={e => setHttpOnly(e.target.checked)}
+                    className="rounded border-ww-gray-300"
+                  />
+                  HTTP only
+                </label>
+              )}
             </div>
           </div>
 

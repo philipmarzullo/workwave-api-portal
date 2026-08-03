@@ -15,12 +15,17 @@ export const DOMAIN_LABELS: Record<CatalogDomain, string> = {
   compliance: 'Compliance',
   contacts: 'Contacts',
   documents: 'Documents',
+  services: 'Services / Programs',
+  reporting: 'Reporting / Metrics',
+  configuration: 'Configuration / Codes',
+  properties: 'Properties / Territory',
 }
 
 export const GENERATION_LABELS: Record<ApiGeneration, { label: string; color: string }> = {
   legacy: { label: 'Legacy', color: 'bg-gray-100 text-gray-600' },
   csa: { label: 'CSA', color: 'bg-sky-100 text-sky-700' },
   connector: { label: 'Connector', color: 'bg-teal-100 text-teal-700' },
+  rest: { label: 'REST', color: 'bg-emerald-100 text-emerald-700' },
 }
 
 export const METHOD_COLORS: Record<HttpMethod, string> = {

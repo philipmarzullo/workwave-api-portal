@@ -357,12 +357,13 @@ function detectPrimaryProduct(lower: string): string {
 
 // ── WinTeam API Catalog ──────────────────────────────────────
 export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
-export type ApiGeneration = 'legacy' | 'csa' | 'connector'
+export type ApiGeneration = 'legacy' | 'csa' | 'connector' | 'rest'
 export type TriggerType = 'http' | 'service_bus' | 'event_grid' | 'timer' | 'queue' | 'blob'
 export type CatalogDomain =
   | 'employees_hr' | 'scheduling' | 'jobs' | 'accounting' | 'payroll'
   | 'time_tracking' | 'work_schedules' | 'customers' | 'inventory'
   | 'system_admin' | 'connectors' | 'compliance' | 'contacts' | 'documents'
+  | 'services' | 'reporting' | 'configuration' | 'properties'
 
 export interface CatalogEndpoint {
   id: string
