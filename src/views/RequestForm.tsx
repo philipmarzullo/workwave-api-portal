@@ -4,8 +4,9 @@ import {
   Lock, ChevronRight, ChevronLeft, CheckCircle2,
   Building2, Settings2, Server, FileCheck,
   Send, Globe, Mail, AlertTriangle, ExternalLink, Info, Phone, Swords,
-  Bot, Loader2, X, Trash2,
+  Loader2, X, Trash2,
 } from 'lucide-react'
+import { WaiveIcon } from '@/components/WaiveIcon'
 import type { CustomerUser, WorkWaveProduct, BuilderType, UseCase, DataCategory, Environment, RequestType, LegacyAccessMethod } from '@/data/types'
 import { store } from '@/data/store'
 import { PRODUCT_LABELS, TIER_LABELS, USE_CASE_LABELS, DATA_CATEGORY_LABELS, REQUEST_TYPE_LABELS, LEGACY_METHOD_LABELS } from '@/App'
@@ -1777,8 +1778,8 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
                 : 'border-ww-primary/30 text-ww-primary bg-ww-primary/5 hover:bg-ww-primary/10'
             }`}
           >
-            <Bot size={15} />
-            Ask the Agent
+            <WaiveIcon size={15} />
+            Ask WAIve
           </button>
         </div>
         <div className="text-center">
@@ -1793,13 +1794,13 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
         </div>
       </div>
 
-      {/* Ask the Agent panel */}
+      {/* Ask WAIve panel */}
       {agentOpen && (
         <div className="rounded-lg border border-ww-primary/30 bg-white overflow-hidden flex flex-col mb-6" style={{ maxHeight: '480px' }}>
           <div className="flex items-center justify-between px-4 py-2 bg-ww-primary/5 border-b border-ww-primary/10 shrink-0">
             <div className="flex items-center gap-2">
-              <Bot size={14} className="text-ww-primary" />
-              <span className="text-sm font-display font-bold text-ww-navy">Ask the Agent</span>
+              <WaiveIcon size={14} />
+              <span className="text-sm font-display font-bold text-ww-navy">Ask WAIve</span>
               {agentUsage && (
                 <span className="text-[10px] font-mono text-ww-gray-400">
                   ${((agentUsage.dailyBudgetCents - agentUsage.dailySpentCents) / 100).toFixed(2)} remaining today
@@ -1894,7 +1895,7 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
                     askAgent()
                   }
                 }}
-                placeholder={agentMessages.length > 0 ? 'Ask a follow-up...' : 'Ask about this form, fields, or the review process...'}
+                placeholder={agentMessages.length > 0 ? 'Ask a follow-up...' : 'Ask WAIve about this form or the review process...'}
                 rows={1}
                 className="flex-1 px-3 py-2 text-sm border border-ww-gray-200 rounded resize-none focus:ring-2 focus:ring-ww-primary/30 focus:border-ww-primary outline-none"
               />

@@ -6,12 +6,12 @@ import {
   Server,
   ChevronRight,
   Search,
-  Bot,
   Send,
   Loader2,
   X,
   Trash2,
 } from 'lucide-react'
+import { WaiveIcon } from '@/components/WaiveIcon'
 import type { WorkWaveProduct, GatewayPlatform } from '@/data/types'
 import { store } from '@/data/store'
 import {
@@ -156,8 +156,8 @@ export function ReviewerActiveAccess({ hideHeader = false }: { hideHeader?: bool
               : 'border-ww-primary/30 text-ww-primary bg-ww-primary/5 hover:bg-ww-primary/10'
           }`}
         >
-          <Bot size={15} />
-          Ask the Agent
+          <WaiveIcon size={15} />
+          Ask WAIve
         </button>
       </div>
       )}
@@ -197,13 +197,13 @@ export function ReviewerActiveAccess({ hideHeader = false }: { hideHeader?: bool
         </button>
       </div>
 
-      {/* Ask the Agent panel */}
+      {/* Ask WAIve panel */}
       {agentOpen && (
         <div className="rounded-lg border border-ww-primary/30 bg-white overflow-hidden flex flex-col mb-6" style={{ maxHeight: '480px' }}>
           <div className="flex items-center justify-between px-4 py-2 bg-ww-primary/5 border-b border-ww-primary/10 shrink-0">
             <div className="flex items-center gap-2">
-              <Bot size={14} className="text-ww-primary" />
-              <span className="text-sm font-display font-bold text-ww-navy">Ask the Agent</span>
+              <WaiveIcon size={14} />
+              <span className="text-sm font-display font-bold text-ww-navy">Ask WAIve</span>
               {agentUsage && (
                 <span className="text-[10px] font-mono text-ww-gray-400">
                   ${((agentUsage.dailyBudgetCents - agentUsage.dailySpentCents) / 100).toFixed(2)} remaining today
@@ -298,7 +298,7 @@ export function ReviewerActiveAccess({ hideHeader = false }: { hideHeader?: bool
                     askAgent()
                   }
                 }}
-                placeholder={agentMessages.length > 0 ? 'Ask a follow-up...' : 'Ask about business rules, pricing, competitive guidance...'}
+                placeholder={agentMessages.length > 0 ? 'Ask a follow-up...' : 'Ask WAIve about business rules, pricing...'}
                 rows={1}
                 className="flex-1 px-3 py-2 text-sm border border-ww-gray-200 rounded resize-none focus:ring-2 focus:ring-ww-primary/30 focus:border-ww-primary outline-none"
               />

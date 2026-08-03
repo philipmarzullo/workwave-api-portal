@@ -3,7 +3,6 @@ import {
   BookOpen,
   ChevronDown,
   ChevronRight,
-  Bot,
   Send,
   Loader2,
   X,
@@ -19,6 +18,7 @@ import {
   FileBox,
   Lock,
 } from 'lucide-react'
+import { WaiveIcon } from '@/components/WaiveIcon'
 import type { CatalogEndpoint, CatalogDomain, ApiGeneration, HttpMethod, TriggerType } from '@/data/types'
 import rawWinteamCatalog from '@/data/winteam-api-catalog.json'
 import rawRealgreenCatalog from '@/data/realgreen-api-catalog.json'
@@ -296,8 +296,8 @@ export function ApiCatalog() {
             onClick={() => setAgentOpen(!agentOpen)}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[13px] font-medium bg-ww-navy text-white hover:bg-ww-navy/90 transition-colors"
           >
-            <Bot size={14} />
-            Ask the Agent
+            <WaiveIcon size={14} />
+            Ask WAIve
           </button>
         )}
       </div>
@@ -428,8 +428,8 @@ export function ApiCatalog() {
             <div className="border border-ww-gray-200 rounded-lg bg-white overflow-hidden">
               <div className="flex items-center justify-between px-4 py-2.5 border-b border-ww-gray-200 bg-ww-gray-50">
                 <div className="flex items-center gap-2">
-                  <Bot size={14} className="text-ww-primary" />
-                  <span className="text-[13px] font-semibold text-ww-navy">API Catalog Agent</span>
+                  <WaiveIcon size={14} />
+                  <span className="text-[13px] font-semibold text-ww-navy">WAIve</span>
                 </div>
                 <div className="flex items-center gap-1">
                   {agentMessages.length > 0 && (
@@ -474,7 +474,7 @@ export function ApiCatalog() {
                   {agentMessages.map((msg, i) => (
                     <div key={i} className={`text-sm ${msg.role === 'user' ? 'text-ww-navy font-medium' : 'text-ww-gray-600'}`}>
                       <span className="text-[10px] font-mono text-ww-gray-400 uppercase mr-1.5">
-                        {msg.role === 'user' ? 'You' : 'Agent'}
+                        {msg.role === 'user' ? 'You' : 'WAIve'}
                       </span>
                       <span className="whitespace-pre-wrap">{msg.text}</span>
                     </div>
@@ -503,7 +503,7 @@ export function ApiCatalog() {
                   onKeyDown={e => {
                     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); askAgent() }
                   }}
-                  placeholder="Ask about the API surface..."
+                  placeholder="Ask WAIve about the API surface..."
                   rows={1}
                   className="flex-1 resize-none text-sm border border-ww-gray-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-ww-primary/30 focus:border-ww-primary outline-none"
                 />

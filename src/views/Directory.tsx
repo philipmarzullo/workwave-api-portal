@@ -1,6 +1,7 @@
 import { useState, useMemo, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Search, ChevronDown, ChevronRight, Plus, X, HelpCircle, Bot, Send, Loader2, Trash2 } from 'lucide-react'
+import { Search, ChevronDown, ChevronRight, Plus, X, HelpCircle, Send, Loader2, Trash2 } from 'lucide-react'
+import { WaiveIcon } from '@/components/WaiveIcon'
 import { store } from '@/data/store'
 import type { CustomerUser, WorkWaveProduct, IntegrationType, PartnerTier, Partner } from '@/data/types'
 import { PRODUCT_LABELS, TIER_LABELS } from '@/App'
@@ -224,8 +225,8 @@ export function Directory({ activeUser, isReviewerView = false, hideHeader = fal
                       : 'border-ww-primary/30 text-ww-primary bg-ww-primary/5 hover:bg-ww-primary/10'
                   }`}
                 >
-                  <Bot size={15} />
-                  Ask the Agent
+                  <WaiveIcon size={15} />
+                  Ask WAIve
                 </button>
               </>
             )}
@@ -417,13 +418,13 @@ export function Directory({ activeUser, isReviewerView = false, hideHeader = fal
       <div className="pb-12">
         {!hideHeader && renderHeader()}
 
-        {/* Ask the Agent panel */}
+        {/* Ask WAIve panel */}
         {agentOpen && (
           <div className="rounded-lg border border-ww-primary/30 bg-white overflow-hidden flex flex-col mt-5" style={{ maxHeight: '480px' }}>
             <div className="flex items-center justify-between px-4 py-2 bg-ww-primary/5 border-b border-ww-primary/10 shrink-0">
               <div className="flex items-center gap-2">
-                <Bot size={14} className="text-ww-primary" />
-                <span className="text-sm font-display font-bold text-ww-navy">Ask the Agent</span>
+                <WaiveIcon size={14} />
+                <span className="text-sm font-display font-bold text-ww-navy">Ask WAIve</span>
                 {agentUsage && (
                   <span className="text-[10px] font-mono text-ww-gray-400">
                     ${((agentUsage.dailyBudgetCents - agentUsage.dailySpentCents) / 100).toFixed(2)} remaining today
@@ -518,7 +519,7 @@ export function Directory({ activeUser, isReviewerView = false, hideHeader = fal
                       askAgent()
                     }
                   }}
-                  placeholder={agentMessages.length > 0 ? 'Ask a follow-up...' : 'Ask about partners, integrations, products...'}
+                  placeholder={agentMessages.length > 0 ? 'Ask a follow-up...' : 'Ask WAIve about partners, integrations...'}
                   rows={1}
                   className="flex-1 px-3 py-2 text-sm border border-ww-gray-200 rounded resize-none focus:ring-2 focus:ring-ww-primary/30 focus:border-ww-primary outline-none"
                 />
