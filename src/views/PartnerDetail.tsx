@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useState, useMemo } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import {
   ArrowLeft,
@@ -14,8 +14,13 @@ import {
   ShieldAlert,
   FileText,
   Package,
+  Sparkles,
+  Loader2,
+  FileUp,
+  Paperclip,
 } from 'lucide-react'
 import type { ApiRequest, PartnerCustomer } from '@/data/types'
+import { WaiveIcon } from '@/components/WaiveIcon'
 import { store } from '@/data/store'
 import { PRODUCT_LABELS, STATUS_LABELS, TIER_LABELS, USE_CASE_LABELS } from '@/App'
 
@@ -66,6 +71,32 @@ export function PartnerDetail() {
       .filter(l => l.status === 'active')
       .map(l => store.getCustomer(l.customerId)?.name ?? 'Unknown')
   }, [links])
+
+  const [summary, setSummary] = useState<string | null>(null)
+  const [summaryLoading, setSummaryLoading] = useState(false)
+
+  const generateSummary = async () => {
+    if (!partner) return
+    setSummaryLoading(true)
+    try {
+      const res = await fetch('/api/ask', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          question: `Give me a comprehensive overview of the partner "${partner.name}". They are a ${INTEGRATION_TYPE_LABELS[partner.integrationType]} integration partner supporting ${partner.productsSupported.map(p => PRODUCT_LABELS[p]).join(', ')}. Their website is ${partner.website}. They are currently ${partner.tier}. ${partner.competitiveFlag ? 'They have been flagged as potentially competitive: ' + partner.competitiveFlagReason : ''} They have ${stats.active} active customer integrations and ${stats.totalRequests} total API requests. Include: what they do, how they integrate with WorkWave, any risk factors, and recommendations.`,
+          page: 'reviewer-partners',
+        }),
+      })
+      const data = await res.json()
+      if (res.ok) {
+        setSummary(data.answer)
+      }
+    } catch {
+      // silently fail
+    } finally {
+      setSummaryLoading(false)
+    }
+  }
 
   if (!partner) {
     return (
@@ -145,6 +176,34 @@ export function PartnerDetail() {
             )}
           </div>
         </div>
+      </div>
+
+      {/* AI Summary */}
+      <div className="bg-white rounded-md border border-ww-gray-200 p-6 mb-6">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-sm font-mono font-semibold text-ww-gray-900 uppercase tracking-[0.06em] flex items-center gap-2">
+            <Sparkles size={16} className="text-amber-500" />
+            AI Partner Summary
+          </h2>
+          <button
+            onClick={generateSummary}
+            disabled={summaryLoading}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium bg-ww-navy text-white hover:bg-ww-navy/90 disabled:opacity-40 transition-colors"
+          >
+            {summaryLoading ? <Loader2 size={12} className="animate-spin" /> : <WaiveIcon size={12} />}
+            {summary ? 'Regenerate' : 'Generate Summary'}
+          </button>
+        </div>
+        {summary ? (
+          <div className="text-sm text-ww-gray-700 whitespace-pre-wrap leading-relaxed">{summary}</div>
+        ) : summaryLoading ? (
+          <div className="flex items-center gap-2 text-ww-gray-400 text-sm py-4">
+            <Loader2 size={16} className="animate-spin" />
+            WAIve is generating a partner overview...
+          </div>
+        ) : (
+          <p className="text-sm text-ww-gray-400 italic">Click "Generate Summary" for a WAIve-powered overview of this partner, their integration, and key details.</p>
+        )}
       </div>
 
       {/* Stats Cards */}
@@ -347,6 +406,52 @@ export function PartnerDetail() {
             <p className="text-sm text-ww-gray-500">No active integrations. Removing this partner would have no impact on customers.</p>
           </div>
         )}
+      </div>
+
+      {/* Documents & Agreements */}
+      <div className="bg-white rounded-md border border-ww-gray-200 mt-6 overflow-hidden">
+        <div className="px-6 py-4 border-b border-ww-gray-200 flex items-center justify-between">
+          <h2 className="text-sm font-mono font-semibold text-ww-gray-900 uppercase tracking-[0.06em] flex items-center gap-2">
+            <Paperclip size={16} className="text-ww-gray-400" />
+            Documents & Agreements
+          </h2>
+          <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium border border-ww-gray-200 text-ww-gray-600 hover:bg-ww-gray-50 transition-colors">
+            <FileUp size={12} />
+            Upload
+          </button>
+        </div>
+        <div className="divide-y divide-ww-gray-100">
+          {partner.contractRef ? (
+            <>
+              <div className="px-6 py-3 flex items-center justify-between hover:bg-ww-gray-50">
+                <div className="flex items-center gap-3">
+                  <FileText size={16} className="text-ww-gray-400" />
+                  <div>
+                    <p className="text-sm font-medium text-ww-gray-900">API Partnership Agreement</p>
+                    <p className="text-[11px] text-ww-gray-400 font-mono">Ref: {partner.contractRef}</p>
+                  </div>
+                </div>
+                <span className="text-[10px] font-mono text-ww-gray-400">PDF</span>
+              </div>
+              <div className="px-6 py-3 flex items-center justify-between hover:bg-ww-gray-50">
+                <div className="flex items-center gap-3">
+                  <FileText size={16} className="text-ww-gray-400" />
+                  <div>
+                    <p className="text-sm font-medium text-ww-gray-900">API Terms & Conditions</p>
+                    <p className="text-[11px] text-ww-gray-400 font-mono">Standard terms v2.1</p>
+                  </div>
+                </div>
+                <span className="text-[10px] font-mono text-ww-gray-400">PDF</span>
+              </div>
+            </>
+          ) : (
+            <div className="px-6 py-8 text-center">
+              <Paperclip size={24} className="mx-auto text-ww-gray-300 mb-2" />
+              <p className="text-sm text-ww-gray-400">No documents uploaded yet</p>
+              <p className="text-[11px] text-ww-gray-400 mt-1">Upload partnership agreements, contracts, and negotiation documents</p>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )

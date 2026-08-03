@@ -201,6 +201,16 @@ export interface ReviewerNote {
   createdAt: string
 }
 
+export interface RequestMessage {
+  id: string
+  requestId: string
+  author: string
+  role: 'reviewer' | 'customer'
+  content: string
+  attachmentName?: string | null
+  createdAt: string
+}
+
 export interface Approval {
   id: string
   requestId: string

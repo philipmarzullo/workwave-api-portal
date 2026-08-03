@@ -12,6 +12,7 @@ import type {
   ApiPricing,
   Approval,
   ReviewerNote,
+  RequestMessage,
   ViewMode,
   RequestStatus,
   ApprovalStage,
@@ -100,6 +101,8 @@ function ensureSeed(): void {
 }
 
 ensureSeed()
+
+// Seed messages will be called after store is defined (see bottom of file)
 
 // ── Volume Tier Pricing ─────────────────────────────────────────
 
@@ -667,6 +670,66 @@ export const store = {
     localStorage.setItem(FB_ENABLED_KEY, enabled ? '1' : '0')
   },
 
+  // ── Request Messages (bidirectional communication) ──────────
+
+  getMessages(requestId: string): RequestMessage[] {
+    const all = load<RequestMessage[]>('request-messages', [])
+    return all.filter(m => m.requestId === requestId).sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
+  },
+
+  addMessage(requestId: string, author: string, role: 'reviewer' | 'customer', content: string, attachmentName?: string): RequestMessage {
+    const all = load<RequestMessage[]>('request-messages', [])
+    const msg: RequestMessage = {
+      id: `msg-${uid()}`,
+      requestId,
+      author,
+      role,
+      content,
+      attachmentName: attachmentName || null,
+      createdAt: now(),
+    }
+    all.push(msg)
+    save('request-messages', all)
+    return msg
+  },
+
+  seedMessages(): void {
+    const existing = load<RequestMessage[]>('request-messages', [])
+    if (existing.length > 0) return
+    const requests = this.getRequests()
+    const seedMsgs: RequestMessage[] = []
+    // Add a couple seed messages to the first pending request
+    const pending = requests.find(r => r.status === 'pending_review')
+    if (pending) {
+      const customer = this.getCustomerUser(pending.requestedBy)
+      seedMsgs.push({
+        id: 'msg-seed-1',
+        requestId: pending.id,
+        author: customer?.name ?? 'Customer',
+        role: 'customer',
+        content: 'Hi, I submitted this request last week. Just checking if there is anything else you need from our side to proceed.',
+        createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+      })
+      seedMsgs.push({
+        id: 'msg-seed-2',
+        requestId: pending.id,
+        author: 'API Review Team',
+        role: 'reviewer',
+        content: 'Thanks for following up. We are currently in the competitive review stage. Could you provide more details about how the integration will handle customer data? Specifically, does any data leave the WorkWave environment?',
+        createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+      })
+      seedMsgs.push({
+        id: 'msg-seed-3',
+        requestId: pending.id,
+        author: customer?.name ?? 'Customer',
+        role: 'customer',
+        content: 'Good question. All data stays within our secure AWS environment. We only pull scheduling data via the API and display it in our dashboard. No data is exported or shared with third parties.',
+        createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+      })
+    }
+    if (seedMsgs.length > 0) save('request-messages', seedMsgs)
+  },
+
   // ── Reset ────────────────────────────────────────────────────
 
   reset(): void {
@@ -679,3 +742,6 @@ export const store = {
     localStorage.setItem(key('seed-version'), SEED_VERSION)
   },
 }
+
+// Seed messages after store is initialized
+store.seedMessages()

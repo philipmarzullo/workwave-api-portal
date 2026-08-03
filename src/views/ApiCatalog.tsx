@@ -17,6 +17,8 @@ import {
   Database,
   FileBox,
   Lock,
+  Key,
+  Code2,
 } from 'lucide-react'
 import { WaiveIcon } from '@/components/WaiveIcon'
 import type { CatalogEndpoint, CatalogDomain, ApiGeneration, HttpMethod, TriggerType } from '@/data/types'
@@ -102,6 +104,9 @@ export function ApiCatalog() {
   // Accordion
   const [expandedProjects, setExpandedProjects] = useState<Set<string>>(new Set())
   const [allExpanded, setAllExpanded] = useState(false)
+
+  // Developer docs
+  const [docsOpen, setDocsOpen] = useState(false)
 
   // Agent
   const [agentOpen, setAgentOpen] = useState(false)
@@ -356,6 +361,86 @@ export function ApiCatalog() {
             <span>{currentPlatform.description}</span>
             <span className="text-ww-gray-300">&middot;</span>
             <span className="font-mono">{currentPlatform.gateway}</span>
+          </div>
+
+          {/* Developer Docs */}
+          <div className="border border-ww-gray-200 rounded-lg bg-white overflow-hidden">
+            <button
+              onClick={() => setDocsOpen(!docsOpen)}
+              className="w-full flex items-center justify-between px-5 py-3 hover:bg-ww-gray-50 transition-colors"
+            >
+              <div className="flex items-center gap-2">
+                <Key size={16} className="text-ww-primary" />
+                <span className="text-[13px] font-semibold text-ww-navy">Developer Quick Start</span>
+                <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700">NEW</span>
+              </div>
+              <ChevronDown size={14} className={`text-ww-gray-400 transition-transform ${docsOpen ? 'rotate-180' : ''}`} />
+            </button>
+            {docsOpen && (
+              <div className="border-t border-ww-gray-100 px-5 py-4 space-y-4">
+                {/* Authentication */}
+                <div>
+                  <h3 className="text-[12px] font-mono font-semibold text-ww-gray-900 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                    <Key size={12} className="text-ww-gray-400" />
+                    Authentication
+                  </h3>
+                  <div className="bg-ww-gray-50 rounded-lg p-4 text-[13px] text-ww-gray-700 leading-relaxed space-y-2">
+                    <p><strong>1. Obtain credentials:</strong> After approval, you will receive a <code className="bg-ww-gray-200 px-1 rounded text-[12px]">client_id</code> and <code className="bg-ww-gray-200 px-1 rounded text-[12px]">client_secret</code> via secure channel.</p>
+                    <p><strong>2. Request a token:</strong> POST to the token endpoint with your credentials to receive a Bearer token.</p>
+                    <div className="bg-ww-gray-800 text-green-400 rounded p-3 font-mono text-[11px] overflow-x-auto">
+                      <pre>{`curl -X POST ${currentPlatform.gateway.includes('Apigee') ? 'https://api.workwave.com/oauth/token' : 'https://api.winteam.workwave.com/connect/token'} \\
+  -H "Content-Type: application/x-www-form-urlencoded" \\
+  -d "grant_type=client_credentials&client_id=YOUR_ID&client_secret=YOUR_SECRET"`}</pre>
+                    </div>
+                    <p><strong>3. Use the token:</strong> Include the Bearer token in the <code className="bg-ww-gray-200 px-1 rounded text-[12px]">Authorization</code> header of all API requests.</p>
+                    <div className="bg-ww-gray-800 text-green-400 rounded p-3 font-mono text-[11px] overflow-x-auto">
+                      <pre>{`curl -X GET ${currentPlatform.gateway.includes('Apigee') ? 'https://api.workwave.com/v1/customers' : 'https://api.winteam.workwave.com/api/employees'} \\
+  -H "Authorization: Bearer YOUR_TOKEN"`}</pre>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Error Responses */}
+                <div>
+                  <h3 className="text-[12px] font-mono font-semibold text-ww-gray-900 uppercase tracking-wider mb-2">Common Error Responses</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                    <div className="bg-red-50 border border-red-100 rounded-lg p-3">
+                      <p className="text-[12px] font-mono font-bold text-red-700">401 Unauthorized</p>
+                      <p className="text-[11px] text-red-600 mt-0.5">Token expired or invalid. Re-authenticate.</p>
+                    </div>
+                    <div className="bg-amber-50 border border-amber-100 rounded-lg p-3">
+                      <p className="text-[12px] font-mono font-bold text-amber-700">429 Rate Limited</p>
+                      <p className="text-[11px] text-amber-600 mt-0.5">Too many requests. Check your tier limits.</p>
+                    </div>
+                    <div className="bg-blue-50 border border-blue-100 rounded-lg p-3">
+                      <p className="text-[12px] font-mono font-bold text-blue-700">403 Forbidden</p>
+                      <p className="text-[11px] text-blue-600 mt-0.5">Endpoint not included in your access scope.</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* SDKs */}
+                <div>
+                  <h3 className="text-[12px] font-mono font-semibold text-ww-gray-900 uppercase tracking-wider mb-2">SDKs & Libraries</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {[
+                      { lang: 'C# / .NET', status: 'Available' },
+                      { lang: 'Python', status: 'Coming Soon' },
+                      { lang: 'Node.js', status: 'Coming Soon' },
+                      { lang: 'Java', status: 'Coming Soon' },
+                    ].map(sdk => (
+                      <div key={sdk.lang} className="flex items-center gap-2 px-3 py-2 rounded-lg border border-ww-gray-200 bg-white">
+                        <Code2 size={14} className="text-ww-gray-400" />
+                        <span className="text-[12px] font-medium text-ww-gray-700">{sdk.lang}</span>
+                        <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded ${
+                          sdk.status === 'Available' ? 'bg-emerald-100 text-emerald-700' : 'bg-ww-gray-100 text-ww-gray-400'
+                        }`}>{sdk.status}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Section B: Stat Cards */}
@@ -680,7 +765,12 @@ export function ApiCatalog() {
                                 )}
                               </td>
                               <td className="px-4 py-2">
-                                <code className="text-[12px] font-mono text-ww-gray-700">{ep.route}</code>
+                                <div className="flex items-center gap-1.5">
+                                  <code className="text-[12px] font-mono text-ww-gray-700">{ep.route}</code>
+                                  {ep.generation === 'legacy' && (
+                                    <span className="text-[9px] font-mono font-semibold px-1.5 py-0.5 rounded bg-orange-100 text-orange-700 shrink-0">LEGACY</span>
+                                  )}
+                                </div>
                               </td>
                               <td className="px-4 py-2">
                                 <span className="text-[12px] text-ww-gray-600 truncate block max-w-[180px]" title={ep.functionName}>

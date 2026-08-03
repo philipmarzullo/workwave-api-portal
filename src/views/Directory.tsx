@@ -535,6 +535,57 @@ export function Directory({ activeUser, isReviewerView = false, hideHeader = fal
           </div>
         )}
 
+        {/* Hero CTA */}
+        <div className="bg-gradient-to-r from-ww-navy to-ww-primary/90 rounded-xl p-6 mt-5 text-white">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <h2 className="text-lg font-display font-bold">Ready to integrate?</h2>
+              <p className="text-white/70 text-sm mt-1">Select a partner below or submit a new request</p>
+            </div>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => navigate('/request')}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-white text-ww-navy text-sm font-semibold hover:bg-white/90 transition-colors"
+              >
+                <Plus size={16} />
+                Request API Access
+              </button>
+              <button
+                onClick={() => navigate('/request?self=true')}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg border-2 border-white/40 text-white text-sm font-semibold hover:bg-white/10 transition-colors"
+              >
+                Build Your Own
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Product-first filter */}
+        <div className="flex items-center gap-2 mt-5 mb-1">
+          <span className="text-[11px] font-mono text-ww-gray-400 uppercase tracking-wider mr-1">Filter by product:</span>
+          {(['pestpac', 'realgreen', 'winteam'] as const).map(product => (
+            <button
+              key={product}
+              onClick={() => setSelectedProduct(selectedProduct === product ? '' : product)}
+              className={`px-3 py-1.5 rounded-lg text-[13px] font-medium transition-all ${
+                selectedProduct === product
+                  ? 'bg-ww-navy text-white shadow-sm'
+                  : 'bg-white border border-ww-gray-200 text-ww-gray-700 hover:border-ww-gray-300 hover:bg-ww-gray-50'
+              }`}
+            >
+              {PRODUCT_LABELS[product]}
+            </button>
+          ))}
+          {selectedProduct && (
+            <button
+              onClick={() => setSelectedProduct('')}
+              className="text-[11px] text-ww-gray-400 hover:text-ww-gray-600 transition-colors ml-1"
+            >
+              <X size={14} />
+            </button>
+          )}
+        </div>
+
         {filteredPartners.length === 0 ? (
           renderEmpty()
         ) : (
