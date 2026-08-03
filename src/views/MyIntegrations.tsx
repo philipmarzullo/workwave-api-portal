@@ -63,7 +63,7 @@ export function MyIntegrations({ activeUser }: MyIntegrationsProps) {
       const res = await fetch('/api/ask', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question: q }),
+        body: JSON.stringify({ question: q, page: 'my-integrations' }),
       })
       const data = await res.json()
       if (!res.ok) {

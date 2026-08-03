@@ -70,7 +70,7 @@ export function Directory({ activeUser, isReviewerView = false, hideHeader = fal
       const res = await fetch('/api/ask', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question: q }),
+        body: JSON.stringify({ question: q, page: 'directory' }),
       })
       const data = await res.json()
       if (!res.ok) {

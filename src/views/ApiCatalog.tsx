@@ -259,7 +259,7 @@ export function ApiCatalog() {
       const res = await fetch('/api/ask', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question: q }),
+        body: JSON.stringify({ question: q, page: 'api-catalog' }),
       })
       const data = await res.json()
       if (!res.ok) {

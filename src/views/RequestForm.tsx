@@ -201,7 +201,7 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
       const res = await fetch('/api/ask', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question: q }),
+        body: JSON.stringify({ question: q, page: 'request-form' }),
       })
       const data = await res.json()
       if (!res.ok) {

@@ -74,7 +74,7 @@ export function UsageIntelligence() {
       const res = await fetch('/api/ask', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question: q }),
+        body: JSON.stringify({ question: q, page: 'usage-intelligence' }),
       })
       const d = await res.json()
       if (!res.ok) {

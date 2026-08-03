@@ -67,7 +67,7 @@ export function ReviewerActiveAccess({ hideHeader = false }: { hideHeader?: bool
       const res = await fetch('/api/ask', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question: q }),
+        body: JSON.stringify({ question: q, page: 'reviewer-active-access' }),
       })
       const data = await res.json()
       if (!res.ok) {

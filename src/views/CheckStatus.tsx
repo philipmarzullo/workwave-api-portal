@@ -81,7 +81,7 @@ export function CheckStatus() {
       const res = await fetch('/api/ask', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question: q }),
+        body: JSON.stringify({ question: q, page: 'check-status' }),
       })
       const data = await res.json()
       if (!res.ok) {

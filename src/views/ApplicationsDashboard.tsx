@@ -205,7 +205,7 @@ export function ApplicationsDashboard({ hideHeader = false }: { hideHeader?: boo
       const res = await fetch('/api/ask', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question: q }),
+        body: JSON.stringify({ question: q, page: 'applications-dashboard' }),
       })
       const data = await res.json()
       if (!res.ok) {

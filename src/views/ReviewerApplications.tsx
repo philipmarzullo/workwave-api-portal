@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { FileText } from 'lucide-react'
 import { ViewTabs } from '@/components/ViewTabs'
+import { AskWaive } from '@/components/AskWaive'
 import { ApplicationsDashboard } from '@/views/ApplicationsDashboard'
 import { HistoricalApplications } from '@/views/HistoricalApplications'
 
@@ -15,14 +16,17 @@ export function ReviewerApplications() {
   return (
     <div className="py-8">
       {/* Header */}
-      <div className="flex items-center gap-3 mb-6">
-        <div className="w-10 h-10 rounded-md bg-ww-navy flex items-center justify-center">
-          <FileText size={20} className="text-white" />
+      <div className="flex items-start justify-between gap-4 mb-6">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-md bg-ww-navy flex items-center justify-center">
+            <FileText size={20} className="text-white" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-display font-bold text-ww-gray-900">Applications</h1>
+            <p className="text-sm text-ww-gray-500">Analytics dashboard and historical application data</p>
+          </div>
         </div>
-        <div>
-          <h1 className="text-2xl font-display font-bold text-ww-gray-900">Applications</h1>
-          <p className="text-sm text-ww-gray-500">Analytics dashboard and historical application data</p>
-        </div>
+        <AskWaive page="reviewer-applications" placeholder="Ask WAIve about application trends, competitive data..." />
       </div>
 
       <div className="mb-6">

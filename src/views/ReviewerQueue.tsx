@@ -77,7 +77,7 @@ export function ReviewerQueue({ hideHeader = false }: { hideHeader?: boolean }) 
       const res = await fetch('/api/ask', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question: q }),
+        body: JSON.stringify({ question: q, page: 'reviewer-queue' }),
       })
       const data = await res.json()
       if (!res.ok) {
