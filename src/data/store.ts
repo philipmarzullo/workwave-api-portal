@@ -58,15 +58,18 @@ function save<T>(k: string, value: T): void {
   localStorage.setItem(key(k), JSON.stringify(value))
 }
 
+// Keys that survive seed resets and manual resets (user-generated content)
+const PRESERVE_KEYS = new Set([key('feedback'), key('feedback-enabled'), key('feedback-author')])
+
 // Reset seed data if version changed
 function ensureSeed(): void {
   const stored = localStorage.getItem(key('seed-version'))
   if (stored !== SEED_VERSION) {
-    // Clear all portal data
+    // Clear all portal data except feedback
     const keysToRemove: string[] = []
     for (let i = 0; i < localStorage.length; i++) {
       const k = localStorage.key(i)
-      if (k?.startsWith(PREFIX)) keysToRemove.push(k)
+      if (k?.startsWith(PREFIX) && !PRESERVE_KEYS.has(k)) keysToRemove.push(k)
     }
     keysToRemove.forEach(k => localStorage.removeItem(k))
     localStorage.setItem(key('seed-version'), SEED_VERSION)
@@ -644,7 +647,7 @@ export const store = {
     const keysToRemove: string[] = []
     for (let i = 0; i < localStorage.length; i++) {
       const k = localStorage.key(i)
-      if (k?.startsWith(PREFIX)) keysToRemove.push(k)
+      if (k?.startsWith(PREFIX) && !PRESERVE_KEYS.has(k)) keysToRemove.push(k)
     }
     keysToRemove.forEach(k => localStorage.removeItem(k))
     localStorage.setItem(key('seed-version'), SEED_VERSION)
