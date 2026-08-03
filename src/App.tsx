@@ -32,7 +32,7 @@ import { ReviewerRequests } from '@/views/ReviewerRequests'
 import { ReviewerPartners } from '@/views/ReviewerPartners'
 import { CustomerPartners } from '@/views/CustomerPartners'
 import { ReviewerApplications } from '@/views/ReviewerApplications'
-import { FeedbackWidget } from '@/components/FeedbackWidget'
+import { WaiveWidget } from '@/components/WaiveWidget'
 
 // ── Product labels ──────────────────────────────────────────────
 
@@ -248,13 +248,13 @@ export default function App() {
   const [refreshKey, setRefreshKey] = useState(0)
   const [personaOpen, setPersonaOpen] = useState(false)
 
-  // Feedback toggle: ?feedback=off in URL disables it, ?feedback=on re-enables
-  const [feedbackEnabled] = useState(() => {
+  // WAIve toggle: ?waive=off in URL disables it, ?waive=on re-enables
+  const [waiveEnabled] = useState(() => {
     const params = new URLSearchParams(window.location.search)
-    const fbParam = params.get('feedback')
-    if (fbParam === 'off') { store.setFeedbackEnabled(false); return false }
-    if (fbParam === 'on') { store.setFeedbackEnabled(true); return true }
-    return store.isFeedbackEnabled()
+    const p = params.get('waive')
+    if (p === 'off') return false
+    if (p === 'on') return true
+    return true
   })
 
   // Persona / active user state
@@ -480,7 +480,7 @@ export default function App() {
         </div>
       </footer>
     </div>
-    {feedbackEnabled && <FeedbackWidget viewMode={viewMode} />}
+    {waiveEnabled && <WaiveWidget />}
     </AuthGate>
   )
 }

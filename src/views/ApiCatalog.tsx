@@ -1,12 +1,8 @@
-import { useState, useMemo, useRef, useEffect } from 'react'
+import { useState, useMemo } from 'react'
 import {
   BookOpen,
   ChevronDown,
   ChevronRight,
-  Send,
-  Loader2,
-  X,
-  Trash2,
   Search,
   Filter,
   ChevronsDown,
@@ -20,7 +16,6 @@ import {
   Key,
   Code2,
 } from 'lucide-react'
-import { WaiveIcon } from '@/components/WaiveIcon'
 import type { CatalogEndpoint, CatalogDomain, ApiGeneration, HttpMethod, TriggerType } from '@/data/types'
 import rawWinteamCatalog from '@/data/winteam-api-catalog.json'
 import rawRealgreenCatalog from '@/data/realgreen-api-catalog.json'
@@ -79,15 +74,6 @@ const PLATFORMS: PlatformDef[] = [
   { key: 'timegate_plus', label: 'Timegate+', gateway: 'TBD', available: false, endpointCount: null, description: 'Workforce and time management (UK/ANZ)' },
 ]
 
-// ── Suggested questions ─────────────────────────────────────
-
-const SUGGESTED_QUESTIONS = [
-  'Which endpoints handle employee payroll data?',
-  'How many POST endpoints exist across accounting?',
-  'What is the CSA equivalent of the legacy ScheduleAPI?',
-  'List all undocumented endpoints in the scheduling domain',
-]
-
 // ── Main component ──────────────────────────────────────────
 
 export function ApiCatalog() {
@@ -107,15 +93,6 @@ export function ApiCatalog() {
 
   // Developer docs
   const [docsOpen, setDocsOpen] = useState(false)
-
-  // Agent
-  const [agentOpen, setAgentOpen] = useState(false)
-  const [agentQuestion, setAgentQuestion] = useState('')
-  const [agentMessages, setAgentMessages] = useState<{ role: 'user' | 'assistant'; text: string }[]>([])
-  const [agentLoading, setAgentLoading] = useState(false)
-  const [agentError, setAgentError] = useState<string | null>(null)
-  const agentInputRef = useRef<HTMLTextAreaElement>(null)
-  const agentScrollRef = useRef<HTMLDivElement>(null)
 
   const currentPlatform = PLATFORMS.find(p => p.key === activePlatform)!
   const catalog = PLATFORM_CATALOGS[activePlatform] ?? []
@@ -246,42 +223,6 @@ export function ApiCatalog() {
     setSearchQuery('')
   }
 
-  // ── Agent ──
-
-  useEffect(() => {
-    if (agentOpen && agentScrollRef.current) {
-      agentScrollRef.current.scrollTop = agentScrollRef.current.scrollHeight
-    }
-  }, [agentMessages, agentOpen])
-
-  const askAgent = async (question?: string) => {
-    const q = (question || agentQuestion).trim()
-    if (!q || agentLoading) return
-
-    setAgentMessages(prev => [...prev, { role: 'user', text: q }])
-    setAgentQuestion('')
-    setAgentLoading(true)
-    setAgentError(null)
-
-    try {
-      const res = await fetch('/api/ask', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question: q, page: 'api-catalog' }),
-      })
-      const data = await res.json()
-      if (!res.ok) {
-        setAgentError(data.error || 'Request failed')
-      } else {
-        setAgentMessages(prev => [...prev, { role: 'assistant', text: data.answer }])
-      }
-    } catch {
-      setAgentError('Failed to connect to server')
-    } finally {
-      setAgentLoading(false)
-    }
-  }
-
   // ── Render ──
 
   return (
@@ -299,15 +240,6 @@ export function ApiCatalog() {
             </p>
           </div>
         </div>
-        {currentPlatform.available && (
-          <button
-            onClick={() => setAgentOpen(!agentOpen)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[13px] font-medium bg-ww-navy text-white hover:bg-ww-navy/90 transition-colors"
-          >
-            <WaiveIcon size={14} />
-            Ask WAIve
-          </button>
-        )}
       </div>
 
       {/* Section A2: Platform tabs */}
@@ -508,101 +440,6 @@ export function ApiCatalog() {
                 sub={`${stats.documentedPct}%`}
                 active={false}
               />
-            </div>
-          )}
-
-          {/* Section C: Agent Panel */}
-          {agentOpen && (
-            <div className="border border-ww-gray-200 rounded-lg bg-white overflow-hidden">
-              <div className="flex items-center justify-between px-4 py-2.5 border-b border-ww-gray-200 bg-ww-gray-50">
-                <div className="flex items-center gap-2">
-                  <WaiveIcon size={14} />
-                  <span className="text-[13px] font-semibold text-ww-navy">WAIve</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  {agentMessages.length > 0 && (
-                    <button
-                      onClick={() => { setAgentMessages([]); setAgentError(null) }}
-                      className="p-1 rounded text-ww-gray-400 hover:text-ww-gray-600 transition-colors"
-                      title="Clear conversation"
-                    >
-                      <Trash2 size={13} />
-                    </button>
-                  )}
-                  <button
-                    onClick={() => setAgentOpen(false)}
-                    className="p-1 rounded text-ww-gray-400 hover:text-ww-gray-600 transition-colors"
-                  >
-                    <X size={14} />
-                  </button>
-                </div>
-              </div>
-
-              {/* Suggested questions */}
-              {agentMessages.length === 0 && (
-                <div className="px-4 py-3 border-b border-ww-gray-100">
-                  <p className="text-[11px] font-mono text-ww-gray-400 uppercase tracking-wider mb-2">Suggested questions</p>
-                  <div className="flex flex-wrap gap-1.5">
-                    {SUGGESTED_QUESTIONS.map(q => (
-                      <button
-                        key={q}
-                        onClick={() => askAgent(q)}
-                        className="text-[12px] px-2.5 py-1 rounded-full border border-ww-gray-200 text-ww-gray-600 hover:bg-ww-gray-50 hover:border-ww-gray-300 transition-colors"
-                      >
-                        {q}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Messages */}
-              {agentMessages.length > 0 && (
-                <div ref={agentScrollRef} className="max-h-64 overflow-y-auto px-4 py-3 space-y-3">
-                  {agentMessages.map((msg, i) => (
-                    <div key={i} className={`text-sm ${msg.role === 'user' ? 'text-ww-navy font-medium' : 'text-ww-gray-600'}`}>
-                      <span className="text-[10px] font-mono text-ww-gray-400 uppercase mr-1.5">
-                        {msg.role === 'user' ? 'You' : 'WAIve'}
-                      </span>
-                      <span className="whitespace-pre-wrap">{msg.text}</span>
-                    </div>
-                  ))}
-                  {agentLoading && (
-                    <div className="flex items-center gap-2 text-ww-gray-400 text-sm">
-                      <Loader2 size={14} className="animate-spin" />
-                      <span>Thinking...</span>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {agentError && (
-                <div className="px-4 py-2 text-xs text-red-600 bg-red-50 border-t border-red-100">
-                  {agentError}
-                </div>
-              )}
-
-              {/* Input */}
-              <div className="px-4 py-2.5 border-t border-ww-gray-200 flex gap-2">
-                <textarea
-                  ref={agentInputRef}
-                  value={agentQuestion}
-                  onChange={e => setAgentQuestion(e.target.value)}
-                  onKeyDown={e => {
-                    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); askAgent() }
-                  }}
-                  placeholder="Ask WAIve about the API surface..."
-                  rows={1}
-                  className="flex-1 resize-none text-sm border border-ww-gray-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-ww-primary/30 focus:border-ww-primary outline-none"
-                />
-                <button
-                  onClick={() => askAgent()}
-                  disabled={!agentQuestion.trim() || agentLoading}
-                  className="px-3 py-2 rounded-lg bg-ww-navy text-white hover:bg-ww-navy/90 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-                >
-                  <Send size={14} />
-                </button>
-              </div>
             </div>
           )}
 

@@ -1,7 +1,6 @@
-import { useState, useMemo, useRef, useEffect } from 'react'
+import { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Search, ChevronDown, ChevronRight, Plus, X, HelpCircle, Send, Loader2, Trash2 } from 'lucide-react'
-import { WaiveIcon } from '@/components/WaiveIcon'
+import { Search, ChevronDown, ChevronRight, Plus, X, HelpCircle } from 'lucide-react'
 import { store } from '@/data/store'
 import type { CustomerUser, WorkWaveProduct, IntegrationType, PartnerTier, Partner } from '@/data/types'
 import { PRODUCT_LABELS, TIER_LABELS } from '@/App'
@@ -42,50 +41,6 @@ interface DirectoryProps {
 
 export function Directory({ activeUser, isReviewerView = false, hideHeader = false }: DirectoryProps) {
   const navigate = useNavigate()
-
-  // Agent state (customer view only)
-  const [agentOpen, setAgentOpen] = useState(false)
-  const [agentQuestion, setAgentQuestion] = useState('')
-  const [agentMessages, setAgentMessages] = useState<{ role: 'user' | 'assistant'; text: string }[]>([])
-  const [agentLoading, setAgentLoading] = useState(false)
-  const [agentError, setAgentError] = useState('')
-  const [agentUsage, setAgentUsage] = useState<{ dailySpentCents: number; dailyBudgetCents: number } | null>(null)
-  const agentInputRef = useRef<HTMLTextAreaElement>(null)
-  const agentScrollRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    if (agentScrollRef.current) {
-      agentScrollRef.current.scrollTop = agentScrollRef.current.scrollHeight
-    }
-  }, [agentMessages, agentLoading])
-
-  const askAgent = async () => {
-    const q = agentQuestion.trim()
-    if (!q || agentLoading) return
-    setAgentMessages(prev => [...prev, { role: 'user', text: q }])
-    setAgentQuestion('')
-    setAgentLoading(true)
-    setAgentError('')
-    try {
-      const res = await fetch('/api/ask', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question: q, page: 'directory' }),
-      })
-      const data = await res.json()
-      if (!res.ok) {
-        setAgentError(data.error || 'Request failed')
-      } else {
-        setAgentMessages(prev => [...prev, { role: 'assistant', text: data.answer }])
-        if (data.usage) setAgentUsage(data.usage)
-      }
-    } catch {
-      setAgentError('Failed to connect to server')
-    } finally {
-      setAgentLoading(false)
-      setTimeout(() => agentInputRef.current?.focus(), 50)
-    }
-  }
 
   const allPartners = store.getPartners()
 
@@ -205,30 +160,14 @@ export function Directory({ activeUser, isReviewerView = false, hideHeader = fal
               />
             </div>
             {!isReviewerView && (
-              <>
-                <button
-                  onClick={() => navigate('/request')}
-                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-md text-[13px] font-semibold bg-ww-primary text-white hover:bg-ww-primary-light transition-colors shrink-0"
-                >
-                  <Plus size={14} />
-                  <span className="hidden sm:inline">Request Unlisted Partner</span>
-                  <span className="sm:hidden">New</span>
-                </button>
-                <button
-                  onClick={() => {
-                    setAgentOpen(o => !o)
-                    if (!agentOpen) setTimeout(() => agentInputRef.current?.focus(), 100)
-                  }}
-                  className={`flex items-center gap-1.5 px-3 py-2 rounded-lg border text-sm font-medium transition-all ${
-                    agentOpen
-                      ? 'bg-ww-primary text-white border-ww-primary'
-                      : 'border-ww-primary/30 text-ww-primary bg-ww-primary/5 hover:bg-ww-primary/10'
-                  }`}
-                >
-                  <WaiveIcon size={15} />
-                  Ask WAIve
-                </button>
-              </>
+              <button
+                onClick={() => navigate('/request')}
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-md text-[13px] font-semibold bg-ww-primary text-white hover:bg-ww-primary-light transition-colors shrink-0"
+              >
+                <Plus size={14} />
+                <span className="hidden sm:inline">Request Unlisted Partner</span>
+                <span className="sm:hidden">New</span>
+              </button>
             )}
           </div>
         </div>
@@ -417,123 +356,6 @@ export function Directory({ activeUser, isReviewerView = false, hideHeader = fal
     return (
       <div className="pb-12">
         {!hideHeader && renderHeader()}
-
-        {/* Ask WAIve panel */}
-        {agentOpen && (
-          <div className="rounded-lg border border-ww-primary/30 bg-white overflow-hidden flex flex-col mt-5" style={{ maxHeight: '480px' }}>
-            <div className="flex items-center justify-between px-4 py-2 bg-ww-primary/5 border-b border-ww-primary/10 shrink-0">
-              <div className="flex items-center gap-2">
-                <WaiveIcon size={14} />
-                <span className="text-sm font-display font-bold text-ww-navy">Ask WAIve</span>
-                {agentUsage && (
-                  <span className="text-[10px] font-mono text-ww-gray-400">
-                    ${((agentUsage.dailyBudgetCents - agentUsage.dailySpentCents) / 100).toFixed(2)} remaining today
-                  </span>
-                )}
-              </div>
-              <div className="flex items-center gap-1">
-                {agentMessages.length > 0 && (
-                  <button
-                    onClick={() => { setAgentMessages([]); setAgentError('') }}
-                    className="p-1 rounded hover:bg-ww-gray-100 text-ww-gray-400 hover:text-ww-gray-600 transition-colors"
-                    title="Clear conversation"
-                  >
-                    <Trash2 size={13} />
-                  </button>
-                )}
-                <button
-                  onClick={() => setAgentOpen(false)}
-                  className="p-1 rounded hover:bg-ww-gray-100 text-ww-gray-400 hover:text-ww-gray-600 transition-colors"
-                >
-                  <X size={14} />
-                </button>
-              </div>
-            </div>
-
-            <div ref={agentScrollRef} className="flex-1 overflow-y-auto min-h-0">
-              {agentMessages.length === 0 && !agentLoading ? (
-                <div className="p-4">
-                  <p className="text-xs text-ww-gray-400 mb-2">Try a question:</p>
-                  <div className="flex flex-wrap gap-1.5">
-                    {[
-                      'Which partners support PestPac integrations?',
-                      'Can I request access for a partner not listed here?',
-                      'What types of integrations are available?',
-                      'How do I get started with an API integration?',
-                    ].map(q => (
-                      <button
-                        key={q}
-                        onClick={() => {
-                          setAgentQuestion(q)
-                          setTimeout(() => agentInputRef.current?.focus(), 50)
-                        }}
-                        className="text-[11px] px-2 py-1 rounded-full border border-ww-gray-200 text-ww-gray-500 hover:border-ww-primary/30 hover:text-ww-primary hover:bg-ww-primary/5 transition-colors"
-                      >
-                        {q}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              ) : (
-                <div className="p-3 space-y-3">
-                  {agentMessages.map((msg, i) => (
-                    <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                      <div
-                        className={`max-w-[85%] rounded-lg px-3 py-2 text-sm ${
-                          msg.role === 'user'
-                            ? 'bg-ww-primary text-white'
-                            : 'bg-ww-gray-50 border border-ww-gray-200 text-ww-gray-700'
-                        }`}
-                      >
-                        <div className="whitespace-pre-wrap leading-relaxed">{msg.text}</div>
-                      </div>
-                    </div>
-                  ))}
-                  {agentLoading && (
-                    <div className="flex justify-start">
-                      <div className="bg-ww-gray-50 border border-ww-gray-200 rounded-lg px-3 py-2 flex items-center gap-2 text-sm text-ww-gray-400">
-                        <Loader2 size={14} className="animate-spin" />
-                        Thinking...
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-
-            {agentError && (
-              <div className="mx-3 mb-2 px-3 py-2 rounded bg-red-50 border border-red-200 text-sm text-red-700 shrink-0">
-                {agentError}
-              </div>
-            )}
-
-            <div className="border-t border-ww-gray-100 px-3 py-2 shrink-0">
-              <div className="flex gap-2">
-                <textarea
-                  ref={agentInputRef}
-                  value={agentQuestion}
-                  onChange={e => setAgentQuestion(e.target.value)}
-                  onKeyDown={e => {
-                    if (e.key === 'Enter' && !e.shiftKey) {
-                      e.preventDefault()
-                      askAgent()
-                    }
-                  }}
-                  placeholder={agentMessages.length > 0 ? 'Ask a follow-up...' : 'Ask WAIve about partners, integrations...'}
-                  rows={1}
-                  className="flex-1 px-3 py-2 text-sm border border-ww-gray-200 rounded resize-none focus:ring-2 focus:ring-ww-primary/30 focus:border-ww-primary outline-none"
-                />
-                <button
-                  onClick={askAgent}
-                  disabled={agentLoading || !agentQuestion.trim()}
-                  className="px-3 py-2 rounded bg-ww-primary text-white text-sm hover:bg-ww-primary-light disabled:opacity-40 disabled:cursor-not-allowed transition-colors flex items-center gap-1.5 self-end"
-                >
-                  {agentLoading ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
 
         {/* Hero CTA */}
         <div className="bg-gradient-to-r from-ww-navy to-ww-primary/90 rounded-xl p-6 mt-5 text-white">
