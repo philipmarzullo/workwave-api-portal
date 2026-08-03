@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 import { Send, Loader2, X, Trash2, Sparkles } from 'lucide-react'
 import { WaiveIcon } from '@/components/WaiveIcon'
+import type { ViewMode } from '@/data/types'
 
 // ── Route → page key for server context ─────────────────────────
 function pageKey(path: string): string {
@@ -45,51 +46,77 @@ function pageName(path: string): string {
   return 'the Portal'
 }
 
-// ── Suggested questions per page ────────────────────────────────
-function suggestedQuestions(path: string): string[] {
+// ── Suggested questions per page + persona ──────────────────────
+function suggestedQuestions(path: string, role: ViewMode): string[] {
   const page = pageKey(path)
-  const map: Record<string, string[]> = {
+
+  // Reviewer-specific suggestions
+  if (role === 'reviewer') {
+    const reviewerMap: Record<string, string[]> = {
+      'reviewer-requests': [
+        'Which requests should I prioritize?',
+        'Show me high-risk pending requests',
+        'What does the approval workflow look like?',
+        'Flag any competitive concerns in the queue',
+      ],
+      'reviewer-partners': [
+        'Which partners have competitive flags?',
+        'Show blocked or at-risk partners',
+        'What is the $500K ARR threshold?',
+        'Summarize partner risk exposure',
+      ],
+      'api-catalog': [
+        'How do I authenticate with the API?',
+        'Compare PestPac vs RealGreen API surfaces',
+        'Which endpoints handle premium data?',
+        'Show me legacy vs modern WinTeam endpoints',
+      ],
+      'reviewer-applications': [
+        'What are the top competitive vendors?',
+        'Show application trends by product',
+        'How many applications flagged resell intent?',
+        'Cross-reference demand with endpoint coverage',
+      ],
+      'usage-intelligence': [
+        'Which capability gaps are largest?',
+        'What integrations have the most demand?',
+        'Where should we invest in API coverage?',
+        'Show me scheduling integration gaps',
+      ],
+      'developer-risk-profiles': [
+        'Who are the highest-risk developers?',
+        'What factors drive risk scores?',
+        'Which developers have competitive overlap?',
+        'Recommend access restrictions for high-risk devs',
+      ],
+    }
+    return reviewerMap[page] ?? [
+      'What can WAIve help me with?',
+      'Summarize the current review pipeline',
+      'Which areas have the most risk?',
+      'Show me competitive landscape insights',
+    ]
+  }
+
+  // Customer-specific suggestions
+  const customerMap: Record<string, string[]> = {
     'customer-partners': [
       'Which partners support PestPac?',
       'How do I request API access?',
       'What endpoints do I need for scheduling?',
-      'Compare integration partners for my use case',
+      'Can I build my own integration?',
     ],
-    'reviewer-requests': [
-      'Which requests should I prioritize?',
-      'Show me high-risk pending requests',
-      'What does the approval workflow look like?',
-      'How many requests are pending review?',
+    'my-integrations': [
+      'What is the status of my integrations?',
+      'How do I request additional endpoints?',
+      'What volume tier am I on?',
+      'How do I upgrade my access?',
     ],
-    'reviewer-partners': [
-      'Which partners have competitive flags?',
-      'Show blocked or at-risk partners',
-      'What is the $500K ARR threshold?',
-      'How does partner tiering work?',
-    ],
-    'api-catalog': [
-      'How do I authenticate with the API?',
-      'What endpoints handle customer data?',
-      'Compare PestPac vs RealGreen APIs',
-      'Which endpoints support scheduling?',
-    ],
-    'reviewer-applications': [
-      'What are the top competitive vendors?',
-      'Show application trends by product',
-      'How many applications flagged resell intent?',
-      'Which endpoints are most requested?',
-    ],
-    'usage-intelligence': [
-      'Which capability gaps are largest?',
-      'What integrations have the most demand?',
-      'Where should we invest in API coverage?',
-      'Show me scheduling integration gaps',
-    ],
-    'developer-risk-profiles': [
-      'Who are the highest-risk developers?',
-      'What factors drive risk scores?',
-      'Which developers have competitive overlap?',
-      'How is the risk score calculated?',
+    'check-status': [
+      'Where is my request in the review process?',
+      'How long does approval usually take?',
+      'What are the review stages?',
+      'Who do I contact for updates?',
     ],
     'request-form': [
       'What endpoints should I request for CRM sync?',
@@ -97,16 +124,22 @@ function suggestedQuestions(path: string): string[] {
       'What happens after I submit?',
       'Which data categories should I select?',
     ],
+    'directory': [
+      'Which partner fits my use case?',
+      'How do I compare integration partners?',
+      'What products does each partner support?',
+      'Can I request access without a partner?',
+    ],
   }
-  return map[page] ?? [
-    'What can WAIve help me with?',
-    'How does API access work?',
-    'What endpoints are available?',
-    'Walk me through the process',
+  return customerMap[page] ?? [
+    'How do I get API access?',
+    'What integrations are available?',
+    'Walk me through the request process',
+    'What endpoints do I need?',
   ]
 }
 
-export function WaiveWidget() {
+export function WaiveWidget({ viewMode }: { viewMode: ViewMode }) {
   const location = useLocation()
   const [open, setOpen] = useState(false)
   const [question, setQuestion] = useState('')
@@ -149,7 +182,7 @@ export function WaiveWidget() {
       const res = await fetch('/api/ask', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question: text, page: currentPage }),
+        body: JSON.stringify({ question: text, page: currentPage, role: viewMode }),
       })
       const data = await res.json()
       if (!res.ok) {
@@ -172,7 +205,7 @@ export function WaiveWidget() {
   }
 
   const friendly = pageName(location.pathname)
-  const suggestions = suggestedQuestions(location.pathname)
+  const suggestions = suggestedQuestions(location.pathname, viewMode)
 
   return (
     <>

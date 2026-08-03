@@ -480,7 +480,7 @@ export default function App() {
         </div>
       </footer>
     </div>
-    {waiveEnabled && <WaiveWidget />}
+    {waiveEnabled && <WaiveWidget viewMode={viewMode} />}
     </AuthGate>
   )
 }
