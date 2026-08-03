@@ -35,7 +35,7 @@ export function FeedbackWidget({ viewMode }: FeedbackWidgetProps) {
   const location = useLocation()
   const [open, setOpen] = useState(false)
   const [comment, setComment] = useState('')
-  const [author, setAuthor] = useState(() => localStorage.getItem('ww-api-portal:feedback-author') || '')
+  const [author, setAuthor] = useState(() => localStorage.getItem('ww-hackathon:feedback-author') || '')
   const [items, setItems] = useState<FeedbackItem[]>(() => store.getFeedback())
   const [showAll, setShowAll] = useState(false)
   const [submitted, setSubmitted] = useState(false)
@@ -53,7 +53,7 @@ export function FeedbackWidget({ viewMode }: FeedbackWidgetProps) {
     e.preventDefault()
     if (!comment.trim()) return
     const name = author.trim() || 'Anonymous'
-    localStorage.setItem('ww-api-portal:feedback-author', name)
+    localStorage.setItem('ww-hackathon:feedback-author', name)
     store.addFeedback({
       page: location.pathname,
       viewMode,
@@ -75,7 +75,7 @@ export function FeedbackWidget({ viewMode }: FeedbackWidgetProps) {
 
   const handleReply = (feedbackId: string, replyComment: string) => {
     const name = author.trim() || 'Anonymous'
-    localStorage.setItem('ww-api-portal:feedback-author', name)
+    localStorage.setItem('ww-hackathon:feedback-author', name)
     store.addReply(feedbackId, { author: name, comment: replyComment })
     setItems(store.getFeedback())
   }

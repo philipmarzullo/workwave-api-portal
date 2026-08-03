@@ -58,7 +58,30 @@ function save<T>(k: string, value: T): void {
   localStorage.setItem(key(k), JSON.stringify(value))
 }
 
-// Keys that survive seed resets and manual resets (user-generated content)
+// ── Feedback storage (separate namespace — immune to seed resets) ──
+const FB_KEY = 'ww-hackathon:feedback'
+const FB_ENABLED_KEY = 'ww-hackathon:feedback-enabled'
+const FB_AUTHOR_KEY = 'ww-hackathon:feedback-author'
+
+// One-time migration: move feedback from old prefix to new prefix
+function migrateFeedback(): void {
+  const oldKey = key('feedback')
+  const oldData = localStorage.getItem(oldKey)
+  if (oldData && !localStorage.getItem(FB_KEY)) {
+    localStorage.setItem(FB_KEY, oldData)
+  }
+  const oldEnabled = localStorage.getItem(key('feedback-enabled'))
+  if (oldEnabled && !localStorage.getItem(FB_ENABLED_KEY)) {
+    localStorage.setItem(FB_ENABLED_KEY, oldEnabled)
+  }
+  const oldAuthor = localStorage.getItem(key('feedback-author'))
+  if (oldAuthor && !localStorage.getItem(FB_AUTHOR_KEY)) {
+    localStorage.setItem(FB_AUTHOR_KEY, oldAuthor)
+  }
+}
+migrateFeedback()
+
+// PRESERVE_KEYS kept for backwards compat but no longer relied upon
 const PRESERVE_KEYS = new Set([key('feedback'), key('feedback-enabled'), key('feedback-author')])
 
 // Reset seed data if version changed
@@ -595,7 +618,10 @@ export const store = {
   // ── Feedback ─────────────────────────────────────────────────
 
   getFeedback(): FeedbackItem[] {
-    return load<FeedbackItem[]>('feedback', [])
+    try {
+      const raw = localStorage.getItem(FB_KEY)
+      return raw ? JSON.parse(raw) : []
+    } catch { return [] }
   },
 
   addFeedback(item: Omit<FeedbackItem, 'id' | 'createdAt'>): FeedbackItem {
@@ -606,7 +632,7 @@ export const store = {
       createdAt: now(),
     }
     items.push(newItem)
-    save('feedback', items)
+    localStorage.setItem(FB_KEY, JSON.stringify(items))
     return newItem
   },
 
@@ -621,24 +647,24 @@ export const store = {
       comment: reply.comment,
       createdAt: now(),
     })
-    save('feedback', items)
+    localStorage.setItem(FB_KEY, JSON.stringify(items))
   },
 
   deleteFeedback(id: string): void {
     const items = this.getFeedback().filter(f => f.id !== id)
-    save('feedback', items)
+    localStorage.setItem(FB_KEY, JSON.stringify(items))
   },
 
   clearFeedback(): void {
-    save('feedback', [])
+    localStorage.setItem(FB_KEY, JSON.stringify([]))
   },
 
   isFeedbackEnabled(): boolean {
-    return localStorage.getItem(key('feedback-enabled')) !== '0'
+    return localStorage.getItem(FB_ENABLED_KEY) !== '0'
   },
 
   setFeedbackEnabled(enabled: boolean): void {
-    localStorage.setItem(key('feedback-enabled'), enabled ? '1' : '0')
+    localStorage.setItem(FB_ENABLED_KEY, enabled ? '1' : '0')
   },
 
   // ── Reset ────────────────────────────────────────────────────
