@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
-import { useLocation } from 'react-router-dom'
-import { Send, Loader2, X, Trash2, Sparkles } from 'lucide-react'
+import { useLocation, useNavigate } from 'react-router-dom'
+import { Send, Loader2, X, Trash2, Sparkles, ArrowRight } from 'lucide-react'
 import { WaiveIcon } from '@/components/WaiveIcon'
 import type { ViewMode } from '@/data/types'
 
@@ -101,8 +101,8 @@ function suggestedQuestions(path: string, role: ViewMode): string[] {
   // Customer-specific suggestions
   const customerMap: Record<string, string[]> = {
     'customer-partners': [
+      'Walk me through getting API access',
       'Which partners support PestPac?',
-      'How do I request API access?',
       'What endpoints do I need for scheduling?',
       'Can I build my own integration?',
     ],
@@ -132,15 +132,42 @@ function suggestedQuestions(path: string, role: ViewMode): string[] {
     ],
   }
   return customerMap[page] ?? [
-    'How do I get API access?',
+    'Walk me through getting API access',
     'What integrations are available?',
-    'Walk me through the request process',
     'What endpoints do I need?',
+    'How does the approval process work?',
   ]
+}
+
+// ── Navigation actions WAIve can suggest ────────────────────────
+interface NavAction {
+  label: string
+  path: string
+}
+
+const CUSTOMER_NAV_ACTIONS: { keywords: RegExp; action: NavAction }[] = [
+  { keywords: /request (?:api )?access|start (?:a )?request|submit (?:a )?request|apply for|get started/i, action: { label: 'Start Access Request', path: '/request' } },
+  { keywords: /browse partners|find (?:a )?partner|view partners|partner directory/i, action: { label: 'Browse Partners', path: '/' } },
+  { keywords: /check (?:your |my )?status|track (?:your |my )?request|where is my/i, action: { label: 'Check Request Status', path: '/check-status' } },
+  { keywords: /my integrations|active integrations|current access/i, action: { label: 'View My Integrations', path: '/my-integrations' } },
+  { keywords: /api catalog|endpoint catalog|browse endpoints|view endpoints/i, action: { label: 'View API Catalog', path: '/reviewer/api-catalog' } },
+  { keywords: /build your own|self.?build|internal integration|without a partner/i, action: { label: 'Build Your Own', path: '/request?self=true' } },
+]
+
+function detectNavActions(text: string, role: ViewMode): NavAction[] {
+  if (role !== 'customer') return []
+  const actions: NavAction[] = []
+  for (const { keywords, action } of CUSTOMER_NAV_ACTIONS) {
+    if (keywords.test(text) && actions.length < 2) {
+      actions.push(action)
+    }
+  }
+  return actions
 }
 
 export function WaiveWidget({ viewMode }: { viewMode: ViewMode }) {
   const location = useLocation()
+  const navigate = useNavigate()
   const [open, setOpen] = useState(false)
   const [question, setQuestion] = useState('')
   const [messages, setMessages] = useState<{ role: 'user' | 'assistant'; text: string }[]>([])
@@ -226,68 +253,68 @@ export function WaiveWidget({ viewMode }: { viewMode: ViewMode }) {
         )}
       </button>
 
-      {/* ── Slide-out panel ── */}
+      {/* ── Floating card popup ── */}
       {open && (
         <>
-          <div className="fixed inset-0 z-[55] bg-black/20" onClick={() => setOpen(false)} />
-          <div className="fixed right-0 top-0 bottom-0 z-[58] w-[400px] max-w-[90vw] bg-white shadow-2xl flex flex-col border-l border-ww-gray-200">
+          <div className="fixed inset-0 z-[55]" onClick={() => setOpen(false)} />
+          <div className="fixed bottom-[88px] right-5 z-[58] w-[380px] max-w-[calc(100vw-40px)] max-h-[min(620px,calc(100vh-120px))] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-ww-gray-200">
             {/* ── Header ── */}
-            <div className="bg-gradient-to-r from-[#6310D1] to-[#4A0EA0] text-white px-5 py-4">
+            <div className="bg-gradient-to-r from-[#6310D1] to-[#4A0EA0] text-white px-4 py-3 rounded-t-2xl">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2.5">
-                  <WaiveIcon size={22} className="brightness-0 invert" />
-                  <span className="font-display font-bold text-[15px] tracking-tight">WAIve</span>
+                <div className="flex items-center gap-2">
+                  <WaiveIcon size={20} className="brightness-0 invert" />
+                  <div>
+                    <span className="font-display font-bold text-[14px] tracking-tight">WAIve</span>
+                    <span className="text-[10px] font-mono text-white/50 ml-1.5 uppercase tracking-wider">{friendly}</span>
+                  </div>
                 </div>
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-0.5">
                   {usage && (
-                    <span className="text-[10px] font-mono text-white/60 mr-2">
-                      ${((usage.dailyBudgetCents - usage.dailySpentCents) / 100).toFixed(2)} left
+                    <span className="text-[9px] font-mono text-white/40 mr-1">
+                      ${((usage.dailyBudgetCents - usage.dailySpentCents) / 100).toFixed(2)}
                     </span>
                   )}
                   {messages.length > 0 && (
                     <button
                       onClick={clearChat}
-                      className="p-1.5 rounded-lg text-white/60 hover:text-white hover:bg-white/10 transition-colors"
+                      className="p-1.5 rounded-lg text-white/50 hover:text-white hover:bg-white/10 transition-colors"
                       title="New conversation"
                     >
-                      <Trash2 size={14} />
+                      <Trash2 size={13} />
                     </button>
                   )}
                   <button
                     onClick={() => setOpen(false)}
-                    className="p-1.5 rounded-lg text-white/60 hover:text-white hover:bg-white/10 transition-colors"
+                    className="p-1.5 rounded-lg text-white/50 hover:text-white hover:bg-white/10 transition-colors"
                   >
-                    <X size={14} />
+                    <X size={13} />
                   </button>
                 </div>
               </div>
-              <p className="text-white/50 text-[11px] mt-1 font-mono uppercase tracking-wider">
-                {friendly}
-              </p>
             </div>
 
             {/* ── Chat area ── */}
             <div ref={scrollRef} className="flex-1 overflow-y-auto">
               {messages.length === 0 ? (
                 /* ── Empty state: branded welcome + suggestions ── */
-                <div className="flex flex-col items-center px-6 pt-10 pb-6">
-                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#6310D1] to-[#8736F0] flex items-center justify-center mb-5 shadow-lg shadow-[#6310D1]/20">
-                    <Sparkles size={28} className="text-white" />
+                <div className="flex flex-col items-center px-5 pt-8 pb-4">
+                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#6310D1] to-[#8736F0] flex items-center justify-center mb-4 shadow-lg shadow-[#6310D1]/20">
+                    <Sparkles size={24} className="text-white" />
                   </div>
-                  <h3 className="font-display font-bold text-lg text-ww-navy text-center">
+                  <h3 className="font-display font-bold text-base text-ww-navy text-center">
                     Ask WAIve about {friendly}
                   </h3>
-                  <p className="text-sm text-ww-gray-400 text-center mt-1.5 max-w-[280px]">
+                  <p className="text-[13px] text-ww-gray-400 text-center mt-1 max-w-[260px]">
                     Endpoints, partners, access requests, pricing, authentication — I've got you covered.
                   </p>
 
                   {/* Suggested questions */}
-                  <div className="w-full mt-6 space-y-2">
+                  <div className="w-full mt-5 space-y-1.5">
                     {suggestions.map((q, i) => (
                       <button
                         key={i}
                         onClick={() => ask(q)}
-                        className="w-full text-left px-4 py-2.5 rounded-lg border border-ww-gray-200 text-sm text-ww-gray-600 hover:border-[#6310D1]/30 hover:bg-[#6310D1]/5 hover:text-[#6310D1] transition-all"
+                        className="w-full text-left px-3.5 py-2.5 rounded-lg border border-ww-gray-200 text-[13px] text-ww-gray-600 hover:border-[#6310D1]/30 hover:bg-[#6310D1]/5 hover:text-[#6310D1] transition-all"
                       >
                         {q}
                       </button>
@@ -296,31 +323,50 @@ export function WaiveWidget({ viewMode }: { viewMode: ViewMode }) {
                 </div>
               ) : (
                 /* ── Message thread ── */
-                <div className="px-5 py-4 space-y-4">
-                  {messages.map((msg, i) => (
-                    <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                      <div
-                        className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
-                          msg.role === 'user'
-                            ? 'bg-[#6310D1] text-white rounded-br-md'
-                            : 'bg-ww-gray-100 text-ww-gray-700 rounded-bl-md'
-                        }`}
-                      >
-                        {msg.role === 'assistant' && (
-                          <div className="flex items-center gap-1.5 mb-1">
-                            <WaiveIcon size={12} />
-                            <span className="text-[10px] font-semibold text-[#6310D1] uppercase tracking-wider">WAIve</span>
+                <div className="px-4 py-3 space-y-3">
+                  {messages.map((msg, i) => {
+                    const navActions = msg.role === 'assistant' ? detectNavActions(msg.text, viewMode) : []
+                    return (
+                      <div key={i}>
+                        <div className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                          <div
+                            className={`max-w-[85%] rounded-2xl px-3.5 py-2 text-[13px] leading-relaxed ${
+                              msg.role === 'user'
+                                ? 'bg-[#6310D1] text-white rounded-br-md'
+                                : 'bg-ww-gray-100 text-ww-gray-700 rounded-bl-md'
+                            }`}
+                          >
+                            {msg.role === 'assistant' && (
+                              <div className="flex items-center gap-1.5 mb-0.5">
+                                <WaiveIcon size={11} />
+                                <span className="text-[9px] font-semibold text-[#6310D1] uppercase tracking-wider">WAIve</span>
+                              </div>
+                            )}
+                            <span className="whitespace-pre-wrap">{msg.text}</span>
+                          </div>
+                        </div>
+                        {navActions.length > 0 && (
+                          <div className="flex gap-2 mt-1.5 ml-1">
+                            {navActions.map((action, j) => (
+                              <button
+                                key={j}
+                                onClick={() => { navigate(action.path); setOpen(false) }}
+                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#6310D1]/10 text-[#6310D1] text-[12px] font-medium hover:bg-[#6310D1]/20 transition-colors"
+                              >
+                                {action.label}
+                                <ArrowRight size={11} />
+                              </button>
+                            ))}
                           </div>
                         )}
-                        <span className="whitespace-pre-wrap">{msg.text}</span>
                       </div>
-                    </div>
-                  ))}
+                    )
+                  })}
                   {loading && (
                     <div className="flex justify-start">
-                      <div className="bg-ww-gray-100 rounded-2xl rounded-bl-md px-4 py-3 flex items-center gap-2">
-                        <Loader2 size={14} className="animate-spin text-[#6310D1]" />
-                        <span className="text-sm text-ww-gray-400">Thinking...</span>
+                      <div className="bg-ww-gray-100 rounded-2xl rounded-bl-md px-3.5 py-2.5 flex items-center gap-2">
+                        <Loader2 size={13} className="animate-spin text-[#6310D1]" />
+                        <span className="text-[13px] text-ww-gray-400">Thinking...</span>
                       </div>
                     </div>
                   )}
@@ -330,12 +376,12 @@ export function WaiveWidget({ viewMode }: { viewMode: ViewMode }) {
 
             {/* ── Error ── */}
             {error && (
-              <div className="px-5 py-2 text-xs text-red-600 bg-red-50 border-t border-red-100">{error}</div>
+              <div className="px-4 py-2 text-xs text-red-600 bg-red-50 border-t border-red-100">{error}</div>
             )}
 
             {/* ── Input ── */}
-            <div className="px-4 py-3 border-t border-ww-gray-200 bg-white">
-              <div className="flex gap-2">
+            <div className="px-3.5 py-3 border-t border-ww-gray-200 bg-white rounded-b-2xl">
+              <div className="flex gap-2 items-center">
                 <textarea
                   ref={inputRef}
                   value={question}
@@ -345,14 +391,14 @@ export function WaiveWidget({ viewMode }: { viewMode: ViewMode }) {
                   }}
                   placeholder={messages.length > 0 ? 'Ask a follow-up...' : `Ask about ${friendly.toLowerCase()}...`}
                   rows={1}
-                  className="flex-1 resize-none text-sm border border-ww-gray-200 rounded-xl px-3.5 py-2.5 focus:ring-2 focus:ring-[#6310D1]/20 focus:border-[#6310D1]/40 outline-none"
+                  className="flex-1 resize-none text-[13px] border border-ww-gray-200 rounded-full px-3.5 py-2 focus:ring-2 focus:ring-[#6310D1]/20 focus:border-[#6310D1]/40 outline-none"
                 />
                 <button
                   onClick={() => ask()}
                   disabled={!question.trim() || loading}
-                  className="px-3.5 py-2.5 rounded-xl bg-[#6310D1] text-white hover:bg-[#5009B0] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                  className="w-9 h-9 rounded-full bg-[#6310D1] text-white hover:bg-[#5009B0] disabled:opacity-40 disabled:cursor-not-allowed transition-colors flex items-center justify-center shrink-0"
                 >
-                  <Send size={14} />
+                  <Send size={13} />
                 </button>
               </div>
             </div>
