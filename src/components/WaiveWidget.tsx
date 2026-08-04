@@ -224,6 +224,74 @@ function detectNavActions(text: string, role: ViewMode): NavAction[] {
   return actions
 }
 
+// ── Wizard steps ────────────────────────────────────────────────
+interface WizardStep {
+  key: string
+  question: string
+  options: { value: string; label: string }[]
+  multi?: boolean
+}
+
+const WIZARD_STEPS: WizardStep[] = [
+  {
+    key: 'product',
+    question: 'Which WorkWave product do you need API access to?',
+    options: [
+      { value: 'pestpac', label: 'PestPac' },
+      { value: 'realgreen', label: 'RealGreen' },
+      { value: 'winteam', label: 'WinTeam' },
+    ],
+  },
+  {
+    key: 'builderType',
+    question: 'Who will be building the integration?',
+    options: [
+      { value: 'partner', label: 'Integration Partner' },
+      { value: 'internal_team', label: 'Our Internal Team' },
+      { value: 'contractor', label: 'A Contractor' },
+    ],
+  },
+  {
+    key: 'useCase',
+    question: 'What\'s the primary use case for this integration?',
+    options: [
+      { value: 'sync_customer_data', label: 'Sync Customer Data' },
+      { value: 'automate_scheduling', label: 'Automate Scheduling' },
+      { value: 'financial_reporting', label: 'Financial Reporting' },
+      { value: 'payment_processing', label: 'Payment Processing' },
+      { value: 'marketing_automation', label: 'Marketing Automation' },
+      { value: 'hr_integration', label: 'HR Integration' },
+      { value: 'custom_reporting', label: 'Custom Reporting' },
+      { value: 'other', label: 'Something Else' },
+    ],
+  },
+  {
+    key: 'dataCategories',
+    question: 'What types of data will your integration need? Select all that apply.',
+    multi: true,
+    options: [
+      { value: 'customers', label: 'Customers' },
+      { value: 'appointments', label: 'Appointments' },
+      { value: 'invoices', label: 'Invoices' },
+      { value: 'payments', label: 'Payments' },
+      { value: 'employees', label: 'Employees' },
+      { value: 'routes', label: 'Routes' },
+      { value: 'service_history', label: 'Service History' },
+      { value: 'estimates', label: 'Estimates' },
+    ],
+  },
+  {
+    key: 'timeline',
+    question: 'When are you looking to go live?',
+    options: [
+      { value: 'asap', label: 'As soon as possible' },
+      { value: 'this_quarter', label: 'This quarter' },
+      { value: 'next_quarter', label: 'Next quarter' },
+      { value: 'exploring', label: 'Just exploring' },
+    ],
+  },
+]
+
 export function WaiveWidget({ viewMode }: { viewMode: ViewMode }) {
   const location = useLocation()
   const navigate = useNavigate()
@@ -235,6 +303,86 @@ export function WaiveWidget({ viewMode }: { viewMode: ViewMode }) {
   const [usage, setUsage] = useState<{ dailySpentCents: number; dailyBudgetCents: number } | null>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
+
+  // ── Wizard state ──
+  const [wizardActive, setWizardActive] = useState(false)
+  const [wizardStep, setWizardStep] = useState(0)
+  const [wizardAnswers, setWizardAnswers] = useState<Record<string, string | string[]>>({})
+  const [wizardMultiSelections, setWizardMultiSelections] = useState<string[]>([])
+
+  const startWizard = () => {
+    setWizardActive(true)
+    setWizardStep(0)
+    setWizardAnswers({})
+    setWizardMultiSelections([])
+    setMessages([])
+    setError(null)
+  }
+
+  const handleWizardSelect = (step: WizardStep, value: string) => {
+    if (step.multi) {
+      setWizardMultiSelections(prev =>
+        prev.includes(value) ? prev.filter(v => v !== value) : [...prev, value]
+      )
+      return
+    }
+    // Single select — advance
+    const label = step.options.find(o => o.value === value)?.label ?? value
+    setWizardAnswers(prev => ({ ...prev, [step.key]: value }))
+    setMessages(prev => [
+      ...prev,
+      { role: 'assistant', text: step.question },
+      { role: 'user', text: label },
+    ])
+    if (wizardStep < WIZARD_STEPS.length - 1) {
+      setWizardStep(s => s + 1)
+    } else {
+      finishWizard({ ...wizardAnswers, [step.key]: value })
+    }
+  }
+
+  const handleWizardMultiConfirm = (step: WizardStep) => {
+    if (wizardMultiSelections.length === 0) return
+    const labels = wizardMultiSelections.map(v => step.options.find(o => o.value === v)?.label ?? v)
+    setWizardAnswers(prev => ({ ...prev, [step.key]: wizardMultiSelections }))
+    setMessages(prev => [
+      ...prev,
+      { role: 'assistant', text: step.question },
+      { role: 'user', text: labels.join(', ') },
+    ])
+    const nextAnswers = { ...wizardAnswers, [step.key]: wizardMultiSelections }
+    setWizardMultiSelections([])
+    if (wizardStep < WIZARD_STEPS.length - 1) {
+      setWizardStep(s => s + 1)
+    } else {
+      finishWizard(nextAnswers)
+    }
+  }
+
+  const finishWizard = (answers: Record<string, string | string[]>) => {
+    setWizardActive(false)
+    // Build query params for request form pre-fill
+    const params = new URLSearchParams()
+    if (answers.product) params.set('product', answers.product as string)
+    if (answers.builderType) params.set('builder', answers.builderType as string)
+    if (answers.useCase) params.set('usecase', answers.useCase as string)
+    if (answers.timeline) params.set('timeline', answers.timeline as string)
+    if (Array.isArray(answers.dataCategories)) params.set('data', (answers.dataCategories as string[]).join(','))
+    const url = `/request?${params.toString()}`
+    setMessages(prev => [
+      ...prev,
+      { role: 'assistant', text: 'Great — I\'ve got everything I need! I\'ll take you to the request form with your selections pre-filled. You can review and adjust anything before submitting.' },
+    ])
+    // Short delay so they see the message before navigating
+    setTimeout(() => { navigate(url); setOpen(false) }, 1800)
+  }
+
+  const exitWizard = () => {
+    setWizardActive(false)
+    setWizardStep(0)
+    setWizardAnswers({})
+    setWizardMultiSelections([])
+  }
 
   // Clear conversation when navigating to a new page
   const currentPage = pageKey(location.pathname)
@@ -354,7 +502,98 @@ export function WaiveWidget({ viewMode }: { viewMode: ViewMode }) {
 
             {/* ── Chat area ── */}
             <div ref={scrollRef} className="flex-1 overflow-y-auto">
-              {messages.length === 0 ? (
+              {wizardActive ? (
+                /* ── Wizard mode ── */
+                <div className="px-5 py-4">
+                  {/* Progress bar */}
+                  <div className="flex items-center gap-1 mb-5">
+                    {WIZARD_STEPS.map((_, si) => (
+                      <div
+                        key={si}
+                        className={`h-1 flex-1 rounded-full transition-colors ${
+                          si < wizardStep ? 'bg-[#6310D1]'
+                            : si === wizardStep ? 'bg-[#6310D1]/60'
+                            : 'bg-ww-gray-200'
+                        }`}
+                      />
+                    ))}
+                  </div>
+
+                  {/* Previous answers */}
+                  {messages.length > 0 && (
+                    <div className="space-y-2 mb-4">
+                      {messages.map((msg, i) => (
+                        <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                          <div className={`max-w-[85%] rounded-2xl px-3 py-1.5 text-[12px] ${
+                            msg.role === 'user'
+                              ? 'bg-[#6310D1] text-white rounded-br-md'
+                              : 'bg-ww-gray-100 text-ww-gray-500 rounded-bl-md'
+                          }`}>
+                            {msg.text}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Current step */}
+                  {wizardStep < WIZARD_STEPS.length && (() => {
+                    const step = WIZARD_STEPS[wizardStep]
+                    return (
+                      <div>
+                        <div className="flex items-start gap-2 mb-3">
+                          <div className="w-6 h-6 rounded-full bg-[#6310D1]/10 flex items-center justify-center shrink-0 mt-0.5">
+                            <Sparkles size={12} className="text-[#6310D1]" />
+                          </div>
+                          <p className="text-[13px] text-ww-navy font-medium">{step.question}</p>
+                        </div>
+                        <div className={`space-y-1.5 ${step.multi ? 'ml-8' : 'ml-8'}`}>
+                          {step.options.map(opt => {
+                            const isSelected = step.multi
+                              ? wizardMultiSelections.includes(opt.value)
+                              : false
+                            return (
+                              <button
+                                key={opt.value}
+                                onClick={() => handleWizardSelect(step, opt.value)}
+                                className={`w-full text-left px-3.5 py-2 rounded-lg border text-[13px] transition-all ${
+                                  isSelected
+                                    ? 'border-[#6310D1] bg-[#6310D1]/10 text-[#6310D1] font-medium'
+                                    : 'border-ww-gray-200 text-ww-gray-600 hover:border-[#6310D1]/30 hover:bg-[#6310D1]/5 hover:text-[#6310D1]'
+                                }`}
+                              >
+                                {step.multi && (
+                                  <span className={`inline-block w-4 h-4 rounded border mr-2 align-middle text-center text-[10px] leading-4 ${
+                                    isSelected ? 'bg-[#6310D1] border-[#6310D1] text-white' : 'border-ww-gray-300'
+                                  }`}>
+                                    {isSelected ? '✓' : ''}
+                                  </span>
+                                )}
+                                {opt.label}
+                              </button>
+                            )
+                          })}
+                          {step.multi && wizardMultiSelections.length > 0 && (
+                            <button
+                              onClick={() => handleWizardMultiConfirm(step)}
+                              className="w-full mt-2 px-3.5 py-2 rounded-lg bg-[#6310D1] text-white text-[13px] font-medium hover:bg-[#5009B0] transition-colors flex items-center justify-center gap-1.5"
+                            >
+                              Continue
+                              <ArrowRight size={12} />
+                            </button>
+                          )}
+                        </div>
+                        <button
+                          onClick={exitWizard}
+                          className="mt-4 text-[11px] text-ww-gray-400 hover:text-ww-gray-600 transition-colors ml-8"
+                        >
+                          Exit wizard & ask freely
+                        </button>
+                      </div>
+                    )
+                  })()}
+                </div>
+              ) : messages.length === 0 ? (
                 /* ── Empty state: branded welcome + suggestions ── */
                 <div className="flex flex-col items-center px-5 pt-8 pb-4">
                   <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#6310D1] to-[#8736F0] flex items-center justify-center mb-4 shadow-lg shadow-[#6310D1]/20">
@@ -367,8 +606,19 @@ export function WaiveWidget({ viewMode }: { viewMode: ViewMode }) {
                     Endpoints, partners, access requests, pricing, authentication — I've got you covered.
                   </p>
 
+                  {/* Guided request wizard — customer only */}
+                  {viewMode === 'customer' && (
+                    <button
+                      onClick={startWizard}
+                      className="w-full mt-5 px-3.5 py-3 rounded-xl bg-gradient-to-r from-[#6310D1] to-[#8736F0] text-white text-[13px] font-medium hover:shadow-lg hover:shadow-[#6310D1]/20 transition-all flex items-center justify-center gap-2"
+                    >
+                      <Sparkles size={14} />
+                      Start Guided Access Request
+                    </button>
+                  )}
+
                   {/* Suggested questions */}
-                  <div className="w-full mt-5 space-y-1.5">
+                  <div className="w-full mt-3 space-y-1.5">
                     {suggestions.map((q, i) => (
                       <button
                         key={i}

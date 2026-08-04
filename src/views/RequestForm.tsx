@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import {
   Lock, ChevronRight, ChevronLeft, CheckCircle2,
   Building2, Settings2, Server, FileCheck,
@@ -115,8 +115,16 @@ const initialTouched: TouchedFields = {
 export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
   const navigate = useNavigate()
   const { partnerId } = useParams<{ partnerId?: string }>()
+  const [searchParams] = useSearchParams()
 
   const partner = partnerId ? store.getPartner(partnerId) : undefined
+
+  // ── WAIve wizard pre-fill from URL params ──
+  const prefillProduct = searchParams.get('product') as WorkWaveProduct | null
+  const prefillBuilder = searchParams.get('builder') as BuilderType | null
+  const prefillUseCase = searchParams.get('usecase') as UseCase | null
+  const prefillTimeline = searchParams.get('timeline')
+  const prefillData = searchParams.get('data')?.split(',').filter(Boolean) as DataCategory[] | undefined
 
   // Step state
   const [currentStep, setCurrentStep] = useState(0)
@@ -133,19 +141,19 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
   const [partnerWebsite, setPartnerWebsite] = useState('')
   const [partnerContact, setPartnerContact] = useState('')
   const [partnerContactName, setPartnerContactName] = useState('')
-  const [selectedProduct, setSelectedProduct] = useState<WorkWaveProduct | ''>('')
-  const [builderType, setBuilderType] = useState<BuilderType | ''>('')
+  const [selectedProduct, setSelectedProduct] = useState<WorkWaveProduct | ''>(prefillProduct ?? '')
+  const [builderType, setBuilderType] = useState<BuilderType | ''>(prefillBuilder ?? '')
   const [requestType, setRequestType] = useState<RequestType | ''>('')
   const [migratingFrom, setMigratingFrom] = useState<LegacyAccessMethod | ''>('')
 
   // Step 2: Integration Details
   const [connectingSystem, setConnectingSystem] = useState(partner?.name ?? '')
-  const [useCase, setUseCase] = useState<UseCase | ''>('')
+  const [useCase, setUseCase] = useState<UseCase | ''>(prefillUseCase ?? '')
   const [useCaseDetail, setUseCaseDetail] = useState('')
   const [endpointsRequested, setEndpointsRequested] = useState('')
   const [thirdPartyTool, setThirdPartyTool] = useState('')
   const [thirdPartyToolUrl, setThirdPartyToolUrl] = useState('')
-  const [dataRead, setDataRead] = useState<DataCategory[]>([])
+  const [dataRead, setDataRead] = useState<DataCategory[]>(prefillData ?? [])
   const [dataWrite, setDataWrite] = useState<DataCategory[]>([])
   const [dataLeavesEnvironment, setDataLeavesEnvironment] = useState<boolean | null>(null)
 
@@ -153,7 +161,7 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
   const [techContactName, setTechContactName] = useState('')
   const [techContactEmail, setTechContactEmail] = useState('')
   const [techContactPhone, setTechContactPhone] = useState('')
-  const [targetTimeline, setTargetTimeline] = useState('')
+  const [targetTimeline, setTargetTimeline] = useState(prefillTimeline ?? '')
 
   // Listed partner contact (optional, for listed partners)
   const [listedPartnerContactName, setListedPartnerContactName] = useState('')
