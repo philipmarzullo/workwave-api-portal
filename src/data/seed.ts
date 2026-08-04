@@ -50,18 +50,6 @@ export const seedPartners: Partner[] = [
     category: 'CRM',
   },
   {
-    id: 'partner-004',
-    name: 'Stripe',
-    logo: '\u{1F4B3}',
-    description: 'Online payment processing platform for internet businesses. Handles credit cards, ACH, and digital wallets.',
-    tier: 'approved',
-    productsSupported: ['pestpac', 'realgreen', 'winteam', 'lighthouse', 'timegate_plus', 'route_manager', 'hire'],
-    integrationType: 'payments',
-    contractRef: 'MSA-2025-0031',
-    website: 'https://stripe.com',
-    category: 'Payments',
-  },
-  {
     id: 'partner-005',
     name: 'ADP Workforce Now',
     logo: '\u{1F465}',
