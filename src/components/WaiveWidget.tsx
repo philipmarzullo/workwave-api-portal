@@ -139,6 +139,65 @@ function suggestedQuestions(path: string, role: ViewMode): string[] {
   ]
 }
 
+// ── Simple markdown → JSX for WAIve responses ───────────────────
+function renderWaiveText(text: string) {
+  // Split into lines, process each
+  return text.split('\n').map((line, li) => {
+    // Process inline formatting: **bold** and *italic*
+    const parts: React.ReactNode[] = []
+    let remaining = line
+    let ki = 0
+    while (remaining.length > 0) {
+      // Bold: **text**
+      const boldMatch = remaining.match(/\*\*(.+?)\*\*/)
+      if (boldMatch && boldMatch.index !== undefined) {
+        if (boldMatch.index > 0) {
+          parts.push(remaining.slice(0, boldMatch.index))
+        }
+        parts.push(<strong key={ki++} className="font-semibold">{boldMatch[1]}</strong>)
+        remaining = remaining.slice(boldMatch.index + boldMatch[0].length)
+        continue
+      }
+      // No more formatting
+      parts.push(remaining)
+      break
+    }
+
+    // Bullet lines
+    const bulletMatch = line.match(/^(\s*[-•]\s+)(.*)/)
+    if (bulletMatch) {
+      return <div key={li} className="flex gap-1.5 ml-1"><span className="text-[#6310D1] shrink-0">&#8226;</span><span>{parts.slice(1)}{parts.length <= 1 ? renderInlineParts(bulletMatch[2]) : null}</span></div>
+    }
+
+    // Numbered lines
+    const numMatch = line.match(/^(\d+)\.\s+(.*)/)
+    if (numMatch) {
+      return <div key={li} className="flex gap-1.5 ml-1"><span className="text-[#6310D1] font-semibold shrink-0">{numMatch[1]}.</span><span>{parts.slice(1)}{parts.length <= 1 ? renderInlineParts(numMatch[2]) : null}</span></div>
+    }
+
+    if (line.trim() === '') return <div key={li} className="h-2" />
+    return <div key={li}>{parts}</div>
+  })
+}
+
+function renderInlineParts(text: string): React.ReactNode[] {
+  const parts: React.ReactNode[] = []
+  let remaining = text
+  let ki = 0
+  while (remaining.length > 0) {
+    const boldMatch = remaining.match(/\*\*(.+?)\*\*/)
+    if (boldMatch && boldMatch.index !== undefined) {
+      if (boldMatch.index > 0) parts.push(remaining.slice(0, boldMatch.index))
+      parts.push(<strong key={ki++} className="font-semibold">{boldMatch[1]}</strong>)
+      remaining = remaining.slice(boldMatch.index + boldMatch[0].length)
+      continue
+    }
+    parts.push(remaining)
+    break
+  }
+  return parts
+}
+
 // ── Navigation actions WAIve can suggest ────────────────────────
 interface NavAction {
   label: string
@@ -342,7 +401,10 @@ export function WaiveWidget({ viewMode }: { viewMode: ViewMode }) {
                                 <span className="text-[9px] font-semibold text-[#6310D1] uppercase tracking-wider">WAIve</span>
                               </div>
                             )}
-                            <span className="whitespace-pre-wrap">{msg.text}</span>
+                            {msg.role === 'assistant'
+                              ? <div className="space-y-0.5">{renderWaiveText(msg.text)}</div>
+                              : <span className="whitespace-pre-wrap">{msg.text}</span>
+                            }
                           </div>
                         </div>
                         {navActions.length > 0 && (
