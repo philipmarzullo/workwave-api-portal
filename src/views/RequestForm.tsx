@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import {
   Lock, ChevronRight, ChevronLeft, CheckCircle2,
@@ -129,6 +129,11 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
 
   // Step state
   const [currentStep, setCurrentStep] = useState(0)
+  const formTopRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    formTopRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }, [currentStep])
 
   // Touched state
   const [touched, setTouched] = useState<TouchedFields>({ ...initialTouched })
@@ -168,12 +173,21 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
   const [listedPartnerContactName, setListedPartnerContactName] = useState('')
   const [listedPartnerContactEmail, setListedPartnerContactEmail] = useState('')
 
+  // Contractor contact info (when builderType is 'contractor')
+  const [contractorCompany, setContractorCompany] = useState('')
+  const [contractorContactName, setContractorContactName] = useState('')
+  const [contractorContactEmail, setContractorContactEmail] = useState('')
+
+  // CC notification email
+  const [ccEmail, setCcEmail] = useState('')
+
   // Resell intent
   const [customerIntendToResell, setCustomerIntendToResell] = useState<boolean | null>(null)
   const [developerIntendToResell, setDeveloperIntendToResell] = useState<boolean | null>(null)
 
   // Step 3: Environment
   const [environment, setEnvironment] = useState<Environment | ''>('')
+  const [alsoRequestProduction, setAlsoRequestProduction] = useState(false)
 
   // Step 4: Terms
   const [termsAccepted, setTermsAccepted] = useState(false)
@@ -278,6 +292,7 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
     if (!useCaseDetail.trim()) return false
     if (dataRead.length === 0) return false
     if (dataLeavesEnvironment === null) return false
+    if (customerIntendToResell === null) return false
     if (!techContactName.trim() || !techContactEmail.trim()) return false
     if (!targetTimeline) return false
     return true
@@ -315,9 +330,17 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
   }
 
   function toggleDataWrite(cat: DataCategory) {
-    setDataWrite(prev =>
-      prev.includes(cat) ? prev.filter(c => c !== cat) : [...prev, cat]
-    )
+    setDataWrite(prev => {
+      const isAdding = !prev.includes(cat)
+      if (isAdding) {
+        // Auto-check READ when WRITE is selected — unsafe to write without reading first
+        if (!dataRead.includes(cat)) {
+          setDataRead(r => [...r, cat])
+        }
+        return [...prev, cat]
+      }
+      return prev.filter(c => c !== cat)
+    })
   }
 
   // ── Cancel handler ────────────────────────────────────────────
@@ -739,6 +762,59 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
           {touched.builderType && !builderType && renderError('This field is required')}
         </div>
 
+        {/* Contractor contact info */}
+        {builderType === 'contractor' && (
+          <div>
+            <label className="block text-sm font-semibold text-ww-gray-700 mb-3">
+              Contractor Details
+            </label>
+            <p className="text-xs text-ww-gray-500 mb-3">
+              The contractor building this integration will need authorization credentials. Provide their contact details so we can coordinate access.
+            </p>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-ww-gray-700 mb-1.5">
+                  Contractor Company
+                </label>
+                <input
+                  type="text"
+                  value={contractorCompany}
+                  onChange={e => setContractorCompany(e.target.value)}
+                  placeholder="e.g. Acme Dev Shop"
+                  className="w-full px-4 py-2.5 rounded-lg border border-ww-gray-300 text-sm text-ww-gray-800 placeholder:text-ww-gray-400 focus:outline-none focus:ring-2 focus:ring-ww-primary focus:border-transparent transition-shadow"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-ww-gray-700 mb-1.5">
+                  Contractor Contact Name
+                </label>
+                <input
+                  type="text"
+                  value={contractorContactName}
+                  onChange={e => setContractorContactName(e.target.value)}
+                  placeholder="e.g. Jane Smith"
+                  className="w-full px-4 py-2.5 rounded-lg border border-ww-gray-300 text-sm text-ww-gray-800 placeholder:text-ww-gray-400 focus:outline-none focus:ring-2 focus:ring-ww-primary focus:border-transparent transition-shadow"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-ww-gray-700 mb-1.5">
+                  <span className="flex items-center gap-1.5">
+                    <Mail size={14} />
+                    Contractor Contact Email
+                  </span>
+                </label>
+                <input
+                  type="email"
+                  value={contractorContactEmail}
+                  onChange={e => setContractorContactEmail(e.target.value)}
+                  placeholder="contractor@example.com"
+                  className="w-full px-4 py-2.5 rounded-lg border border-ww-gray-300 text-sm text-ww-gray-800 placeholder:text-ww-gray-400 focus:outline-none focus:ring-2 focus:ring-ww-primary focus:border-transparent transition-shadow"
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Request type */}
         <div>
           <label className="block text-sm font-semibold text-ww-gray-700 mb-3">
@@ -1039,7 +1115,7 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
         {/* Resell Intent — Customer */}
         <div>
           <label className="block text-sm font-semibold text-ww-gray-700 mb-1.5">
-            Will your company resell or redistribute data accessed through this API?
+            Will your company resell or redistribute data accessed through this API? <span className="text-ww-red">*</span>
           </label>
           <p className="text-xs text-ww-gray-500 mb-3">
             This includes offering WorkWave data as part of a paid service, report, or product sold to others.
@@ -1217,6 +1293,24 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
                 className="w-full px-4 py-2.5 rounded-lg border border-ww-gray-300 text-sm text-ww-gray-800 placeholder:text-ww-gray-400 focus:outline-none focus:ring-2 focus:ring-ww-primary focus:border-transparent transition-shadow"
               />
             </div>
+            <div>
+              <label className="block text-sm font-medium text-ww-gray-700 mb-1.5">
+                <span className="flex items-center gap-1.5">
+                  <Mail size={14} />
+                  CC Email (partner or integrator)
+                </span>
+              </label>
+              <p className="text-xs text-ww-gray-500 mb-1.5">
+                Optionally CC a partner, contractor, or integrator on status updates — even if they don't have portal access.
+              </p>
+              <input
+                type="email"
+                value={ccEmail}
+                onChange={e => setCcEmail(e.target.value)}
+                placeholder="partner@example.com"
+                className="w-full px-4 py-2.5 rounded-lg border border-ww-gray-300 text-sm text-ww-gray-800 placeholder:text-ww-gray-400 focus:outline-none focus:ring-2 focus:ring-ww-primary focus:border-transparent transition-shadow"
+              />
+            </div>
           </div>
 
           {/* Partner contact for listed partner (optional) */}
@@ -1354,6 +1448,24 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
             ))}
           </div>
           {touched.environment && !environment && renderError('This field is required')}
+
+          {environment === 'sandbox' && (
+            <label className="flex items-start gap-3 mt-4 px-4 py-3 rounded-md border border-ww-gray-200 bg-ww-gray-50 cursor-pointer hover:border-ww-gray-300 transition-colors">
+              <input
+                type="checkbox"
+                checked={alsoRequestProduction}
+                onChange={e => setAlsoRequestProduction(e.target.checked)}
+                className="sr-only"
+              />
+              <CheckBox checked={alsoRequestProduction} />
+              <div>
+                <span className="text-sm font-medium text-ww-gray-700">Also request production access</span>
+                <p className="text-xs text-ww-gray-500 mt-0.5">
+                  Submit a single request for both environments. Production access will be granted after sandbox validation is complete.
+                </p>
+              </div>
+            </label>
+          )}
         </div>
       </div>
     )
@@ -1746,7 +1858,7 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
   // ── Main render ───────────────────────────────────────────────
 
   return (
-    <div className="max-w-[720px] mx-auto py-10">
+    <div ref={formTopRef} className="max-w-[720px] mx-auto py-10">
       {/* Page header */}
       <div className="mb-8">
         <div className="text-center">
@@ -1754,9 +1866,11 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
             Request API Access
           </h1>
           <p className="text-sm text-ww-gray-500">
-            {partner
-              ? `Set up an integration with ${partner.name}`
-              : 'Request access for an unlisted integration partner'}
+            {selfBuild
+              ? 'Request API access for your own internal use'
+              : partner
+                ? `Set up an integration with ${partner.name}`
+                : 'Request access for an unlisted integration partner'}
           </p>
         </div>
       </div>

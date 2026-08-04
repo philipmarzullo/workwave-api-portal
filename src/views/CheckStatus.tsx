@@ -14,6 +14,7 @@ import {
   Headphones,
   MessageSquare,
   Send,
+  Paperclip,
 } from 'lucide-react'
 import { store } from '@/data/store'
 import type { ApiRequest, Approval, RequestMessage } from '@/data/types'
@@ -52,7 +53,9 @@ export function CheckStatus() {
   const [approvals, setApprovals] = useState<Approval[]>([])
   const [messages, setMessages] = useState<RequestMessage[]>([])
   const [newMessage, setNewMessage] = useState('')
+  const [attachmentName, setAttachmentName] = useState<string | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const activeUser = store.getActiveUser()
 
@@ -93,9 +96,16 @@ export function CheckStatus() {
 
   function handleSendMessage() {
     if (!result || !newMessage.trim() || !activeUser) return
-    store.addMessage(result.id, activeUser.name, 'customer', newMessage.trim())
+    store.addMessage(result.id, activeUser.name, 'customer', newMessage.trim(), attachmentName ?? undefined)
     setMessages(store.getMessages(result.id))
     setNewMessage('')
+    setAttachmentName(null)
+  }
+
+  function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (file) setAttachmentName(file.name)
+    e.target.value = ''
   }
 
   const partner = result?.partnerId ? store.getPartner(result.partnerId) : null
@@ -435,6 +445,12 @@ export function CheckStatus() {
                         <span className="text-[10px] text-ww-gray-400 font-mono">{formatDateTime(msg.createdAt)}</span>
                       </div>
                       <p className="text-sm text-ww-gray-700 whitespace-pre-wrap">{msg.content}</p>
+                      {msg.attachmentName && (
+                        <div className="mt-1 inline-flex items-center gap-1 text-[11px] text-ww-primary font-medium">
+                          <Paperclip size={10} />
+                          {msg.attachmentName}
+                        </div>
+                      )}
                     </div>
                   ))}
                   <div ref={messagesEndRef} />
@@ -464,15 +480,32 @@ export function CheckStatus() {
                       rows={2}
                       className="w-full px-3 py-2 text-sm border border-ww-gray-200 rounded-lg resize-none focus:ring-2 focus:ring-ww-primary/30 focus:border-ww-primary outline-none"
                     />
+                    {attachmentName && (
+                      <div className="flex items-center gap-1.5 mt-1.5 text-[11px] text-ww-primary font-medium">
+                        <Paperclip size={10} />
+                        {attachmentName}
+                        <button onClick={() => setAttachmentName(null)} className="text-ww-gray-400 hover:text-ww-gray-600 ml-1">&times;</button>
+                      </div>
+                    )}
                   </div>
-                  <button
-                    onClick={handleSendMessage}
-                    disabled={!newMessage.trim()}
-                    className="self-end px-4 py-2 rounded-lg bg-ww-navy text-white text-sm font-medium hover:bg-ww-navy/90 disabled:opacity-40 disabled:cursor-not-allowed transition-colors flex items-center gap-1.5"
-                  >
-                    <Send size={14} />
-                    Send
-                  </button>
+                  <div className="flex flex-col justify-end gap-1.5">
+                    <input ref={fileInputRef} type="file" className="hidden" onChange={handleFileSelect} />
+                    <button
+                      onClick={() => fileInputRef.current?.click()}
+                      className="px-2.5 py-2 rounded-lg border border-ww-gray-200 text-ww-gray-500 hover:text-ww-gray-700 hover:border-ww-gray-300 transition-colors"
+                      title="Attach file"
+                    >
+                      <Paperclip size={14} />
+                    </button>
+                    <button
+                      onClick={handleSendMessage}
+                      disabled={!newMessage.trim()}
+                      className="px-4 py-2 rounded-lg bg-ww-navy text-white text-sm font-medium hover:bg-ww-navy/90 disabled:opacity-40 disabled:cursor-not-allowed transition-colors flex items-center gap-1.5"
+                    >
+                      <Send size={14} />
+                      Send
+                    </button>
+                  </div>
                 </div>
               </div>
             )}

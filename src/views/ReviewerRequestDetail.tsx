@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react'
+import { useState, useMemo, useCallback, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import {
   ArrowLeft,
@@ -132,6 +132,8 @@ export function ReviewerRequestDetail({ onRefresh }: { onRefresh: () => void }) 
   const [messages, setMessages] = useState<RequestMessage[]>([])
   const [messagesInit, setMessagesInit] = useState(false)
   const [newMessage, setNewMessage] = useState('')
+  const [msgAttachmentName, setMsgAttachmentName] = useState<string | null>(null)
+  const msgFileInputRef = useRef<HTMLInputElement>(null)
 
   // Provisioning state
   const [provisioningRefresh, setProvisioningRefresh] = useState(0)
@@ -227,8 +229,9 @@ export function ReviewerRequestDetail({ onRefresh }: { onRefresh: () => void }) 
 
   const handleSendMessage = () => {
     if (!newMessage.trim() || !request) return
-    store.addMessage(request.id, 'API Reviewer', 'reviewer', newMessage.trim())
+    store.addMessage(request.id, 'API Reviewer', 'reviewer', newMessage.trim(), msgAttachmentName ?? undefined)
     setMessages(store.getMessages(request.id))
+    setMsgAttachmentName(null)
     setNewMessage('')
   }
 
@@ -1205,15 +1208,32 @@ export function ReviewerRequestDetail({ onRefresh }: { onRefresh: () => void }) 
                       rows={2}
                       className="w-full px-3 py-2 text-sm border border-ww-gray-200 rounded-lg resize-none focus:ring-2 focus:ring-ww-primary/30 focus:border-ww-primary outline-none"
                     />
+                    {msgAttachmentName && (
+                      <div className="flex items-center gap-1.5 mt-1.5 text-[11px] text-ww-primary font-medium">
+                        <Paperclip size={10} />
+                        {msgAttachmentName}
+                        <button onClick={() => setMsgAttachmentName(null)} className="text-ww-gray-400 hover:text-ww-gray-600 ml-1">&times;</button>
+                      </div>
+                    )}
                   </div>
-                  <button
-                    onClick={handleSendMessage}
-                    disabled={!newMessage.trim()}
-                    className="self-end px-4 py-2 rounded-lg bg-ww-navy text-white text-sm font-medium hover:bg-ww-navy/90 disabled:opacity-40 disabled:cursor-not-allowed transition-colors flex items-center gap-1.5"
-                  >
-                    <Send size={14} />
-                    Send
-                  </button>
+                  <div className="flex flex-col justify-end gap-1.5">
+                    <input ref={msgFileInputRef} type="file" className="hidden" onChange={e => { if (e.target.files?.[0]) setMsgAttachmentName(e.target.files[0].name); e.target.value = '' }} />
+                    <button
+                      onClick={() => msgFileInputRef.current?.click()}
+                      className="px-2.5 py-2 rounded-lg border border-ww-gray-200 text-ww-gray-500 hover:text-ww-gray-700 hover:border-ww-gray-300 transition-colors"
+                      title="Attach file"
+                    >
+                      <Paperclip size={14} />
+                    </button>
+                    <button
+                      onClick={handleSendMessage}
+                      disabled={!newMessage.trim()}
+                      className="px-4 py-2 rounded-lg bg-ww-navy text-white text-sm font-medium hover:bg-ww-navy/90 disabled:opacity-40 disabled:cursor-not-allowed transition-colors flex items-center gap-1.5"
+                    >
+                      <Send size={14} />
+                      Send
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
