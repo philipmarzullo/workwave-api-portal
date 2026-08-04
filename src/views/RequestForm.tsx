@@ -53,6 +53,13 @@ const ALL_PRODUCTS: WorkWaveProduct[] = [
 
 const ALL_BUILDER_TYPES: BuilderType[] = ['partner', 'internal_team', 'contractor']
 
+// Product-specific data categories — tailored to what each platform actually exposes
+const PRODUCT_DATA_CATEGORIES: Partial<Record<WorkWaveProduct, DataCategory[]>> = {
+  winteam: ['customers', 'employees', 'invoices', 'payments', 'appointments', 'documents'],
+  pestpac: ['customers', 'appointments', 'invoices', 'payments', 'routes', 'service_history', 'estimates', 'documents', 'inventory'],
+  realgreen: ['customers', 'appointments', 'invoices', 'payments', 'routes', 'estimates', 'service_history', 'documents'],
+}
+
 const STEPS = [
   { label: 'Partner & Product', icon: Building2 },
   { label: 'Integration Details', icon: Settings2 },
@@ -151,6 +158,7 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
   const [builderType, setBuilderType] = useState<BuilderType | ''>(selfBuild ? 'internal_team' : (prefillBuilder ?? ''))
   const [requestType, setRequestType] = useState<RequestType | ''>('')
   const [migratingFrom, setMigratingFrom] = useState<LegacyAccessMethod | ''>('')
+  const [existingCaseNumber, setExistingCaseNumber] = useState('')
 
   // Step 2: Integration Details
   const [connectingSystem, setConnectingSystem] = useState(partner?.name ?? '')
@@ -177,6 +185,10 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
   const [contractorCompany, setContractorCompany] = useState('')
   const [contractorContactName, setContractorContactName] = useState('')
   const [contractorContactEmail, setContractorContactEmail] = useState('')
+
+  // Submitter details
+  const [submitterTitle, setSubmitterTitle] = useState('')
+  const [submitterCompany, setSubmitterCompany] = useState('')
 
   // CC notification email
   const [ccEmail, setCcEmail] = useState('')
@@ -287,12 +299,13 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
   }
 
   function isStep2Valid(): boolean {
-    if (!connectingSystem.trim()) return false
+    if (!connectingSystem.trim() && !partnerName.trim() && !partner) return false
     if (!useCase) return false
     if (!useCaseDetail.trim()) return false
     if (dataRead.length === 0) return false
     if (dataLeavesEnvironment === null) return false
     if (customerIntendToResell === null) return false
+    if (!submitterCompany.trim() || !submitterTitle.trim()) return false
     if (!techContactName.trim() || !techContactEmail.trim()) return false
     if (!targetTimeline) return false
     return true
@@ -368,7 +381,7 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
         partnerContact: selfBuild ? null : (partner ? null : partnerContact.trim()),
         product: selectedProduct as WorkWaveProduct,
         builderType: builderType as BuilderType,
-        connectingSystem: connectingSystem.trim(),
+        connectingSystem: connectingSystem.trim() || partnerName.trim() || partner?.name || '',
         useCase: useCase as UseCase,
         useCaseDetail: useCaseDetail.trim(),
         dataRead,
@@ -885,6 +898,33 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
               </div>
             </div>
           )}
+
+          {/* Expand access — existing subscription details */}
+          {requestType === 'expand_access' && (
+            <div className="mt-4 space-y-3">
+              <div>
+                <label className="block text-sm font-medium text-ww-gray-700 mb-1.5">
+                  Existing Case Number or Subscription ID
+                </label>
+                <p className="text-xs text-ww-gray-500 mb-2">
+                  Provide the case number from your original API access request so we can locate your existing subscription.
+                </p>
+                <input
+                  type="text"
+                  value={existingCaseNumber}
+                  onChange={e => setExistingCaseNumber(e.target.value)}
+                  placeholder="e.g. APR-001234"
+                  className="w-full px-4 py-2.5 rounded-lg border border-ww-gray-300 text-sm text-ww-gray-800 placeholder:text-ww-gray-400 focus:outline-none focus:ring-2 focus:ring-ww-primary focus:border-transparent transition-shadow font-mono"
+                />
+              </div>
+              <div className="flex items-start gap-2 p-3 rounded-md bg-blue-50 border border-blue-200">
+                <Info size={14} className="text-blue-500 shrink-0 mt-0.5" />
+                <p className="text-xs text-blue-700 leading-relaxed">
+                  Expanding access adds new endpoints or capabilities to your existing API subscription. Your current access remains unchanged.
+                </p>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     )
@@ -895,8 +935,8 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
   function renderStep2() {
     return (
       <div className="space-y-8">
-        {/* Connecting system — only shown for unlisted partners */}
-        {!partner && (
+        {/* Connecting system — only shown for unlisted partners without a name already provided */}
+        {!partner && !partnerName.trim() && (
           <div>
             <label className="block text-sm font-semibold text-ww-gray-700 mb-1.5">
               What system are you connecting WorkWave to? <span className="text-ww-red">*</span>
@@ -1001,7 +1041,7 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
             Select all data categories this integration will need to read from WorkWave.
           </p>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
-            {ALL_DATA_CATEGORIES.map(cat => (
+            {(selectedProduct && PRODUCT_DATA_CATEGORIES[selectedProduct] ? PRODUCT_DATA_CATEGORIES[selectedProduct] : ALL_DATA_CATEGORIES).map(cat => (
               <label
                 key={`read-${cat}`}
                 className={`flex items-center gap-2.5 px-3.5 py-2.5 rounded-lg border cursor-pointer transition-all ${
@@ -1039,7 +1079,7 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
             Select all data categories this integration will need to write or update in WorkWave.
           </p>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
-            {ALL_DATA_CATEGORIES.map(cat => (
+            {(selectedProduct && PRODUCT_DATA_CATEGORIES[selectedProduct] ? PRODUCT_DATA_CATEGORIES[selectedProduct] : ALL_DATA_CATEGORIES).map(cat => (
               <label
                 key={`write-${cat}`}
                 className={`flex items-center gap-2.5 px-3.5 py-2.5 rounded-lg border cursor-pointer transition-all ${
@@ -1073,7 +1113,7 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
             Will data leave your environment or be stored by a third party? <span className="text-ww-red">*</span>
           </label>
           <p className="text-xs text-ww-gray-500 mb-3">
-            This includes any scenario where WorkWave data is sent to or stored on external servers.
+            If WorkWave data will sync with any third-party SaaS platform (e.g. an LMS, payroll provider, or CRM that runs outside your local servers), the answer is <strong>Yes</strong>. This includes any scenario where data is sent to or stored on external servers, even temporarily.
           </p>
           <div className="flex gap-3">
             {[
@@ -1122,8 +1162,8 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
           </p>
           <div className="flex gap-3">
             {[
-              { value: false, label: 'No' },
               { value: true, label: 'Yes' },
+              { value: false, label: 'No' },
             ].map(opt => (
               <label
                 key={`cust-resell-${String(opt.value)}`}
@@ -1164,8 +1204,8 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
             </p>
             <div className="flex gap-3">
               {[
-                { value: false, label: 'No' },
                 { value: true, label: 'Yes' },
+                { value: false, label: 'No' },
                 { value: null, label: 'Not sure' },
               ].map(opt => (
                 <label
@@ -1248,6 +1288,18 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
           <div className="space-y-3 mb-5">
             <div>
               <label className="block text-sm font-medium text-ww-gray-700 mb-1.5">
+                Company Name <span className="text-ww-red">*</span>
+              </label>
+              <input
+                type="text"
+                value={submitterCompany}
+                onChange={e => setSubmitterCompany(e.target.value)}
+                placeholder="e.g. Acme Pest Control"
+                className="w-full px-4 py-2.5 rounded-lg border border-ww-gray-300 text-sm text-ww-gray-800 placeholder:text-ww-gray-400 focus:outline-none focus:ring-2 focus:ring-ww-primary focus:border-transparent transition-shadow"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-ww-gray-700 mb-1.5">
                 Your Name <span className="text-ww-red">*</span>
               </label>
               <input
@@ -1276,6 +1328,18 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
                 className="w-full px-4 py-2.5 rounded-lg border border-ww-gray-300 text-sm text-ww-gray-800 placeholder:text-ww-gray-400 focus:outline-none focus:ring-2 focus:ring-ww-primary focus:border-transparent transition-shadow"
               />
               {renderError(fieldError('techContactEmail', !!techContactEmail.trim()))}
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-ww-gray-700 mb-1.5">
+                Title / Role <span className="text-ww-red">*</span>
+              </label>
+              <input
+                type="text"
+                value={submitterTitle}
+                onChange={e => setSubmitterTitle(e.target.value)}
+                placeholder="e.g. IT Director, VP Operations"
+                className="w-full px-4 py-2.5 rounded-lg border border-ww-gray-300 text-sm text-ww-gray-800 placeholder:text-ww-gray-400 focus:outline-none focus:ring-2 focus:ring-ww-primary focus:border-transparent transition-shadow"
+              />
             </div>
             <div>
               <label className="block text-sm font-medium text-ww-gray-700 mb-1.5">
@@ -1785,11 +1849,16 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
               )}
             </div>
             <span className="text-sm text-ww-gray-700 leading-relaxed">
-              I acknowledge and agree to WorkWave's API Terms of Service, Integration Partner Agreement,
+              I acknowledge and agree to WorkWave's{' '}
+              <a href="https://www.workwave.com/terms-and-conditions/" target="_blank" rel="noopener noreferrer" className="text-ww-primary underline hover:text-ww-primary-light">
+                API Terms of Service
+              </a>
+              , Integration Partner Agreement,
               and the credential usage and data protection provisions above. I understand that API access
               is void if credentials are shared or used with unapproved partners, and that WorkWave may
               revoke access and pursue contractual remedies for any violations. I confirm the information
-              provided above is accurate.
+              provided above is accurate and that <strong>I am authorized to act on behalf of my organization</strong> in
+              agreeing to these terms.
             </span>
           </label>
           {touched.termsAccepted && !termsAccepted && (

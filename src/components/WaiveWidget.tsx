@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { Send, Loader2, X, Trash2, Sparkles, ArrowRight, CheckCircle2 } from 'lucide-react'
+import { Send, Loader2, X, Trash2, Sparkles, ArrowRight, CheckCircle2, ClipboardCopy } from 'lucide-react'
 import { WaiveIcon } from '@/components/WaiveIcon'
 import { store } from '@/data/store'
 import type { ViewMode, CustomerUser, DataCategory, WorkWaveProduct, BuilderType, UseCase } from '@/data/types'
@@ -590,6 +590,20 @@ export function WaiveWidget({ viewMode, activeUser }: { viewMode: ViewMode; acti
                       ${((usage.dailyBudgetCents - usage.dailySpentCents) / 100).toFixed(2)}
                     </span>
                   )}
+                  {(messages.length > 0 || wizardMessages.length > 0) && (
+                    <button
+                      onClick={() => {
+                        const text = wizardActive
+                          ? wizardMessages.map(m => `${m.role === 'user' ? 'You' : 'WAIve'}: ${m.content}`).join('\n\n')
+                          : messages.map(m => `${m.role === 'user' ? 'You' : 'WAIve'}: ${m.text}`).join('\n\n')
+                        navigator.clipboard.writeText(text)
+                      }}
+                      className="p-1.5 rounded-lg text-white/50 hover:text-white hover:bg-white/10 transition-colors"
+                      title="Copy chat history"
+                    >
+                      <ClipboardCopy size={13} />
+                    </button>
+                  )}
                   {(messages.length > 0 || wizardMessages.length > 0) && !wizardActive && (
                     <button
                       onClick={clearChat}
@@ -619,7 +633,7 @@ export function WaiveWidget({ viewMode, activeUser }: { viewMode: ViewMode; acti
                     <div key={i}>
                       <div className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                         <div
-                          className={`max-w-[85%] rounded-2xl px-3.5 py-2 text-[13px] leading-relaxed ${
+                          className={`max-w-[85%] rounded-2xl px-3.5 py-2 text-[13px] leading-relaxed overflow-hidden break-words ${
                             msg.role === 'user'
                               ? 'bg-[#6310D1] text-white rounded-br-md'
                               : 'bg-ww-gray-100 text-ww-gray-700 rounded-bl-md'
@@ -805,7 +819,7 @@ export function WaiveWidget({ viewMode, activeUser }: { viewMode: ViewMode; acti
                       <div key={i}>
                         <div className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                           <div
-                            className={`max-w-[85%] rounded-2xl px-3.5 py-2 text-[13px] leading-relaxed ${
+                            className={`max-w-[85%] rounded-2xl px-3.5 py-2 text-[13px] leading-relaxed overflow-hidden break-words ${
                               msg.role === 'user'
                                 ? 'bg-[#6310D1] text-white rounded-br-md'
                                 : 'bg-ww-gray-100 text-ww-gray-700 rounded-bl-md'
