@@ -3,7 +3,7 @@ import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import {
   Lock, ChevronRight, ChevronLeft, CheckCircle2,
   Building2, Settings2, Server, FileCheck,
-  Send, Globe, Mail, AlertTriangle, ExternalLink, Info, Phone, Swords,
+  Send, Globe, Mail, AlertTriangle, ExternalLink, Info, Phone,
   Plus, Trash2, Database,
 } from 'lucide-react'
 import type { CustomerUser, WorkWaveProduct, BuilderType, UseCase, DataCategory, Environment, RequestType, LegacyAccessMethod, DatabaseEntry } from '@/data/types'
@@ -254,11 +254,9 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
             Vendor Blocked
           </h2>
           <p className="text-sm text-ww-gray-600 max-w-md mx-auto leading-relaxed mb-2">
-            <strong>{partner.name}</strong> has been blocked from API access and new applications cannot be submitted.
+            API access requests for <strong>{partner.name}</strong> are not available at this time.
+            Please contact your WorkWave representative for more information.
           </p>
-          {partner.blockedReason && (
-            <p className="text-xs text-red-600 max-w-md mx-auto">{partner.blockedReason}</p>
-          )}
           <button
             onClick={() => navigate('/')}
             className="mt-6 px-4 py-2 rounded-md bg-ww-navy text-white text-sm font-medium hover:bg-ww-navy-light transition-colors"
@@ -687,26 +685,7 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
           </div>
         )}
 
-        {/* Competitive flag warning */}
-        {partner?.competitiveFlag && (
-          <div className="bg-red-50 border-l-4 border-red-400 p-4 rounded-r-lg">
-            <div className="flex gap-3">
-              <Swords size={18} className="text-red-500 shrink-0 mt-0.5" />
-              <div>
-                <p className="text-sm font-medium text-red-800 mb-1">
-                  Competitive Concern
-                </p>
-                <p className="text-xs text-red-700 leading-relaxed">
-                  This partner has been flagged for competitive concerns. Your request will undergo
-                  additional review by the Partnerships team and may require leadership approval.
-                  {partner.competitiveFlagReason && (
-                    <span className="block mt-1 font-medium">{partner.competitiveFlagReason}</span>
-                  )}
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
+        {/* Competitive flags are reviewer-only — never surface to customers */}
 
         {/* Product selector */}
         <div>
