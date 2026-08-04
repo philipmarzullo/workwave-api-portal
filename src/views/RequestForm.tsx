@@ -117,6 +117,7 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
   const { partnerId } = useParams<{ partnerId?: string }>()
   const [searchParams] = useSearchParams()
 
+  const selfBuild = searchParams.get('self') === 'true'
   const partner = partnerId ? store.getPartner(partnerId) : undefined
 
   // ── WAIve wizard pre-fill from URL params ──
@@ -142,7 +143,7 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
   const [partnerContact, setPartnerContact] = useState('')
   const [partnerContactName, setPartnerContactName] = useState('')
   const [selectedProduct, setSelectedProduct] = useState<WorkWaveProduct | ''>(prefillProduct ?? '')
-  const [builderType, setBuilderType] = useState<BuilderType | ''>(prefillBuilder ?? '')
+  const [builderType, setBuilderType] = useState<BuilderType | ''>(selfBuild ? 'internal_team' : (prefillBuilder ?? ''))
   const [requestType, setRequestType] = useState<RequestType | ''>('')
   const [migratingFrom, setMigratingFrom] = useState<LegacyAccessMethod | ''>('')
 
@@ -262,7 +263,7 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
   // ── Validation per step ───────────────────────────────────────
 
   function isStep1Valid(): boolean {
-    if (!partner) {
+    if (!partner && !selfBuild) {
       if (!partnerName.trim() || !partnerWebsite.trim() || !partnerContact.trim() || !partnerContactName.trim()) return false
     }
     if (!selectedProduct || !builderType) return false
@@ -339,9 +340,9 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
         customerId: activeUser.customerId,
         requestedBy: activeUser.id,
         partnerId: partner?.id ?? null,
-        partnerNameFreetext: partner ? null : partnerName.trim(),
-        partnerWebsite: partner ? null : partnerWebsite.trim(),
-        partnerContact: partner ? null : partnerContact.trim(),
+        partnerNameFreetext: selfBuild ? null : (partner ? null : partnerName.trim()),
+        partnerWebsite: selfBuild ? null : (partner ? null : partnerWebsite.trim()),
+        partnerContact: selfBuild ? null : (partner ? null : partnerContact.trim()),
         product: selectedProduct as WorkWaveProduct,
         builderType: builderType as BuilderType,
         connectingSystem: connectingSystem.trim(),
@@ -485,7 +486,27 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
     return (
       <div className="space-y-8">
         {/* Partner info */}
-        {partner ? (
+        {selfBuild ? (
+          <div>
+            <label className="block text-sm font-semibold text-ww-gray-700 mb-3">
+              Internal Build
+            </label>
+            <div className="bg-blue-50 border-l-4 border-blue-400 p-4 rounded-r-lg">
+              <div className="flex gap-3">
+                <Building2 size={18} className="text-blue-500 shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm font-medium text-blue-800 mb-1">
+                    Internal API Access Request
+                  </p>
+                  <p className="text-xs text-blue-700 leading-relaxed">
+                    You're requesting API access for your own internal use. No partner details
+                    are required. Select your product, builder type, and request type below to continue.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : partner ? (
           <div>
             <label className="block text-sm font-semibold text-ww-gray-700 mb-3">
               Integration Partner
@@ -684,7 +705,7 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
             Who is building this integration? <span className="text-ww-red">*</span>
           </label>
           <div className="space-y-2.5">
-            {ALL_BUILDER_TYPES.map(bt => (
+            {(selfBuild ? ALL_BUILDER_TYPES.filter(bt => bt !== 'partner') : ALL_BUILDER_TYPES).map(bt => (
               <label
                 key={bt}
                 className={`relative flex items-center gap-3 px-4 py-3.5 rounded-md border-2 cursor-pointer transition-all ${

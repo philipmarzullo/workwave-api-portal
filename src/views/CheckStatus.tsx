@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import {
   Search,
   AlertCircle,
@@ -12,9 +12,11 @@ import {
   Key,
   FileCode,
   Headphones,
+  MessageSquare,
+  Send,
 } from 'lucide-react'
 import { store } from '@/data/store'
-import type { ApiRequest, Approval } from '@/data/types'
+import type { ApiRequest, Approval, RequestMessage } from '@/data/types'
 import { PRODUCT_LABELS, STATUS_LABELS, USE_CASE_LABELS, STAGE_LABELS, STAGE_REVIEWER_ROLES, GATEWAY_LABELS } from '@/App'
 
 function formatDate(iso: string): string {
@@ -48,6 +50,17 @@ export function CheckStatus() {
   const [searched, setSearched] = useState(false)
   const [result, setResult] = useState<ApiRequest | null>(null)
   const [approvals, setApprovals] = useState<Approval[]>([])
+  const [messages, setMessages] = useState<RequestMessage[]>([])
+  const [newMessage, setNewMessage] = useState('')
+  const messagesEndRef = useRef<HTMLDivElement>(null)
+
+  const activeUser = store.getActiveUser()
+
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' })
+    }
+  }, [messages])
 
   function handleSearch(e: React.FormEvent) {
     e.preventDefault()
@@ -61,8 +74,10 @@ export function CheckStatus() {
         store.getApprovalsForRequest(request.id)
           .sort((a, b) => new Date(a.decidedAt).getTime() - new Date(b.decidedAt).getTime())
       )
+      setMessages(store.getMessages(request.id))
     } else {
       setApprovals([])
+      setMessages([])
     }
     setSearched(true)
   }
@@ -72,6 +87,15 @@ export function CheckStatus() {
     setSearched(false)
     setResult(null)
     setApprovals([])
+    setMessages([])
+    setNewMessage('')
+  }
+
+  function handleSendMessage() {
+    if (!result || !newMessage.trim() || !activeUser) return
+    store.addMessage(result.id, activeUser.name, 'customer', newMessage.trim())
+    setMessages(store.getMessages(result.id))
+    setNewMessage('')
   }
 
   const partner = result?.partnerId ? store.getPartner(result.partnerId) : null
@@ -386,6 +410,73 @@ export function CheckStatus() {
               </div>
             )
           )}
+
+          {/* Communication Thread */}
+          <div className="bg-white rounded-md border border-ww-gray-200 overflow-hidden">
+            <div className="px-6 py-4 border-b border-ww-gray-200">
+              <h2 className="text-sm font-mono font-semibold text-ww-gray-900 uppercase tracking-[0.06em] flex items-center gap-2">
+                <MessageSquare size={16} className="text-ww-gray-400" />
+                Communication
+              </h2>
+              <p className="text-[11px] text-ww-gray-400 mt-0.5">Messages between you and the review team</p>
+            </div>
+            <div className="max-h-80 overflow-y-auto">
+              {messages.length > 0 ? (
+                <div className="divide-y divide-ww-gray-50">
+                  {messages.map(msg => (
+                    <div key={msg.id} className={`px-6 py-3 ${msg.role === 'reviewer' ? 'bg-blue-50/40' : ''}`}>
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className={`text-[10px] font-mono font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded ${
+                          msg.role === 'reviewer' ? 'bg-blue-100 text-blue-700' : 'bg-emerald-100 text-emerald-700'
+                        }`}>
+                          {msg.role === 'reviewer' ? 'Reviewer' : 'Customer'}
+                        </span>
+                        <span className="text-[12px] font-medium text-ww-gray-700">{msg.author}</span>
+                        <span className="text-[10px] text-ww-gray-400 font-mono">{formatDateTime(msg.createdAt)}</span>
+                      </div>
+                      <p className="text-sm text-ww-gray-700 whitespace-pre-wrap">{msg.content}</p>
+                    </div>
+                  ))}
+                  <div ref={messagesEndRef} />
+                </div>
+              ) : (
+                <div className="px-6 py-8 text-center">
+                  <MessageSquare size={24} className="mx-auto text-ww-gray-300 mb-2" />
+                  <p className="text-sm text-ww-gray-400">No messages yet</p>
+                  <p className="text-[11px] text-ww-gray-400 mt-0.5">The review team will reach out here if they need anything</p>
+                </div>
+              )}
+            </div>
+            {activeUser && (
+              <div className="px-6 py-3 border-t border-ww-gray-200 bg-ww-gray-50">
+                <div className="flex gap-2">
+                  <div className="flex-1">
+                    <textarea
+                      value={newMessage}
+                      onChange={e => setNewMessage(e.target.value)}
+                      onKeyDown={e => {
+                        if (e.key === 'Enter' && !e.shiftKey && newMessage.trim()) {
+                          e.preventDefault()
+                          handleSendMessage()
+                        }
+                      }}
+                      placeholder="Type a message to the review team..."
+                      rows={2}
+                      className="w-full px-3 py-2 text-sm border border-ww-gray-200 rounded-lg resize-none focus:ring-2 focus:ring-ww-primary/30 focus:border-ww-primary outline-none"
+                    />
+                  </div>
+                  <button
+                    onClick={handleSendMessage}
+                    disabled={!newMessage.trim()}
+                    className="self-end px-4 py-2 rounded-lg bg-ww-navy text-white text-sm font-medium hover:bg-ww-navy/90 disabled:opacity-40 disabled:cursor-not-allowed transition-colors flex items-center gap-1.5"
+                  >
+                    <Send size={14} />
+                    Send
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       )}
 

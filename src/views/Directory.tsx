@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Search, ChevronDown, ChevronRight, Plus, X, HelpCircle } from 'lucide-react'
+import { Search, ChevronDown, ChevronRight, Plus, X, HelpCircle, ExternalLink, Sparkles, Loader2, ChevronLeft } from 'lucide-react'
 import { WaiveIcon } from '@/components/WaiveIcon'
 import { store } from '@/data/store'
 import type { CustomerUser, WorkWaveProduct, IntegrationType, PartnerTier, Partner } from '@/data/types'
@@ -55,6 +55,11 @@ export function Directory({ activeUser, isReviewerView = false, hideHeader = fal
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedProduct, setSelectedProduct] = useState<WorkWaveProduct | ''>('')
   const [selectedIntegrationType, setSelectedIntegrationType] = useState<IntegrationType | ''>('')
+
+  // Partner detail panel state (customer view)
+  const [selectedPartner, setSelectedPartner] = useState<Partner | null>(null)
+  const [partnerSummary, setPartnerSummary] = useState<string | null>(null)
+  const [summaryLoading, setSummaryLoading] = useState(false)
 
   // Collapsed sections state (reviewer only)
   const [collapsedSections, setCollapsedSections] = useState<Record<PartnerTier, boolean>>({
@@ -111,7 +116,32 @@ export function Directory({ activeUser, isReviewerView = false, hideHeader = fal
     if (isReviewerView) {
       navigate(`/reviewer/partner/${partner.id}`)
     } else {
-      navigate(`/request/${partner.id}`)
+      setSelectedPartner(partner)
+      setPartnerSummary(null)
+      setSummaryLoading(false)
+    }
+  }
+
+  const generatePartnerSummary = async (partner: Partner) => {
+    setSummaryLoading(true)
+    try {
+      const res = await fetch('/api/ask', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          question: `Give me a customer-friendly overview of the integration partner "${partner.name}". They are a ${INTEGRATION_TYPE_LABELS[partner.integrationType]} integration partner supporting ${partner.productsSupported.map(p => PRODUCT_LABELS[p] ?? p).join(', ')}. Their website is ${partner.website}. Description: ${partner.description}. Include: what they do, how they integrate with WorkWave products, which industries they serve, and key benefits for customers. Keep it concise and informative.`,
+          page: 'directory',
+          role: 'customer',
+        }),
+      })
+      const data = await res.json()
+      if (res.ok) {
+        setPartnerSummary(data.answer)
+      }
+    } catch {
+      setPartnerSummary('Unable to generate summary at this time. Please try again later.')
+    } finally {
+      setSummaryLoading(false)
     }
   }
 
@@ -353,7 +383,143 @@ export function Directory({ activeUser, isReviewerView = false, hideHeader = fal
 
   // ── CUSTOMER VIEW ─────────────────────────────────────────────
 
+  // ── Partner detail panel (customer view) ─────────────────────
+
+  function renderPartnerDetail(partner: Partner) {
+    const initial = partner.name.charAt(0).toUpperCase()
+
+    return (
+      <div className="pb-12">
+        {/* Back button */}
+        <div className="pt-6 pb-4">
+          <button
+            onClick={() => { setSelectedPartner(null); setPartnerSummary(null) }}
+            className="flex items-center gap-1.5 text-sm text-ww-gray-500 hover:text-ww-primary transition-colors"
+          >
+            <ChevronLeft size={16} />
+            Back to directory
+          </button>
+        </div>
+
+        <div className="bg-white rounded-md border border-ww-gray-200 overflow-hidden">
+          {/* Partner header */}
+          <div className="px-6 py-6 border-b border-ww-gray-100">
+            <div className="flex items-start gap-4">
+              <div className="w-16 h-16 rounded-md bg-ww-sky flex items-center justify-center text-2xl font-bold font-mono text-ww-navy shrink-0">
+                {initial}
+              </div>
+              <div className="flex-1 min-w-0">
+                <h2 className="font-display text-xl font-bold text-ww-navy mb-1">
+                  {partner.name}
+                </h2>
+                <p className="text-sm text-ww-gray-500 leading-relaxed mb-3">
+                  {partner.description}
+                </p>
+                {partner.website && (
+                  <a
+                    href={partner.website}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 text-xs text-ww-primary hover:underline"
+                  >
+                    <ExternalLink size={12} />
+                    {partner.website}
+                  </a>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Partner metadata */}
+          <div className="px-6 py-4 border-b border-ww-gray-100">
+            <dl className="grid grid-cols-2 gap-x-8 gap-y-3">
+              <div>
+                <dt className="text-[10px] font-mono font-medium text-ww-gray-400 uppercase tracking-[0.08em] mb-1">Integration Type</dt>
+                <dd className="text-sm font-medium text-ww-gray-800">
+                  {INTEGRATION_TYPE_LABELS[partner.integrationType] ?? partner.integrationType}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-[10px] font-mono font-medium text-ww-gray-400 uppercase tracking-[0.08em] mb-1">Products Supported</dt>
+                <dd className="flex flex-wrap gap-1.5">
+                  {partner.productsSupported.map(product => (
+                    <span
+                      key={product}
+                      className="text-[11px] font-mono font-medium uppercase tracking-[0.05em] px-2 py-0.5 rounded-sm border border-ww-gray-200 text-ww-gray-600"
+                    >
+                      {PRODUCT_LABELS[product] ?? product}
+                    </span>
+                  ))}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-[10px] font-mono font-medium text-ww-gray-400 uppercase tracking-[0.08em] mb-1">Category</dt>
+                <dd className="text-sm font-medium text-ww-gray-800">{partner.category}</dd>
+              </div>
+              <div>
+                <dt className="text-[10px] font-mono font-medium text-ww-gray-400 uppercase tracking-[0.08em] mb-1">Status</dt>
+                <dd>
+                  <span className={`text-[10px] px-2 py-0.5 rounded font-semibold font-mono ${TIER_LABELS[partner.tier]?.color ?? 'bg-gray-100 text-gray-600'}`}>
+                    {TIER_LABELS[partner.tier]?.label ?? partner.tier}
+                  </span>
+                </dd>
+              </div>
+            </dl>
+          </div>
+
+          {/* AI Overview */}
+          <div className="px-6 py-5 border-b border-ww-gray-100">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-mono font-semibold text-ww-gray-900 uppercase tracking-[0.06em] flex items-center gap-2">
+                <Sparkles size={14} className="text-purple-500" />
+                AI Overview
+              </h3>
+              {!partnerSummary && !summaryLoading && (
+                <button
+                  onClick={() => generatePartnerSummary(partner)}
+                  className="text-xs font-medium text-purple-600 hover:text-purple-700 transition-colors flex items-center gap-1"
+                >
+                  <Sparkles size={12} />
+                  Generate
+                </button>
+              )}
+            </div>
+            {summaryLoading ? (
+              <div className="flex items-center gap-2 py-4">
+                <Loader2 size={16} className="text-purple-500 animate-spin" />
+                <span className="text-sm text-ww-gray-500">Generating partner overview...</span>
+              </div>
+            ) : partnerSummary ? (
+              <div className="text-sm text-ww-gray-700 leading-relaxed whitespace-pre-wrap bg-purple-50/50 rounded-md p-4 border border-purple-100">
+                {partnerSummary}
+              </div>
+            ) : (
+              <p className="text-sm text-ww-gray-400 italic">
+                Click "Generate" to get an AI-powered overview of this partner.
+              </p>
+            )}
+          </div>
+
+          {/* Request Access button */}
+          <div className="px-6 py-5">
+            <button
+              onClick={() => navigate(`/request/${partner.id}`)}
+              className="w-full px-5 py-3 rounded-lg bg-ww-primary text-white text-sm font-semibold hover:bg-ww-primary-light transition-colors flex items-center justify-center gap-2"
+            >
+              Request Access
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   if (!isReviewerView) {
+    // Show partner detail panel if one is selected
+    if (selectedPartner) {
+      return renderPartnerDetail(selectedPartner)
+    }
+
     return (
       <div className="pb-12">
         {!hideHeader && renderHeader()}
