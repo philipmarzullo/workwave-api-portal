@@ -311,11 +311,15 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
     return true
   }
 
+  // Partner requests on RealGreen/PestPac use tier-based provisioning — endpoint access is
+  // determined by the product team, not selected by the customer.
+  const isPartnerProvisioned = builderType === 'partner' && (selectedProduct === 'realgreen' || selectedProduct === 'pestpac')
+
   function isStep2Valid(): boolean {
     if (!connectingSystem.trim() && !partnerName.trim() && !partner) return false
     if (!useCase) return false
     if (!useCaseDetail.trim()) return false
-    if (dataRead.length === 0) return false
+    if (!isPartnerProvisioned && dataRead.length === 0) return false
     if (dataLeavesEnvironment === null) return false
     if (customerIntendToResell === null) return false
     if (!submitterCompany.trim() || !submitterTitle.trim()) return false
@@ -1046,80 +1050,118 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
           />
         </div>
 
-        {/* Data to READ */}
-        <div>
-          <label className="block text-sm font-semibold text-ww-gray-700 mb-1.5">
-            Data to READ <span className="text-ww-red">*</span>
-          </label>
-          <p className="text-xs text-ww-gray-500 mb-3">
-            Select all data categories this integration will need to read from WorkWave.
-          </p>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
-            {(selectedProduct && PRODUCT_DATA_CATEGORIES[selectedProduct] ? PRODUCT_DATA_CATEGORIES[selectedProduct] : ALL_DATA_CATEGORIES).map(cat => (
-              <label
-                key={`read-${cat}`}
-                className={`flex items-center gap-2.5 px-3.5 py-2.5 rounded-lg border cursor-pointer transition-all ${
-                  dataRead.includes(cat)
-                    ? 'border-ww-primary bg-ww-sky/30'
-                    : 'border-ww-gray-200 bg-white hover:border-ww-gray-300'
-                }`}
-              >
-                <input
-                  type="checkbox"
-                  checked={dataRead.includes(cat)}
-                  onChange={() => toggleDataRead(cat)}
-                  className="sr-only"
-                />
-                <CheckBox checked={dataRead.includes(cat)} />
-                <span
-                  className={`text-sm ${
-                    dataRead.includes(cat) ? 'text-ww-gray-800 font-medium' : 'text-ww-gray-700'
-                  }`}
-                >
-                  {DATA_CATEGORY_LABELS[cat] ?? cat}
-                </span>
-              </label>
-            ))}
+        {/* Data Access — conditional on provisioning model */}
+        {isPartnerProvisioned ? (
+          <div>
+            <label className="block text-sm font-semibold text-ww-gray-700 mb-2">
+              Data Access
+            </label>
+            <div className="bg-blue-50 border-l-4 border-blue-400 p-4 rounded-r-lg mb-4">
+              <div className="flex gap-3">
+                <Info size={18} className="text-blue-500 shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm font-medium text-blue-800 mb-1">
+                    Partner Endpoint Access
+                  </p>
+                  <p className="text-xs text-blue-700 leading-relaxed">
+                    For {selectedProduct === 'realgreen' ? 'RealGreen' : 'PestPac'}, partner API access is provisioned at a specific tier by the product team.
+                    Your partner will receive a key scoped to the endpoints approved for your integration. Describe your
+                    integration needs below and the team will determine the appropriate access level.
+                  </p>
+                </div>
+              </div>
+            </div>
+            <textarea
+              value={endpointsRequested}
+              onChange={e => setEndpointsRequested(e.target.value)}
+              placeholder="Describe what data you need to access and how your partner's integration will use it..."
+              rows={4}
+              className="w-full px-4 py-2.5 rounded-lg border border-ww-gray-300 text-sm text-ww-gray-800 placeholder:text-ww-gray-400 focus:outline-none focus:ring-2 focus:ring-ww-primary focus:border-transparent transition-shadow resize-none"
+            />
           </div>
-          {touched.dataRead && dataRead.length === 0 && renderError('Select at least one data category to read')}
-        </div>
+        ) : (
+          <>
+            {/* Data to READ */}
+            <div>
+              <label className="block text-sm font-semibold text-ww-gray-700 mb-1.5">
+                Data to READ <span className="text-ww-red">*</span>
+              </label>
+              <p className="text-xs text-ww-gray-500 mb-3">
+                Select all data categories this integration will need to read from WorkWave.
+                {(selectedProduct === 'realgreen' || selectedProduct === 'pestpac') && (
+                  <span className="block mt-1 text-blue-600">
+                    All published endpoints are available for non-partner integrations. Select the categories relevant to your use case.
+                  </span>
+                )}
+              </p>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+                {(selectedProduct && PRODUCT_DATA_CATEGORIES[selectedProduct] ? PRODUCT_DATA_CATEGORIES[selectedProduct] : ALL_DATA_CATEGORIES).map(cat => (
+                  <label
+                    key={`read-${cat}`}
+                    className={`flex items-center gap-2.5 px-3.5 py-2.5 rounded-lg border cursor-pointer transition-all ${
+                      dataRead.includes(cat)
+                        ? 'border-ww-primary bg-ww-sky/30'
+                        : 'border-ww-gray-200 bg-white hover:border-ww-gray-300'
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={dataRead.includes(cat)}
+                      onChange={() => toggleDataRead(cat)}
+                      className="sr-only"
+                    />
+                    <CheckBox checked={dataRead.includes(cat)} />
+                    <span
+                      className={`text-sm ${
+                        dataRead.includes(cat) ? 'text-ww-gray-800 font-medium' : 'text-ww-gray-700'
+                      }`}
+                    >
+                      {DATA_CATEGORY_LABELS[cat] ?? cat}
+                    </span>
+                  </label>
+                ))}
+              </div>
+              {touched.dataRead && dataRead.length === 0 && renderError('Select at least one data category to read')}
+            </div>
 
-        {/* Data to WRITE */}
-        <div>
-          <label className="block text-sm font-semibold text-ww-gray-700 mb-1.5">
-            Data to WRITE
-          </label>
-          <p className="text-xs text-ww-gray-500 mb-3">
-            Select all data categories this integration will need to write or update in WorkWave.
-          </p>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
-            {(selectedProduct && PRODUCT_DATA_CATEGORIES[selectedProduct] ? PRODUCT_DATA_CATEGORIES[selectedProduct] : ALL_DATA_CATEGORIES).map(cat => (
-              <label
-                key={`write-${cat}`}
-                className={`flex items-center gap-2.5 px-3.5 py-2.5 rounded-lg border cursor-pointer transition-all ${
-                  dataWrite.includes(cat)
-                    ? 'border-ww-primary bg-ww-sky/30'
-                    : 'border-ww-gray-200 bg-white hover:border-ww-gray-300'
-                }`}
-              >
-                <input
-                  type="checkbox"
-                  checked={dataWrite.includes(cat)}
-                  onChange={() => toggleDataWrite(cat)}
-                  className="sr-only"
-                />
-                <CheckBox checked={dataWrite.includes(cat)} />
-                <span
-                  className={`text-sm ${
-                    dataWrite.includes(cat) ? 'text-ww-gray-800 font-medium' : 'text-ww-gray-700'
-                  }`}
-                >
-                  {DATA_CATEGORY_LABELS[cat] ?? cat}
-                </span>
+            {/* Data to WRITE */}
+            <div>
+              <label className="block text-sm font-semibold text-ww-gray-700 mb-1.5">
+                Data to WRITE
               </label>
-            ))}
-          </div>
-        </div>
+              <p className="text-xs text-ww-gray-500 mb-3">
+                Select all data categories this integration will need to write or update in WorkWave.
+              </p>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+                {(selectedProduct && PRODUCT_DATA_CATEGORIES[selectedProduct] ? PRODUCT_DATA_CATEGORIES[selectedProduct] : ALL_DATA_CATEGORIES).map(cat => (
+                  <label
+                    key={`write-${cat}`}
+                    className={`flex items-center gap-2.5 px-3.5 py-2.5 rounded-lg border cursor-pointer transition-all ${
+                      dataWrite.includes(cat)
+                        ? 'border-ww-primary bg-ww-sky/30'
+                        : 'border-ww-gray-200 bg-white hover:border-ww-gray-300'
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={dataWrite.includes(cat)}
+                      onChange={() => toggleDataWrite(cat)}
+                      className="sr-only"
+                    />
+                    <CheckBox checked={dataWrite.includes(cat)} />
+                    <span
+                      className={`text-sm ${
+                        dataWrite.includes(cat) ? 'text-ww-gray-800 font-medium' : 'text-ww-gray-700'
+                      }`}
+                    >
+                      {DATA_CATEGORY_LABELS[cat] ?? cat}
+                    </span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          </>
+        )}
 
         {/* Data leaves environment */}
         <div>
