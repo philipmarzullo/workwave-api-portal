@@ -16,6 +16,9 @@ import {
   Lock,
   Radar,
   BookOpen,
+  HelpCircle,
+  Phone,
+  Mail,
 } from 'lucide-react'
 import { store } from '@/data/store'
 import type { ViewMode, CustomerUser } from '@/data/types'
@@ -322,7 +325,7 @@ export default function App() {
     <AuthGate>
     <div className="min-h-screen flex flex-col">
       {/* ── Nav bar — tight, structural ── */}
-      <header className="bg-ww-navy text-white sticky top-0 z-50 border-b border-white/5">
+      <header className={`text-white sticky top-0 z-50 border-b border-white/5 ${viewMode === 'reviewer' ? 'bg-[#1a1a2e]' : 'bg-ww-navy'}`}>
         <div className="w-full max-w-[1200px] mx-auto px-8">
           <div className="flex items-center justify-between h-12">
             {/* Logo */}
@@ -403,7 +406,11 @@ export default function App() {
 
               <button
                 onClick={toggleViewMode}
-                className="flex items-center gap-1.5 px-2.5 py-1 rounded text-[11px] font-mono uppercase tracking-wider transition-colors bg-white/8 hover:bg-white/15 text-white/70 hover:text-white"
+                className={`flex items-center gap-1.5 px-2.5 py-1 rounded text-[11px] font-mono uppercase tracking-wider transition-colors ${
+                  viewMode === 'reviewer'
+                    ? 'bg-amber-500/20 text-amber-300 hover:bg-amber-500/30 border border-amber-500/40'
+                    : 'bg-white/8 hover:bg-white/15 text-white/70 hover:text-white'
+                }`}
               >
                 {viewMode === 'customer' ? <Eye size={11} /> : <Users size={11} />}
                 {viewMode === 'customer' ? 'Customer' : 'Reviewer'}
@@ -440,6 +447,16 @@ export default function App() {
         </div>
       </header>
 
+      {/* Reviewer mode banner */}
+      {viewMode === 'reviewer' && (
+        <div className="bg-amber-500 text-amber-950">
+          <div className="w-full max-w-[1200px] mx-auto px-8 py-1.5 flex items-center justify-center gap-2 text-xs font-semibold tracking-wide">
+            <Eye size={12} />
+            REVIEWER MODE — Internal use only. Information on this screen is confidential.
+          </div>
+        </div>
+      )}
+
       {/* Main content */}
       <main className="flex-1" key={refreshKey}>
         <div className="w-full max-w-[1200px] mx-auto px-8">
@@ -463,6 +480,26 @@ export default function App() {
           </Routes>
         </div>
       </main>
+
+      {/* "Need help?" catch-all — customer mode only */}
+      {viewMode === 'customer' && (
+        <div className="border-t border-ww-gray-200 bg-ww-gray-50">
+          <div className="w-full max-w-[1200px] mx-auto px-8 py-4 flex items-center justify-center gap-6 text-sm text-ww-gray-600">
+            <div className="flex items-center gap-2">
+              <HelpCircle size={15} className="text-ww-primary" />
+              <span className="font-medium">Not finding what you need?</span>
+            </div>
+            <a href="tel:+18005555555" className="flex items-center gap-1.5 text-ww-primary hover:text-ww-navy transition-colors">
+              <Phone size={13} />
+              <span>1-800-555-5555</span>
+            </a>
+            <a href="mailto:api-support@workwave.com" className="flex items-center gap-1.5 text-ww-primary hover:text-ww-navy transition-colors">
+              <Mail size={13} />
+              <span>api-support@workwave.com</span>
+            </a>
+          </div>
+        </div>
+      )}
 
       {/* Footer — mono treatment */}
       <footer className="border-t border-ww-gray-200 py-5 mt-auto">

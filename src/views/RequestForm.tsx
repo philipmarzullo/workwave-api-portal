@@ -25,7 +25,7 @@ const ALL_USE_CASES: UseCase[] = [
   'sync_customer_data',
   'automate_scheduling',
   'financial_reporting',
-  'payment_processing',
+  // payment_processing excluded from customer-facing form per team feedback (WorkWave Payments conflict)
   'fleet_tracking',
   'marketing_automation',
   'hr_integration',
@@ -1580,7 +1580,7 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
                 that needs API access. This helps us authorize the correct environments.
               </p>
               <p className="text-blue-600">
-                You can find your database details in <strong>WinTeam &rarr; System Defaults</strong> — look for Database Name, Display Name, and Database Number.
+                You can find your database details in your product's admin settings (e.g., WinTeam System Defaults). Look for the database identifier or company key, display name, and database number.
               </p>
             </div>
           </div>
@@ -1605,13 +1605,13 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <div>
                       <label className="block text-xs font-medium text-ww-gray-600 mb-1">
-                        Database Name
+                        Database Identifier / Company Key
                       </label>
                       <input
                         type="text"
                         value={db.databaseName}
                         onChange={e => updateDatabase(db.id, 'databaseName', e.target.value)}
-                        placeholder="e.g. WT_TeamUniversity_1026_1"
+                        placeholder="e.g. WT_TeamUniversity_1026_1 or 130704"
                         className="w-full border border-ww-gray-300 rounded-md px-3 py-2 text-sm text-ww-gray-800 font-mono placeholder:text-ww-gray-400 focus:outline-none focus:ring-2 focus:ring-ww-primary/30 focus:border-ww-primary"
                       />
                     </div>

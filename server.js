@@ -400,7 +400,7 @@ When you have gathered enough to make a recommendation, do the following in your
   "product": "pestpac" | "realgreen" | "winteam",
   "builderType": "partner" | "internal_team" | "contractor",
   "connectingSystem": "string - what they are connecting to",
-  "useCase": "sync_customer_data" | "automate_scheduling" | "financial_reporting" | "payment_processing" | "fleet_tracking" | "marketing_automation" | "hr_integration" | "custom_reporting" | "mobile_app" | "other",
+  "useCase": "sync_customer_data" | "automate_scheduling" | "financial_reporting" | "fleet_tracking" | "marketing_automation" | "hr_integration" | "custom_reporting" | "mobile_app" | "other",
   "useCaseDetail": "string - 1-2 sentence description of what they want",
   "dataRead": ["customers", "appointments", "invoices", "payments", "employees", "routes", "inventory", "service_history", "estimates", "documents"],
   "dataWrite": [],

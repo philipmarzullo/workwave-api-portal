@@ -593,11 +593,65 @@ export function Directory({ activeUser, isReviewerView = false, hideHeader = fal
     )
   }
 
+  // ── Compact search + filters for embedded (hideHeader) mode ──
+
+  function renderCompactFilters() {
+    return (
+      <div className="flex flex-wrap items-center gap-3 pb-4 border-b border-ww-gray-200">
+        <div className="relative">
+          <Search
+            size={14}
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-ww-gray-400 pointer-events-none"
+          />
+          <input
+            type="text"
+            placeholder="Search partners..."
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            className="w-52 pl-9 pr-3 py-1.5 rounded-md border border-ww-gray-200 bg-white text-sm placeholder:text-ww-gray-400 focus:outline-none focus:ring-2 focus:ring-ww-primary/20 focus:border-ww-primary transition-colors"
+          />
+        </div>
+        <select
+          value={selectedProduct}
+          onChange={e => setSelectedProduct(e.target.value as WorkWaveProduct | '')}
+          className="px-3 py-1.5 rounded-md border border-ww-gray-200 bg-white text-[12px] font-mono uppercase tracking-wider text-ww-gray-600 focus:outline-none focus:ring-2 focus:ring-ww-primary/20 focus:border-ww-primary cursor-pointer"
+        >
+          <option value="">All Products</option>
+          {Object.entries(PRODUCT_LABELS).map(([value, label]) => (
+            <option key={value} value={value}>{label}</option>
+          ))}
+        </select>
+        <select
+          value={selectedIntegrationType}
+          onChange={e => setSelectedIntegrationType(e.target.value as IntegrationType | '')}
+          className="px-3 py-1.5 rounded-md border border-ww-gray-200 bg-white text-[12px] font-mono uppercase tracking-wider text-ww-gray-600 focus:outline-none focus:ring-2 focus:ring-ww-primary/20 focus:border-ww-primary cursor-pointer"
+        >
+          <option value="">All Types</option>
+          {availableIntegrationTypes.map(type => (
+            <option key={type} value={type}>{INTEGRATION_TYPE_LABELS[type]}</option>
+          ))}
+        </select>
+        {hasActiveFilters && (
+          <button
+            onClick={() => { setSelectedProduct(''); setSelectedIntegrationType('') }}
+            className="text-[11px] text-ww-gray-500 hover:text-ww-gray-700 transition-colors"
+          >
+            Clear filters
+          </button>
+        )}
+        <span className="ml-auto text-[11px] text-ww-gray-400 font-mono">
+          {filteredPartners.length} partner{filteredPartners.length !== 1 ? 's' : ''}
+        </span>
+      </div>
+    )
+  }
+
   // ── REVIEWER VIEW ─────────────────────────────────────────────
 
   return (
     <div className="pb-12">
       {!hideHeader && renderHeader()}
+      {hideHeader && renderCompactFilters()}
 
       {filteredPartners.length === 0 ? (
         renderEmpty()
