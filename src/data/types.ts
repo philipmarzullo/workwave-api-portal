@@ -189,7 +189,7 @@ export interface ApiRequest {
 
 export interface DatabaseEntry {
   id: string
-  databaseName: string    // database identifier / company key, e.g. "WT_TeamUniversity_1026_1" or "130704"
+  databaseName: string    // database identifier / company key, e.g. "DB_CompanyName_1026" or "130704"
   displayName: string     // friendly name, e.g. "Team University"
   databaseNumber: string  // e.g. "33"
 }

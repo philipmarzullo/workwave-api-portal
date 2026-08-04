@@ -1495,8 +1495,8 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
           <div className="flex items-start gap-2.5 mb-5 bg-blue-50 border border-blue-200 rounded-lg px-4 py-3">
             <Info size={16} className="text-ww-primary mt-0.5 shrink-0" />
             <p className="text-xs text-blue-800 leading-relaxed">
-              Sandbox approval is required before production access can be granted. We recommend
-              starting with Sandbox to validate your integration.
+              Sandbox approval is not required but is recommended to validate new integrations.
+              Additional fees may apply.
             </p>
           </div>
 
@@ -1611,7 +1611,7 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
                         type="text"
                         value={db.databaseName}
                         onChange={e => updateDatabase(db.id, 'databaseName', e.target.value)}
-                        placeholder="e.g. WT_TeamUniversity_1026_1 or 130704"
+                        placeholder="e.g. DB_CompanyName_1026 or 130704"
                         className="w-full border border-ww-gray-300 rounded-md px-3 py-2 text-sm text-ww-gray-800 font-mono placeholder:text-ww-gray-400 focus:outline-none focus:ring-2 focus:ring-ww-primary/30 focus:border-ww-primary"
                       />
                     </div>
