@@ -345,6 +345,7 @@ export const seedCustomers: Customer[] = [
   { id: 'cust-004', name: 'Titan Security Group', products: ['winteam', 'lighthouse'], plan: 'enterprise' },
   { id: 'cust-005', name: 'Marsden Holding', products: ['winteam', 'timegate_plus', 'lighthouse'], plan: 'enterprise' },
   { id: 'cust-006', name: 'Aantex Pest Control', products: ['pestpac'], plan: 'professional' },
+  { id: 'cust-007', name: 'Spring Green Lawn Care', products: ['realgreen'], plan: 'professional' },
 ]
 
 // ---------------------------------------------------------------------------
@@ -372,6 +373,9 @@ export const seedCustomerUsers: CustomerUser[] = [
 
   // cust-006: Aantex Pest Control
   { id: 'user-009', customerId: 'cust-006', name: 'Randy Aquino', email: 'randy@aantexpestcontrol.com', canRequestApi: true, role: 'Operations Manager' },
+
+  // cust-007: Spring Green Lawn Care
+  { id: 'user-010', customerId: 'cust-007', name: 'Lisa Morgan', email: 'lmorgan@springgreen.com', canRequestApi: true, role: 'Director of Operations' },
 ]
 
 // ---------------------------------------------------------------------------
