@@ -189,8 +189,9 @@ export interface ApiRequest {
 
 export interface DatabaseEntry {
   id: string
-  name: string            // e.g. "ABC Window Cleaning LLC"
-  description: string     // e.g. "Window cleaning division"
+  databaseName: string    // technical name, e.g. "WT_TeamUniversity_1026_1"
+  displayName: string     // friendly name, e.g. "Team University"
+  databaseNumber: string  // e.g. "33"
 }
 
 export interface ProvisioningStep {

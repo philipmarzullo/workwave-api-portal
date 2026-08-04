@@ -681,9 +681,12 @@ export function ReviewerRequestDetail({ onRefresh }: { onRefresh: () => void }) 
                   {request.databases.map(db => (
                     <div key={db.id} className="flex items-center gap-2 px-3 py-2 rounded-md bg-ww-gray-50 border border-ww-gray-200">
                       <Database size={14} className="text-ww-gray-400 shrink-0" />
-                      <span className="text-sm font-medium text-ww-gray-800">{db.name}</span>
-                      {db.description && (
-                        <span className="text-xs text-ww-gray-500">— {db.description}</span>
+                      <span className="text-sm font-medium text-ww-gray-800 font-mono">{db.databaseName || db.displayName}</span>
+                      {db.displayName && db.databaseName && (
+                        <span className="text-xs text-ww-gray-500">({db.displayName})</span>
+                      )}
+                      {db.databaseNumber && (
+                        <span className="bg-ww-gray-100 text-ww-gray-600 text-[10px] px-1.5 py-0.5 rounded font-mono">#{db.databaseNumber}</span>
                       )}
                     </div>
                   ))}

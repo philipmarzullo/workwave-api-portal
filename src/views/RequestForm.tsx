@@ -205,12 +205,12 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
 
   // Database helpers
   function addDatabase() {
-    setDatabases(prev => [...prev, { id: `db-${Date.now()}`, name: '', description: '' }])
+    setDatabases(prev => [...prev, { id: `db-${Date.now()}`, databaseName: '', displayName: '', databaseNumber: '' }])
   }
   function removeDatabase(id: string) {
     setDatabases(prev => prev.filter(db => db.id !== id))
   }
-  function updateDatabase(id: string, field: 'name' | 'description', value: string) {
+  function updateDatabase(id: string, field: 'databaseName' | 'displayName' | 'databaseNumber', value: string) {
     setDatabases(prev => prev.map(db => db.id === id ? { ...db, [field]: value } : db))
   }
 
@@ -412,7 +412,7 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
         migratingFrom: requestType === 'migration' ? (migratingFrom as LegacyAccessMethod) : null,
         customerIntendToResell,
         developerIntendToResell,
-        databases: databases.filter(db => db.name.trim()),
+        databases: databases.filter(db => db.databaseName.trim() || db.displayName.trim()),
       })
 
       store.signAgreement(newRequest.id)
@@ -1553,11 +1553,15 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
           </label>
           <div className="flex items-start gap-2.5 mb-4 bg-blue-50 border border-blue-200 rounded-lg px-4 py-3">
             <Database size={16} className="text-ww-primary mt-0.5 shrink-0" />
-            <p className="text-xs text-blue-800 leading-relaxed">
-              If your organization has multiple databases (e.g., separate LLCs or divisions), list each one
-              that needs API access. This helps us authorize the correct environments. If you only have one
-              database, you can add it here or skip this section.
-            </p>
+            <div className="text-xs text-blue-800 leading-relaxed">
+              <p className="mb-1">
+                If your organization has multiple databases (e.g., separate LLCs or divisions), list each one
+                that needs API access. This helps us authorize the correct environments.
+              </p>
+              <p className="text-blue-600">
+                You can find your database details in <strong>WinTeam &rarr; System Defaults</strong> — look for Database Name, Display Name, and Database Number.
+              </p>
+            </div>
           </div>
 
           {databases.length > 0 && (
@@ -1577,29 +1581,41 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
                       <Trash2 size={14} />
                     </button>
                   </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <div>
                       <label className="block text-xs font-medium text-ww-gray-600 mb-1">
-                        Database / Company Name
+                        Database Name
                       </label>
                       <input
                         type="text"
-                        value={db.name}
-                        onChange={e => updateDatabase(db.id, 'name', e.target.value)}
-                        placeholder="e.g. ABC Window Cleaning LLC"
+                        value={db.databaseName}
+                        onChange={e => updateDatabase(db.id, 'databaseName', e.target.value)}
+                        placeholder="e.g. WT_TeamUniversity_1026_1"
+                        className="w-full border border-ww-gray-300 rounded-md px-3 py-2 text-sm text-ww-gray-800 font-mono placeholder:text-ww-gray-400 focus:outline-none focus:ring-2 focus:ring-ww-primary/30 focus:border-ww-primary"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-ww-gray-600 mb-1">
+                        Display Name
+                      </label>
+                      <input
+                        type="text"
+                        value={db.displayName}
+                        onChange={e => updateDatabase(db.id, 'displayName', e.target.value)}
+                        placeholder="e.g. Team University"
                         className="w-full border border-ww-gray-300 rounded-md px-3 py-2 text-sm text-ww-gray-800 placeholder:text-ww-gray-400 focus:outline-none focus:ring-2 focus:ring-ww-primary/30 focus:border-ww-primary"
                       />
                     </div>
                     <div>
                       <label className="block text-xs font-medium text-ww-gray-600 mb-1">
-                        Description <span className="text-ww-gray-400">(optional)</span>
+                        Database Number
                       </label>
                       <input
                         type="text"
-                        value={db.description}
-                        onChange={e => updateDatabase(db.id, 'description', e.target.value)}
-                        placeholder="e.g. Commercial cleaning division"
-                        className="w-full border border-ww-gray-300 rounded-md px-3 py-2 text-sm text-ww-gray-800 placeholder:text-ww-gray-400 focus:outline-none focus:ring-2 focus:ring-ww-primary/30 focus:border-ww-primary"
+                        value={db.databaseNumber}
+                        onChange={e => updateDatabase(db.id, 'databaseNumber', e.target.value)}
+                        placeholder="e.g. 33"
+                        className="w-full border border-ww-gray-300 rounded-md px-3 py-2 text-sm text-ww-gray-800 font-mono placeholder:text-ww-gray-400 focus:outline-none focus:ring-2 focus:ring-ww-primary/30 focus:border-ww-primary"
                       />
                     </div>
                   </div>
@@ -1879,17 +1895,20 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
                 <span className="bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded font-medium">+ Production requested</span>
               </div>
             )}
-            {databases.filter(db => db.name.trim()).length > 0 && (
+            {databases.filter(db => db.databaseName.trim() || db.displayName.trim()).length > 0 && (
               <div className="py-2">
                 <div className="flex">
                   <span className="text-[13px] text-ww-gray-500 w-44 shrink-0">Databases</span>
-                  <div className="flex flex-col gap-1">
-                    {databases.filter(db => db.name.trim()).map(db => (
+                  <div className="flex flex-col gap-1.5">
+                    {databases.filter(db => db.databaseName.trim() || db.displayName.trim()).map(db => (
                       <div key={db.id} className="flex items-center gap-2">
                         <Database size={12} className="text-ww-gray-400 shrink-0" />
-                        <span className="text-sm text-ww-gray-800">{db.name}</span>
-                        {db.description.trim() && (
-                          <span className="text-xs text-ww-gray-500">— {db.description}</span>
+                        <span className="text-sm text-ww-gray-800 font-mono">{db.databaseName || db.displayName}</span>
+                        {db.displayName && db.databaseName && (
+                          <span className="text-xs text-ww-gray-500">({db.displayName})</span>
+                        )}
+                        {db.databaseNumber && (
+                          <span className="bg-ww-gray-100 text-ww-gray-600 text-[10px] px-1.5 py-0.5 rounded font-mono">#{db.databaseNumber}</span>
                         )}
                       </div>
                     ))}

@@ -465,9 +465,9 @@ export const seedRequests: ApiRequest[] = [
     holdPlacedBy: null,
     holdPlacedAt: null,
     databases: [
-      { id: 'db-001', name: 'Whelan Security Services LLC', description: 'Primary security services division' },
-      { id: 'db-002', name: 'Whelan Commercial Cleaning Inc', description: 'Commercial janitorial operations' },
-      { id: 'db-003', name: 'Whelan Facility Management', description: 'Facility management contracts' },
+      { id: 'db-001', databaseName: 'WT_WhelanSecurity_0847_1', displayName: 'Whelan Security Services', databaseNumber: '47' },
+      { id: 'db-002', databaseName: 'WT_WhelanCommercial_0847_2', displayName: 'Whelan Commercial Cleaning', databaseNumber: '48' },
+      { id: 'db-003', databaseName: 'WT_WhelanFacility_0847_3', displayName: 'Whelan Facility Management', databaseNumber: '49' },
     ],
     createdAt: '2026-01-08T14:22:00Z',
     updatedAt: '2026-02-01T11:30:00Z',
