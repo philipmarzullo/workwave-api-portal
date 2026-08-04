@@ -1,10 +1,11 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { Send, Loader2, X, Trash2, Sparkles, ArrowRight } from 'lucide-react'
+import { Send, Loader2, X, Trash2, Sparkles, ArrowRight, CheckCircle2 } from 'lucide-react'
 import { WaiveIcon } from '@/components/WaiveIcon'
-import type { ViewMode } from '@/data/types'
+import { store } from '@/data/store'
+import type { ViewMode, CustomerUser, DataCategory, WorkWaveProduct, BuilderType, UseCase } from '@/data/types'
 
-// ── Route → page key for server context ─────────────────────────
+// ── Route to page key for server context ─────────────────────────
 function pageKey(path: string): string {
   const map: Record<string, string> = {
     '/': 'customer-partners',
@@ -139,7 +140,7 @@ function suggestedQuestions(path: string, role: ViewMode): string[] {
   ]
 }
 
-// ── Simple markdown → JSX for WAIve responses ───────────────────
+// ── Simple markdown to JSX for WAIve responses ───────────────────
 function renderWaiveText(text: string) {
   // Split into lines, process each
   return text.split('\n').map((line, li) => {
@@ -164,7 +165,7 @@ function renderWaiveText(text: string) {
     }
 
     // Bullet lines
-    const bulletMatch = line.match(/^(\s*[-•]\s+)(.*)/)
+    const bulletMatch = line.match(/^(\s*[-\u2022]\s+)(.*)/)
     if (bulletMatch) {
       return <div key={li} className="flex gap-1.5 ml-1"><span className="text-[#6310D1] shrink-0">&#8226;</span><span>{parts.slice(1)}{parts.length <= 1 ? renderInlineParts(bulletMatch[2]) : null}</span></div>
     }
@@ -224,75 +225,73 @@ function detectNavActions(text: string, role: ViewMode): NavAction[] {
   return actions
 }
 
-// ── Wizard steps ────────────────────────────────────────────────
-interface WizardStep {
-  key: string
-  question: string
-  options: { value: string; label: string }[]
-  multi?: boolean
+// ── Wizard parsed request data ──────────────────────────────────
+interface WizardRequestData {
+  product: string
+  builderType: string
+  connectingSystem: string
+  useCase: string
+  useCaseDetail: string
+  dataRead: string[]
+  dataWrite: string[]
+  endpointsRequested: string
+  partnerName: string | null
+  partnerWebsite: string | null
+  partnerContact: string | null
+  targetTimeline: string
+  requestType: string
+  environment: string
 }
 
-const WIZARD_STEPS: WizardStep[] = [
-  {
-    key: 'product',
-    question: 'Which WorkWave product do you need API access to?',
-    options: [
-      { value: 'pestpac', label: 'PestPac' },
-      { value: 'realgreen', label: 'RealGreen' },
-      { value: 'winteam', label: 'WinTeam' },
-    ],
-  },
-  {
-    key: 'builderType',
-    question: 'Who will be building the integration?',
-    options: [
-      { value: 'partner', label: 'Integration Partner' },
-      { value: 'internal_team', label: 'Our Internal Team' },
-      { value: 'contractor', label: 'A Contractor' },
-    ],
-  },
-  {
-    key: 'useCase',
-    question: 'What\'s the primary use case for this integration?',
-    options: [
-      { value: 'sync_customer_data', label: 'Sync Customer Data' },
-      { value: 'automate_scheduling', label: 'Automate Scheduling' },
-      { value: 'financial_reporting', label: 'Financial Reporting' },
-      { value: 'payment_processing', label: 'Payment Processing' },
-      { value: 'marketing_automation', label: 'Marketing Automation' },
-      { value: 'hr_integration', label: 'HR Integration' },
-      { value: 'custom_reporting', label: 'Custom Reporting' },
-      { value: 'other', label: 'Something Else' },
-    ],
-  },
-  {
-    key: 'dataCategories',
-    question: 'What types of data will your integration need? Select all that apply.',
-    multi: true,
-    options: [
-      { value: 'customers', label: 'Customers' },
-      { value: 'appointments', label: 'Appointments' },
-      { value: 'invoices', label: 'Invoices' },
-      { value: 'payments', label: 'Payments' },
-      { value: 'employees', label: 'Employees' },
-      { value: 'routes', label: 'Routes' },
-      { value: 'service_history', label: 'Service History' },
-      { value: 'estimates', label: 'Estimates' },
-    ],
-  },
-  {
-    key: 'timeline',
-    question: 'When are you looking to go live?',
-    options: [
-      { value: 'asap', label: 'As soon as possible' },
-      { value: 'this_quarter', label: 'This quarter' },
-      { value: 'next_quarter', label: 'Next quarter' },
-      { value: 'exploring', label: 'Just exploring' },
-    ],
-  },
-]
+// ── Label maps for summary card ─────────────────────────────────
+const PRODUCT_DISPLAY: Record<string, string> = {
+  pestpac: 'PestPac',
+  realgreen: 'RealGreen',
+  winteam: 'WinTeam',
+}
 
-export function WaiveWidget({ viewMode }: { viewMode: ViewMode }) {
+const TIMELINE_DISPLAY: Record<string, string> = {
+  asap: 'As soon as possible',
+  this_quarter: 'This quarter',
+  next_quarter: 'Next quarter',
+  exploring: 'Just exploring',
+}
+
+const USE_CASE_DISPLAY: Record<string, string> = {
+  sync_customer_data: 'Sync Customer Data',
+  automate_scheduling: 'Automate Scheduling',
+  financial_reporting: 'Financial Reporting',
+  payment_processing: 'Payment Processing',
+  fleet_tracking: 'Fleet Tracking',
+  marketing_automation: 'Marketing Automation',
+  hr_integration: 'HR Integration',
+  custom_reporting: 'Custom Reporting',
+  mobile_app: 'Mobile App',
+  other: 'Other',
+}
+
+const BUILDER_DISPLAY: Record<string, string> = {
+  partner: 'Integration Partner',
+  internal_team: 'Internal Team',
+  contractor: 'Contractor',
+}
+
+// ── Valid type sets for safe casting ─────────────────────────────
+const VALID_PRODUCTS = new Set(['pestpac', 'realgreen', 'winteam'])
+const VALID_USE_CASES = new Set([
+  'sync_customer_data', 'automate_scheduling', 'financial_reporting',
+  'payment_processing', 'fleet_tracking', 'marketing_automation',
+  'hr_integration', 'custom_reporting', 'mobile_app', 'other',
+])
+const VALID_BUILDER_TYPES = new Set(['partner', 'internal_team', 'contractor'])
+const VALID_DATA_CATEGORIES = new Set([
+  'customers', 'appointments', 'invoices', 'payments', 'employees',
+  'routes', 'inventory', 'service_history', 'estimates', 'documents',
+])
+
+// ── Component ───────────────────────────────────────────────────
+
+export function WaiveWidget({ viewMode, activeUser }: { viewMode: ViewMode; activeUser?: CustomerUser }) {
   const location = useLocation()
   const navigate = useNavigate()
   const [open, setOpen] = useState(false)
@@ -304,84 +303,174 @@ export function WaiveWidget({ viewMode }: { viewMode: ViewMode }) {
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
 
-  // ── Wizard state ──
+  // ── Wizard state (AI-powered conversation) ──
   const [wizardActive, setWizardActive] = useState(false)
-  const [wizardStep, setWizardStep] = useState(0)
-  const [wizardAnswers, setWizardAnswers] = useState<Record<string, string | string[]>>({})
-  const [wizardMultiSelections, setWizardMultiSelections] = useState<string[]>([])
+  const [wizardMessages, setWizardMessages] = useState<{ role: 'user' | 'assistant'; content: string }[]>([])
+  const [wizardRequestData, setWizardRequestData] = useState<WizardRequestData | null>(null)
+  // wizardSummaryText is stored implicitly in the last wizard assistant message
+  const [wizardSubmitting, setWizardSubmitting] = useState(false)
+  const [wizardSubmitted, setWizardSubmitted] = useState(false)
 
-  const startWizard = () => {
+  // ── Parse wizard response for <<<SUBMIT_REQUEST>>> marker ──
+  const parseWizardResponse = (text: string): { displayText: string; requestData: WizardRequestData | null } => {
+    const marker = '<<<SUBMIT_REQUEST>>>'
+    const idx = text.indexOf(marker)
+    if (idx === -1) {
+      return { displayText: text, requestData: null }
+    }
+
+    const displayText = text.slice(0, idx).trim()
+    const jsonStr = text.slice(idx + marker.length).trim()
+
+    try {
+      // Try to extract JSON from the remaining text
+      const jsonStart = jsonStr.indexOf('{')
+      const jsonEnd = jsonStr.lastIndexOf('}')
+      if (jsonStart !== -1 && jsonEnd !== -1) {
+        const parsed = JSON.parse(jsonStr.slice(jsonStart, jsonEnd + 1))
+        return { displayText, requestData: parsed as WizardRequestData }
+      }
+    } catch (e) {
+      console.error('Failed to parse wizard JSON:', e)
+    }
+
+    return { displayText, requestData: null }
+  }
+
+  // ── Send wizard message ──
+  const sendWizardMessage = useCallback(async (userMessage: string) => {
+    const newMessages = [...wizardMessages, { role: 'user' as const, content: userMessage }]
+    setWizardMessages(newMessages)
+    setLoading(true)
+    setError(null)
+
+    try {
+      const res = await fetch('/api/ask', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          mode: 'wizard',
+          messages: newMessages.map(m => ({ role: m.role, content: m.content })),
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setError(data.error || 'Request failed')
+      } else {
+        const { displayText, requestData } = parseWizardResponse(data.answer)
+        const updatedMessages = [...newMessages, { role: 'assistant' as const, content: displayText }]
+        setWizardMessages(updatedMessages)
+        if (requestData) {
+          setWizardRequestData(requestData)
+        }
+        if (data.usage) setUsage(data.usage)
+      }
+    } catch {
+      setError('Failed to connect to server')
+    } finally {
+      setLoading(false)
+    }
+  }, [wizardMessages])
+
+  // ── Start wizard — kick off the conversation ──
+  const startWizard = useCallback(() => {
     setWizardActive(true)
-    setWizardStep(0)
-    setWizardAnswers({})
-    setWizardMultiSelections([])
+    setWizardMessages([])
+    setWizardRequestData(null)
+    setWizardSubmitting(false)
+    setWizardSubmitted(false)
     setMessages([])
     setError(null)
-  }
+    setQuestion('')
+  }, [])
 
-  const handleWizardSelect = (step: WizardStep, value: string) => {
-    if (step.multi) {
-      setWizardMultiSelections(prev =>
-        prev.includes(value) ? prev.filter(v => v !== value) : [...prev, value]
-      )
-      return
+  // After starting wizard, send the initial kickoff message
+  const wizardInitRef = useRef(false)
+  useEffect(() => {
+    if (wizardActive && wizardMessages.length === 0 && !loading && !wizardInitRef.current) {
+      wizardInitRef.current = true
+      sendWizardMessage('I want to request API access.')
     }
-    // Single select — advance
-    const label = step.options.find(o => o.value === value)?.label ?? value
-    setWizardAnswers(prev => ({ ...prev, [step.key]: value }))
-    setMessages(prev => [
-      ...prev,
-      { role: 'assistant', text: step.question },
-      { role: 'user', text: label },
-    ])
-    if (wizardStep < WIZARD_STEPS.length - 1) {
-      setWizardStep(s => s + 1)
-    } else {
-      finishWizard({ ...wizardAnswers, [step.key]: value })
+    if (!wizardActive) {
+      wizardInitRef.current = false
     }
-  }
-
-  const handleWizardMultiConfirm = (step: WizardStep) => {
-    if (wizardMultiSelections.length === 0) return
-    const labels = wizardMultiSelections.map(v => step.options.find(o => o.value === v)?.label ?? v)
-    setWizardAnswers(prev => ({ ...prev, [step.key]: wizardMultiSelections }))
-    setMessages(prev => [
-      ...prev,
-      { role: 'assistant', text: step.question },
-      { role: 'user', text: labels.join(', ') },
-    ])
-    const nextAnswers = { ...wizardAnswers, [step.key]: wizardMultiSelections }
-    setWizardMultiSelections([])
-    if (wizardStep < WIZARD_STEPS.length - 1) {
-      setWizardStep(s => s + 1)
-    } else {
-      finishWizard(nextAnswers)
-    }
-  }
-
-  const finishWizard = (answers: Record<string, string | string[]>) => {
-    setWizardActive(false)
-    // Build query params for request form pre-fill
-    const params = new URLSearchParams()
-    if (answers.product) params.set('product', answers.product as string)
-    if (answers.builderType) params.set('builder', answers.builderType as string)
-    if (answers.useCase) params.set('usecase', answers.useCase as string)
-    if (answers.timeline) params.set('timeline', answers.timeline as string)
-    if (Array.isArray(answers.dataCategories)) params.set('data', (answers.dataCategories as string[]).join(','))
-    const url = `/request?${params.toString()}`
-    setMessages(prev => [
-      ...prev,
-      { role: 'assistant', text: 'Great — I\'ve got everything I need! I\'ll take you to the request form with your selections pre-filled. You can review and adjust anything before submitting.' },
-    ])
-    // Short delay so they see the message before navigating
-    setTimeout(() => { navigate(url); setOpen(false) }, 1800)
-  }
+  }, [wizardActive, wizardMessages.length, loading, sendWizardMessage])
 
   const exitWizard = () => {
     setWizardActive(false)
-    setWizardStep(0)
-    setWizardAnswers({})
-    setWizardMultiSelections([])
+    setWizardMessages([])
+    setWizardRequestData(null)
+    setWizardSubmitting(false)
+    setWizardSubmitted(false)
+  }
+
+  // ── Submit the wizard request ──
+  const submitWizardRequest = async () => {
+    if (!wizardRequestData || !activeUser) return
+    setWizardSubmitting(true)
+
+    try {
+      const product = VALID_PRODUCTS.has(wizardRequestData.product)
+        ? wizardRequestData.product as WorkWaveProduct
+        : 'pestpac' as WorkWaveProduct
+      const useCase = VALID_USE_CASES.has(wizardRequestData.useCase)
+        ? wizardRequestData.useCase as UseCase
+        : 'other' as UseCase
+      const builderType = VALID_BUILDER_TYPES.has(wizardRequestData.builderType)
+        ? wizardRequestData.builderType as BuilderType
+        : 'internal_team' as BuilderType
+      const dataRead = (wizardRequestData.dataRead || []).filter(d => VALID_DATA_CATEGORIES.has(d)) as DataCategory[]
+      const dataWrite = (wizardRequestData.dataWrite || []).filter(d => VALID_DATA_CATEGORIES.has(d)) as DataCategory[]
+
+      const newRequest = store.createRequest({
+        customerId: activeUser.customerId,
+        requestedBy: activeUser.id,
+        partnerId: null,
+        partnerNameFreetext: wizardRequestData.partnerName || null,
+        partnerWebsite: wizardRequestData.partnerWebsite || null,
+        partnerContact: wizardRequestData.partnerContact || null,
+        product,
+        builderType,
+        connectingSystem: wizardRequestData.connectingSystem || '',
+        useCase,
+        useCaseDetail: wizardRequestData.useCaseDetail || '',
+        dataRead,
+        dataWrite,
+        dataLeavesEnvironment: true,
+        endpointsRequested: wizardRequestData.endpointsRequested || '',
+        thirdPartyTool: null,
+        thirdPartyToolUrl: null,
+        technicalContactName: null,
+        technicalContactEmail: null,
+        technicalContactPhone: null,
+        targetTimeline: wizardRequestData.targetTimeline || null,
+        environment: (wizardRequestData.environment === 'production' ? 'production' : 'sandbox') as 'sandbox' | 'production',
+        requestType: 'new_access',
+        migratingFrom: null,
+        customerIntendToResell: null,
+        developerIntendToResell: null,
+      })
+
+      setWizardSubmitted(true)
+      // Navigate to confirmation after a brief pause
+      setTimeout(() => {
+        navigate(`/confirmation/${newRequest.id}`)
+        setOpen(false)
+        exitWizard()
+      }, 1500)
+    } catch (e) {
+      console.error('Failed to create request:', e)
+      setError('Failed to submit request. Please try again.')
+      setWizardSubmitting(false)
+    }
+  }
+
+  // ── Handle wizard text input ──
+  const handleWizardInput = () => {
+    const text = question.trim()
+    if (!text || loading || wizardRequestData) return
+    setQuestion('')
+    sendWizardMessage(text)
   }
 
   // Clear conversation when navigating to a new page
@@ -399,11 +488,11 @@ export function WaiveWidget({ viewMode }: { viewMode: ViewMode }) {
     if (open && scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight
     }
-  }, [messages, open])
+  }, [messages, wizardMessages, open, wizardRequestData])
 
   useEffect(() => {
-    if (open && !wizardActive) setTimeout(() => inputRef.current?.focus(), 150)
-  }, [open, wizardActive])
+    if (open) setTimeout(() => inputRef.current?.focus(), 150)
+  }, [open])
 
   // Listen for external wizard trigger (from CTA buttons on other pages)
   useEffect(() => {
@@ -413,7 +502,7 @@ export function WaiveWidget({ viewMode }: { viewMode: ViewMode }) {
     }
     window.addEventListener('waive:start-wizard', handler)
     return () => window.removeEventListener('waive:start-wizard', handler)
-  }, [])
+  }, [startWizard])
 
   const ask = async (q?: string) => {
     const text = (q ?? question).trim()
@@ -451,6 +540,9 @@ export function WaiveWidget({ viewMode }: { viewMode: ViewMode }) {
   const friendly = pageName(location.pathname)
   const suggestions = suggestedQuestions(location.pathname, viewMode)
 
+  // ── Render wizard conversation messages (excluding the initial kickoff) ──
+  const visibleWizardMessages = wizardMessages.filter((_, i) => i > 0)  // skip "I want to request API access."
+
   return (
     <>
       {/* ── Floating WAIve button ── */}
@@ -482,7 +574,11 @@ export function WaiveWidget({ viewMode }: { viewMode: ViewMode }) {
                   <WaiveIcon size={20} className="brightness-0 invert" />
                   <div>
                     <span className="font-display font-bold text-[14px] tracking-tight">WAIve</span>
-                    <span className="text-[10px] font-mono text-white/50 ml-1.5 uppercase tracking-wider">{friendly}</span>
+                    {wizardActive ? (
+                      <span className="text-[10px] font-mono text-emerald-300 ml-1.5 uppercase tracking-wider">Guided Request</span>
+                    ) : (
+                      <span className="text-[10px] font-mono text-white/50 ml-1.5 uppercase tracking-wider">{friendly}</span>
+                    )}
                   </div>
                 </div>
                 <div className="flex items-center gap-0.5">
@@ -491,7 +587,7 @@ export function WaiveWidget({ viewMode }: { viewMode: ViewMode }) {
                       ${((usage.dailyBudgetCents - usage.dailySpentCents) / 100).toFixed(2)}
                     </span>
                   )}
-                  {messages.length > 0 && (
+                  {(messages.length > 0 || wizardMessages.length > 0) && !wizardActive && (
                     <button
                       onClick={clearChat}
                       className="p-1.5 rounded-lg text-white/50 hover:text-white hover:bg-white/10 transition-colors"
@@ -513,95 +609,140 @@ export function WaiveWidget({ viewMode }: { viewMode: ViewMode }) {
             {/* ── Chat area ── */}
             <div ref={scrollRef} className="flex-1 overflow-y-auto">
               {wizardActive ? (
-                /* ── Wizard mode ── */
-                <div className="px-5 py-4">
-                  {/* Progress bar */}
-                  <div className="flex items-center gap-1 mb-5">
-                    {WIZARD_STEPS.map((_, si) => (
-                      <div
-                        key={si}
-                        className={`h-1 flex-1 rounded-full transition-colors ${
-                          si < wizardStep ? 'bg-[#6310D1]'
-                            : si === wizardStep ? 'bg-[#6310D1]/60'
-                            : 'bg-ww-gray-200'
-                        }`}
-                      />
-                    ))}
-                  </div>
-
-                  {/* Previous answers */}
-                  {messages.length > 0 && (
-                    <div className="space-y-2 mb-4">
-                      {messages.map((msg, i) => (
-                        <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                          <div className={`max-w-[85%] rounded-2xl px-3 py-1.5 text-[12px] ${
+                /* ── AI Wizard mode ── */
+                <div className="px-4 py-3 space-y-3">
+                  {/* Conversation messages */}
+                  {visibleWizardMessages.map((msg, i) => (
+                    <div key={i}>
+                      <div className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                        <div
+                          className={`max-w-[85%] rounded-2xl px-3.5 py-2 text-[13px] leading-relaxed ${
                             msg.role === 'user'
                               ? 'bg-[#6310D1] text-white rounded-br-md'
-                              : 'bg-ww-gray-100 text-ww-gray-500 rounded-bl-md'
-                          }`}>
-                            {msg.text}
-                          </div>
+                              : 'bg-ww-gray-100 text-ww-gray-700 rounded-bl-md'
+                          }`}
+                        >
+                          {msg.role === 'assistant' && (
+                            <div className="flex items-center gap-1.5 mb-0.5">
+                              <WaiveIcon size={11} />
+                              <span className="text-[9px] font-semibold text-[#6310D1] uppercase tracking-wider">WAIve</span>
+                            </div>
+                          )}
+                          {msg.role === 'assistant'
+                            ? <div className="space-y-0.5">{renderWaiveText(msg.content)}</div>
+                            : <span className="whitespace-pre-wrap">{msg.content}</span>
+                          }
                         </div>
-                      ))}
+                      </div>
+                    </div>
+                  ))}
+
+                  {/* Loading indicator */}
+                  {loading && (
+                    <div className="flex justify-start">
+                      <div className="bg-ww-gray-100 rounded-2xl rounded-bl-md px-3.5 py-2.5 flex items-center gap-2">
+                        <Loader2 size={13} className="animate-spin text-[#6310D1]" />
+                        <span className="text-[13px] text-ww-gray-400">Thinking...</span>
+                      </div>
                     </div>
                   )}
 
-                  {/* Current step */}
-                  {wizardStep < WIZARD_STEPS.length && (() => {
-                    const step = WIZARD_STEPS[wizardStep]
-                    return (
-                      <div>
-                        <div className="flex items-start gap-2 mb-3">
-                          <div className="w-6 h-6 rounded-full bg-[#6310D1]/10 flex items-center justify-center shrink-0 mt-0.5">
-                            <Sparkles size={12} className="text-[#6310D1]" />
+                  {/* Summary card when request data is parsed */}
+                  {wizardRequestData && (
+                    <div className="mt-3">
+                      <div className="border border-[#6310D1]/20 rounded-xl bg-[#6310D1]/5 p-3.5">
+                        <div className="flex items-center gap-2 mb-3">
+                          <div className="w-6 h-6 rounded-full bg-[#6310D1]/10 flex items-center justify-center">
+                            <CheckCircle2 size={14} className="text-[#6310D1]" />
                           </div>
-                          <p className="text-[13px] text-ww-navy font-medium">{step.question}</p>
+                          <span className="text-[13px] font-semibold text-ww-navy">Request Summary</span>
                         </div>
-                        <div className={`space-y-1.5 ${step.multi ? 'ml-8' : 'ml-8'}`}>
-                          {step.options.map(opt => {
-                            const isSelected = step.multi
-                              ? wizardMultiSelections.includes(opt.value)
-                              : false
-                            return (
-                              <button
-                                key={opt.value}
-                                onClick={() => handleWizardSelect(step, opt.value)}
-                                className={`w-full text-left px-3.5 py-2 rounded-lg border text-[13px] transition-all ${
-                                  isSelected
-                                    ? 'border-[#6310D1] bg-[#6310D1]/10 text-[#6310D1] font-medium'
-                                    : 'border-ww-gray-200 text-ww-gray-600 hover:border-[#6310D1]/30 hover:bg-[#6310D1]/5 hover:text-[#6310D1]'
-                                }`}
-                              >
-                                {step.multi && (
-                                  <span className={`inline-block w-4 h-4 rounded border mr-2 align-middle text-center text-[10px] leading-4 ${
-                                    isSelected ? 'bg-[#6310D1] border-[#6310D1] text-white' : 'border-ww-gray-300'
-                                  }`}>
-                                    {isSelected ? '✓' : ''}
-                                  </span>
-                                )}
-                                {opt.label}
-                              </button>
-                            )
-                          })}
-                          {step.multi && wizardMultiSelections.length > 0 && (
-                            <button
-                              onClick={() => handleWizardMultiConfirm(step)}
-                              className="w-full mt-2 px-3.5 py-2 rounded-lg bg-[#6310D1] text-white text-[13px] font-medium hover:bg-[#5009B0] transition-colors flex items-center justify-center gap-1.5"
-                            >
-                              Continue
-                              <ArrowRight size={12} />
-                            </button>
+
+                        <div className="space-y-2 text-[12px]">
+                          <div className="flex justify-between">
+                            <span className="text-ww-gray-500">Product</span>
+                            <span className="font-medium text-ww-navy">{PRODUCT_DISPLAY[wizardRequestData.product] || wizardRequestData.product}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-ww-gray-500">Use Case</span>
+                            <span className="font-medium text-ww-navy">{USE_CASE_DISPLAY[wizardRequestData.useCase] || wizardRequestData.useCase}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-ww-gray-500">Builder</span>
+                            <span className="font-medium text-ww-navy">{BUILDER_DISPLAY[wizardRequestData.builderType] || wizardRequestData.builderType}</span>
+                          </div>
+                          {wizardRequestData.partnerName && (
+                            <div className="flex justify-between">
+                              <span className="text-ww-gray-500">Partner</span>
+                              <span className="font-medium text-ww-navy">{wizardRequestData.partnerName}</span>
+                            </div>
                           )}
+                          <div className="flex justify-between">
+                            <span className="text-ww-gray-500">Connecting To</span>
+                            <span className="font-medium text-ww-navy">{wizardRequestData.connectingSystem}</span>
+                          </div>
+                          {wizardRequestData.dataRead.length > 0 && (
+                            <div>
+                              <span className="text-ww-gray-500">Data Categories</span>
+                              <div className="flex flex-wrap gap-1 mt-1">
+                                {wizardRequestData.dataRead.map(d => (
+                                  <span key={d} className="px-2 py-0.5 rounded-full bg-white text-[11px] text-ww-gray-600 border border-ww-gray-200">{d}</span>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                          {wizardRequestData.endpointsRequested && (
+                            <div>
+                              <span className="text-ww-gray-500">Recommended Endpoints</span>
+                              <p className="text-[11px] text-ww-navy mt-0.5 leading-relaxed">{wizardRequestData.endpointsRequested}</p>
+                            </div>
+                          )}
+                          <div className="flex justify-between">
+                            <span className="text-ww-gray-500">Timeline</span>
+                            <span className="font-medium text-ww-navy">{TIMELINE_DISPLAY[wizardRequestData.targetTimeline] || wizardRequestData.targetTimeline}</span>
+                          </div>
                         </div>
-                        <button
-                          onClick={exitWizard}
-                          className="mt-4 text-[11px] text-ww-gray-400 hover:text-ww-gray-600 transition-colors ml-8"
-                        >
-                          Exit wizard & ask freely
-                        </button>
+
+                        {/* Submit button */}
+                        {!wizardSubmitted ? (
+                          <button
+                            onClick={submitWizardRequest}
+                            disabled={wizardSubmitting || !activeUser}
+                            className="w-full mt-4 px-3.5 py-2.5 rounded-lg bg-[#6310D1] text-white text-[13px] font-medium hover:bg-[#5009B0] disabled:opacity-40 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
+                          >
+                            {wizardSubmitting ? (
+                              <>
+                                <Loader2 size={14} className="animate-spin" />
+                                Submitting...
+                              </>
+                            ) : !activeUser ? (
+                              'Sign in to submit'
+                            ) : (
+                              <>
+                                <ArrowRight size={14} />
+                                Submit Request
+                              </>
+                            )}
+                          </button>
+                        ) : (
+                          <div className="w-full mt-4 px-3.5 py-2.5 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 text-[13px] font-medium text-center flex items-center justify-center gap-2">
+                            <CheckCircle2 size={14} />
+                            Request submitted! Redirecting...
+                          </div>
+                        )}
                       </div>
-                    )
-                  })()}
+                    </div>
+                  )}
+
+                  {/* Exit wizard link */}
+                  {!wizardRequestData && !loading && (
+                    <button
+                      onClick={exitWizard}
+                      className="text-[11px] text-ww-gray-400 hover:text-ww-gray-600 transition-colors"
+                    >
+                      Exit guided request
+                    </button>
+                  )}
                 </div>
               ) : messages.length === 0 ? (
                 /* ── Empty state: branded welcome + suggestions ── */
@@ -709,15 +850,33 @@ export function WaiveWidget({ viewMode }: { viewMode: ViewMode }) {
                   value={question}
                   onChange={e => setQuestion(e.target.value)}
                   onKeyDown={e => {
-                    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); ask() }
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault()
+                      if (wizardActive) {
+                        handleWizardInput()
+                      } else {
+                        ask()
+                      }
+                    }
                   }}
-                  placeholder={messages.length > 0 ? 'Ask a follow-up...' : `Ask about ${friendly.toLowerCase()}...`}
+                  placeholder={
+                    wizardActive
+                      ? (wizardRequestData ? 'Request ready to submit' : 'Type your answer...')
+                      : (messages.length > 0 ? 'Ask a follow-up...' : `Ask about ${friendly.toLowerCase()}...`)
+                  }
+                  disabled={wizardActive && !!wizardRequestData}
                   rows={1}
-                  className="flex-1 resize-none text-[13px] border border-ww-gray-200 rounded-full px-3.5 py-2 focus:ring-2 focus:ring-[#6310D1]/20 focus:border-[#6310D1]/40 outline-none"
+                  className="flex-1 resize-none text-[13px] border border-ww-gray-200 rounded-full px-3.5 py-2 focus:ring-2 focus:ring-[#6310D1]/20 focus:border-[#6310D1]/40 outline-none disabled:bg-ww-gray-50 disabled:text-ww-gray-400"
                 />
                 <button
-                  onClick={() => ask()}
-                  disabled={!question.trim() || loading}
+                  onClick={() => {
+                    if (wizardActive) {
+                      handleWizardInput()
+                    } else {
+                      ask()
+                    }
+                  }}
+                  disabled={!question.trim() || loading || (wizardActive && !!wizardRequestData)}
                   className="w-9 h-9 rounded-full bg-[#6310D1] text-white hover:bg-[#5009B0] disabled:opacity-40 disabled:cursor-not-allowed transition-colors flex items-center justify-center shrink-0"
                 >
                   <Send size={13} />

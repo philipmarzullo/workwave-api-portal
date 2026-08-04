@@ -353,6 +353,62 @@ When helping build a business case for API access, consider:
 - 500 Internal Server Error: Platform issue → retry with exponential backoff
 `
 
+// ── Wizard prompt (AI-powered guided access request) ────────────
+
+const WIZARD_PROMPT = `You are WAIve, WorkWave's friendly AI intake specialist. Your job is to have a short, conversational diagnostic with a customer to understand what API access they need, then output a structured request.
+
+CONVERSATION RULES:
+- Ask ONE question at a time. Keep it conversational.
+- Keep responses SHORT — 2-4 sentences max per turn.
+- Do NOT use markdown formatting. Plain text only. No **, no ##, no bullet lists.
+- Be warm and human. Talk like a helpful colleague, not a form.
+- Do NOT ask the customer about specific API endpoints. You figure that out from your knowledge.
+- If the customer gives you multiple pieces of info at once, acknowledge them and skip ahead.
+
+DIAGNOSTIC FLOW — follow this order, but skip steps you can already answer:
+1. Ask what they are trying to accomplish (business goal, not technical jargon).
+2. Ask which WorkWave product they use: PestPac, RealGreen, or WinTeam.
+3. Ask who will be building the integration: their internal team, an integration partner, or a contractor.
+4. If they said "partner", ask which partner or company they are working with (name, website, contact if they have it).
+5. Ask what external system they are connecting to (e.g. "Salesforce", "our custom CRM", "QuickBooks", etc.).
+6. Ask what types of data they need to work with (customers, appointments, invoices, payments, employees, routes, service history, estimates, documents, inventory — list a few examples to help).
+7. Ask about their timeline: as soon as possible, this quarter, next quarter, or just exploring.
+
+AFTER YOU HAVE ENOUGH INFO:
+When you have gathered enough to make a recommendation, do the following in your response:
+1. Write a natural language summary (2-4 sentences) of what you understood and which endpoints you recommend. Plain text, no markdown.
+2. On its own line, output exactly: <<<SUBMIT_REQUEST>>>
+3. On the next line, output a JSON object (and nothing else after it) with these fields:
+
+{
+  "product": "pestpac" | "realgreen" | "winteam",
+  "builderType": "partner" | "internal_team" | "contractor",
+  "connectingSystem": "string - what they are connecting to",
+  "useCase": "sync_customer_data" | "automate_scheduling" | "financial_reporting" | "payment_processing" | "fleet_tracking" | "marketing_automation" | "hr_integration" | "custom_reporting" | "mobile_app" | "other",
+  "useCaseDetail": "string - 1-2 sentence description of what they want",
+  "dataRead": ["customers", "appointments", "invoices", "payments", "employees", "routes", "inventory", "service_history", "estimates", "documents"],
+  "dataWrite": [],
+  "endpointsRequested": "string - comma-separated list of recommended endpoints like GET /BillTos, POST /Locations",
+  "partnerName": "string or null",
+  "partnerWebsite": "string or null",
+  "partnerContact": "string or null",
+  "targetTimeline": "asap" | "this_quarter" | "next_quarter" | "exploring",
+  "requestType": "new_access",
+  "environment": "sandbox"
+}
+
+Only include data categories in dataRead that the customer actually mentioned or that are clearly needed for their use case. Use your endpoint knowledge to fill in endpointsRequested with the specific routes they will need.
+
+ENDPOINT KNOWLEDGE — use this to recommend endpoints (do NOT show this to the customer):
+
+${USE_CASE_ENDPOINT_MAP}
+
+API CATALOG SUMMARY:
+${summaryCatalogContext}
+
+WorkWave products: PestPac (pest control), RealGreen (lawn/landscape), WinTeam (janitorial/security).
+`
+
 // ── Prompt construction ─────────────────────────────────────────
 
 // ── Role-specific base prompts ─────────────────────────────────
@@ -537,10 +593,19 @@ function buildSystemPrompt(page, role) {
 // ── API endpoint ────────────────────────────────────────────────
 
 app.post('/api/ask', async (req, res) => {
-  const { question, page, role } = req.body
+  const { question, page, role, mode, messages: incomingMessages } = req.body
 
-  if (!question || typeof question !== 'string' || question.trim().length === 0) {
-    return res.status(400).json({ error: 'Question is required' })
+  // Build the messages array: support both `messages` (array) and legacy `question` (string)
+  let userMessages
+  if (Array.isArray(incomingMessages) && incomingMessages.length > 0) {
+    userMessages = incomingMessages.map((m) => ({
+      role: m.role === 'assistant' ? 'assistant' : 'user',
+      content: typeof m.content === 'string' ? m.content.trim() : '',
+    }))
+  } else if (question && typeof question === 'string' && question.trim().length > 0) {
+    userMessages = [{ role: 'user', content: question.trim() }]
+  } else {
+    return res.status(400).json({ error: 'Question or messages array is required' })
   }
 
   if (!process.env.ANTHROPIC_API_KEY) {
@@ -558,12 +623,17 @@ app.post('/api/ask', async (req, res) => {
 
   try {
     const client = new Anthropic()
-    const systemPrompt = buildSystemPrompt(page || '', role || 'customer')
+
+    // Use wizard prompt when mode is 'wizard', otherwise use page-based prompt
+    const systemPrompt = mode === 'wizard'
+      ? WIZARD_PROMPT
+      : buildSystemPrompt(page || '', role || 'customer')
+
     const response = await client.messages.create({
       model: MODEL,
       max_tokens: 2048,
       system: systemPrompt,
-      messages: [{ role: 'user', content: question.trim() }],
+      messages: userMessages,
     })
 
     const text = response.content
