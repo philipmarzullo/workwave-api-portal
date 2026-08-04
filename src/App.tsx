@@ -17,8 +17,6 @@ import {
   Radar,
   BookOpen,
   HelpCircle,
-  Phone,
-  Mail,
 } from 'lucide-react'
 import { store } from '@/data/store'
 import type { ViewMode, CustomerUser } from '@/data/types'
@@ -489,13 +487,8 @@ export default function App() {
               <HelpCircle size={15} className="text-ww-primary" />
               <span className="font-medium">Not finding what you need?</span>
             </div>
-            <a href="tel:+18005555555" className="flex items-center gap-1.5 text-ww-primary hover:text-ww-navy transition-colors">
-              <Phone size={13} />
-              <span>1-800-555-5555</span>
-            </a>
-            <a href="mailto:api-support@workwave.com" className="flex items-center gap-1.5 text-ww-primary hover:text-ww-navy transition-colors">
-              <Mail size={13} />
-              <span>api-support@workwave.com</span>
+            <a href="https://www.workwave.com/support" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-ww-primary hover:text-ww-navy transition-colors font-medium">
+              workwave.com/support
             </a>
           </div>
         </div>

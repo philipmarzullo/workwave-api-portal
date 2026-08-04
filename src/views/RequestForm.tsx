@@ -75,6 +75,61 @@ const TIMELINE_OPTIONS: { value: string; label: string }[] = [
   { value: 'exploring', label: 'Just exploring' },
 ]
 
+// ── Partner + product auto-fill defaults (for listed partners) ──────────
+interface PartnerProductDefaults {
+  useCase: UseCase
+  useCaseDetail: string
+  endpointsRequested: string
+  dataRead: DataCategory[]
+  dataLeavesEnvironment: boolean
+  customerIntendToResell: boolean
+  developerIntendToResell: boolean
+}
+
+// Keyed by partnerId → productId → defaults
+const PARTNER_PRODUCT_DEFAULTS: Record<string, Record<string, PartnerProductDefaults>> = {
+  'partner-020': { // Applause
+    realgreen: {
+      useCase: 'sync_customer_data',
+      useCaseDetail: 'Applause connects to RealGreen to sync customer data and service information, enabling automated review requests and customer engagement workflows.',
+      endpointsRequested: 'GET /Customer, GET /Program, GET /Service, GET /DoneBy, POST /CallLog',
+      dataRead: ['customers', 'appointments', 'service_history'],
+      dataLeavesEnvironment: true,
+      customerIntendToResell: false,
+      developerIntendToResell: false,
+    },
+    pestpac: {
+      useCase: 'sync_customer_data',
+      useCaseDetail: 'Applause connects to PestPac to sync customer data and service records, enabling automated review requests and customer engagement workflows.',
+      endpointsRequested: 'GET /Customer, GET /ServiceSetup, GET /ServiceOrder, POST /CallLog',
+      dataRead: ['customers', 'appointments', 'service_history'],
+      dataLeavesEnvironment: true,
+      customerIntendToResell: false,
+      developerIntendToResell: false,
+    },
+  },
+  'partner-021': { // Captivated
+    realgreen: {
+      useCase: 'sync_customer_data',
+      useCaseDetail: 'Captivated connects to RealGreen to sync customer contact data, enabling SMS/MMS communication for appointment reminders and follow-ups.',
+      endpointsRequested: 'GET /Customer, GET /Program, POST /CallLog',
+      dataRead: ['customers', 'appointments'],
+      dataLeavesEnvironment: true,
+      customerIntendToResell: false,
+      developerIntendToResell: false,
+    },
+    pestpac: {
+      useCase: 'sync_customer_data',
+      useCaseDetail: 'Captivated connects to PestPac to sync customer contact data, enabling SMS/MMS communication for appointment reminders and follow-ups.',
+      endpointsRequested: 'GET /Customer, GET /ServiceSetup, POST /CallLog',
+      dataRead: ['customers', 'appointments'],
+      dataLeavesEnvironment: true,
+      customerIntendToResell: false,
+      developerIntendToResell: false,
+    },
+  },
+}
+
 // ── Touched state type ─────────────────────────────────────────
 type TouchedFields = {
   partnerName: boolean
@@ -156,8 +211,8 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
   const [partnerContact, setPartnerContact] = useState('')
   const [partnerContactName, setPartnerContactName] = useState('')
   const [selectedProduct, setSelectedProduct] = useState<WorkWaveProduct | ''>(prefillProduct ?? '')
-  const [builderType, setBuilderType] = useState<BuilderType | ''>(selfBuild ? 'internal_team' : (prefillBuilder ?? ''))
-  const [requestType, setRequestType] = useState<RequestType | ''>('')
+  const [builderType, setBuilderType] = useState<BuilderType | ''>(selfBuild ? 'internal_team' : partner ? 'partner' : (prefillBuilder ?? ''))
+  const [requestType, setRequestType] = useState<RequestType | ''>(partner ? 'new_access' : '')
   const [migratingFrom, setMigratingFrom] = useState<LegacyAccessMethod | ''>('')
   const [existingCaseNumber, setExistingCaseNumber] = useState('')
 
@@ -212,6 +267,20 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
   }
   function updateDatabase(id: string, field: 'databaseName' | 'displayName' | 'databaseNumber', value: string) {
     setDatabases(prev => prev.map(db => db.id === id ? { ...db, [field]: value } : db))
+  }
+
+  // ── Auto-fill from partner+product defaults ─────────────────
+  function applyPartnerDefaults(product: WorkWaveProduct) {
+    if (!partner) return
+    const defaults = PARTNER_PRODUCT_DEFAULTS[partner.id]?.[product]
+    if (!defaults) return
+    setUseCase(defaults.useCase)
+    setUseCaseDetail(defaults.useCaseDetail)
+    setEndpointsRequested(defaults.endpointsRequested)
+    setDataRead(defaults.dataRead)
+    setDataLeavesEnvironment(defaults.dataLeavesEnvironment)
+    setCustomerIntendToResell(defaults.customerIntendToResell)
+    setDeveloperIntendToResell(defaults.developerIntendToResell)
   }
 
   // Step 4: Terms
@@ -714,6 +783,7 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
                   onChange={() => {
                     setSelectedProduct(product)
                     touch('selectedProduct')
+                    applyPartnerDefaults(product)
                   }}
                   className="sr-only"
                 />
