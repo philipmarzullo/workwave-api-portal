@@ -674,6 +674,22 @@ export function ReviewerRequestDetail({ onRefresh }: { onRefresh: () => void }) 
                 <span className="text-sm font-medium text-red-700">Data will leave the customer environment</span>
               </div>
             )}
+            {request.databases && request.databases.length > 0 && (
+              <div className="mt-4 pt-4 border-t border-ww-gray-200">
+                <p className="text-xs text-ww-gray-400 font-medium font-mono uppercase tracking-wide mb-2">Databases to Authorize</p>
+                <div className="space-y-2">
+                  {request.databases.map(db => (
+                    <div key={db.id} className="flex items-center gap-2 px-3 py-2 rounded-md bg-ww-gray-50 border border-ww-gray-200">
+                      <Database size={14} className="text-ww-gray-400 shrink-0" />
+                      <span className="text-sm font-medium text-ww-gray-800">{db.name}</span>
+                      {db.description && (
+                        <span className="text-xs text-ww-gray-500">— {db.description}</span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Provisioning Checklist — visible for approved requests */}

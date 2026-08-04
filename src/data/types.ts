@@ -181,8 +181,16 @@ export interface ApiRequest {
   holdReason: string | null           // why the request is on hold
   holdPlacedBy: string | null         // who placed the hold
   holdPlacedAt: string | null         // when hold was placed
+  // Database information — clients may have multiple databases (e.g., separate LLCs)
+  databases: DatabaseEntry[]
   createdAt: string
   updatedAt: string
+}
+
+export interface DatabaseEntry {
+  id: string
+  name: string            // e.g. "ABC Window Cleaning LLC"
+  description: string     // e.g. "Window cleaning division"
 }
 
 export interface ProvisioningStep {

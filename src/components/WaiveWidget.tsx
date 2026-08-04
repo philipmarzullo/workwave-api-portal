@@ -452,6 +452,7 @@ export function WaiveWidget({ viewMode, activeUser }: { viewMode: ViewMode; acti
         migratingFrom: null,
         customerIntendToResell: null,
         developerIntendToResell: null,
+        databases: [],
       })
 
       setWizardSubmitted(true)

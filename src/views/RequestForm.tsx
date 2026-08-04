@@ -4,8 +4,9 @@ import {
   Lock, ChevronRight, ChevronLeft, CheckCircle2,
   Building2, Settings2, Server, FileCheck,
   Send, Globe, Mail, AlertTriangle, ExternalLink, Info, Phone, Swords,
+  Plus, Trash2, Database,
 } from 'lucide-react'
-import type { CustomerUser, WorkWaveProduct, BuilderType, UseCase, DataCategory, Environment, RequestType, LegacyAccessMethod } from '@/data/types'
+import type { CustomerUser, WorkWaveProduct, BuilderType, UseCase, DataCategory, Environment, RequestType, LegacyAccessMethod, DatabaseEntry } from '@/data/types'
 import { store } from '@/data/store'
 import { PRODUCT_LABELS, TIER_LABELS, USE_CASE_LABELS, DATA_CATEGORY_LABELS, REQUEST_TYPE_LABELS, LEGACY_METHOD_LABELS } from '@/App'
 
@@ -200,6 +201,18 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
   // Step 3: Environment
   const [environment, setEnvironment] = useState<Environment | ''>('')
   const [alsoRequestProduction, setAlsoRequestProduction] = useState(false)
+  const [databases, setDatabases] = useState<DatabaseEntry[]>([])
+
+  // Database helpers
+  function addDatabase() {
+    setDatabases(prev => [...prev, { id: `db-${Date.now()}`, name: '', description: '' }])
+  }
+  function removeDatabase(id: string) {
+    setDatabases(prev => prev.filter(db => db.id !== id))
+  }
+  function updateDatabase(id: string, field: 'name' | 'description', value: string) {
+    setDatabases(prev => prev.map(db => db.id === id ? { ...db, [field]: value } : db))
+  }
 
   // Step 4: Terms
   const [termsAccepted, setTermsAccepted] = useState(false)
@@ -399,6 +412,7 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
         migratingFrom: requestType === 'migration' ? (migratingFrom as LegacyAccessMethod) : null,
         customerIntendToResell,
         developerIntendToResell,
+        databases: databases.filter(db => db.name.trim()),
       })
 
       store.signAgreement(newRequest.id)
@@ -1531,6 +1545,78 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
             </label>
           )}
         </div>
+
+        {/* Database Information */}
+        <div>
+          <label className="block text-sm font-semibold text-ww-gray-700 mb-2">
+            Database Information
+          </label>
+          <div className="flex items-start gap-2.5 mb-4 bg-blue-50 border border-blue-200 rounded-lg px-4 py-3">
+            <Database size={16} className="text-ww-primary mt-0.5 shrink-0" />
+            <p className="text-xs text-blue-800 leading-relaxed">
+              If your organization has multiple databases (e.g., separate LLCs or divisions), list each one
+              that needs API access. This helps us authorize the correct environments. If you only have one
+              database, you can add it here or skip this section.
+            </p>
+          </div>
+
+          {databases.length > 0 && (
+            <div className="space-y-3 mb-4">
+              {databases.map((db, idx) => (
+                <div key={db.id} className="border border-ww-gray-200 rounded-lg p-4 bg-white">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-xs font-semibold text-ww-gray-500 uppercase tracking-wide">
+                      Database {idx + 1}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => removeDatabase(db.id)}
+                      className="text-ww-gray-400 hover:text-red-500 transition-colors"
+                      title="Remove database"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs font-medium text-ww-gray-600 mb-1">
+                        Database / Company Name
+                      </label>
+                      <input
+                        type="text"
+                        value={db.name}
+                        onChange={e => updateDatabase(db.id, 'name', e.target.value)}
+                        placeholder="e.g. ABC Window Cleaning LLC"
+                        className="w-full border border-ww-gray-300 rounded-md px-3 py-2 text-sm text-ww-gray-800 placeholder:text-ww-gray-400 focus:outline-none focus:ring-2 focus:ring-ww-primary/30 focus:border-ww-primary"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-ww-gray-600 mb-1">
+                        Description <span className="text-ww-gray-400">(optional)</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={db.description}
+                        onChange={e => updateDatabase(db.id, 'description', e.target.value)}
+                        placeholder="e.g. Commercial cleaning division"
+                        className="w-full border border-ww-gray-300 rounded-md px-3 py-2 text-sm text-ww-gray-800 placeholder:text-ww-gray-400 focus:outline-none focus:ring-2 focus:ring-ww-primary/30 focus:border-ww-primary"
+                      />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <button
+            type="button"
+            onClick={addDatabase}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-md border border-dashed border-ww-gray-300 text-sm text-ww-gray-600 hover:border-ww-primary hover:text-ww-primary transition-colors bg-white"
+          >
+            <Plus size={14} />
+            Add Database
+          </button>
+        </div>
       </div>
     )
   }
@@ -1787,6 +1873,30 @@ export function RequestForm({ activeUser, onSubmit }: RequestFormProps) {
                     : '--'}
               </span>
             </div>
+            {alsoRequestProduction && environment === 'sandbox' && (
+              <div className="flex py-2">
+                <span className="text-[13px] text-ww-gray-500 w-44 shrink-0" />
+                <span className="bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded font-medium">+ Production requested</span>
+              </div>
+            )}
+            {databases.filter(db => db.name.trim()).length > 0 && (
+              <div className="py-2">
+                <div className="flex">
+                  <span className="text-[13px] text-ww-gray-500 w-44 shrink-0">Databases</span>
+                  <div className="flex flex-col gap-1">
+                    {databases.filter(db => db.name.trim()).map(db => (
+                      <div key={db.id} className="flex items-center gap-2">
+                        <Database size={12} className="text-ww-gray-400 shrink-0" />
+                        <span className="text-sm text-ww-gray-800">{db.name}</span>
+                        {db.description.trim() && (
+                          <span className="text-xs text-ww-gray-500">— {db.description}</span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
