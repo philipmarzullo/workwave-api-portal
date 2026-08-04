@@ -117,13 +117,13 @@ function suggestedQuestions(path: string, role: ViewMode): string[] {
       'Where is my request in the review process?',
       'How long does approval usually take?',
       'What are the review stages?',
-      'Who do I contact for updates?',
+      'How do I message the review team?',
     ],
     'request-form': [
       'What endpoints should I request for CRM sync?',
       'What volume tier do I need?',
       'What happens after I submit?',
-      'Which data categories should I select?',
+      'How do I add my WinTeam databases?',
     ],
     'directory': [
       'Which partner fits my use case?',
