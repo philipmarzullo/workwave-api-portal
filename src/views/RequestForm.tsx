@@ -25,7 +25,7 @@ const ALL_USE_CASES: UseCase[] = [
   'sync_customer_data',
   'automate_scheduling',
   'financial_reporting',
-  // payment_processing excluded from customer-facing form per team feedback (WorkWave Payments conflict)
+  'payment_processing',
   'fleet_tracking',
   'marketing_automation',
   'hr_integration',

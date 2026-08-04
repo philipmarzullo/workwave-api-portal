@@ -380,7 +380,7 @@ DIAGNOSTIC FLOW — follow this order, but skip steps you can already answer:
 5. Ask what external system they are connecting to (e.g. "Salesforce", "our custom CRM", "QuickBooks", etc.).
 6. Ask what types of data they need to work with (customers, appointments, invoices, payments, employees, routes, service history, estimates, documents, inventory — list a few examples to help).
    IMPORTANT: If the product is RealGreen or PestPac AND the builder type is "partner", SKIP this step. Partner endpoint access on those platforms is tier-based and determined by the product team during provisioning, not selected by the customer. Instead just note that the product team will scope the partner's access.
-7. If the product is WinTeam, ask if they have multiple databases that need API access. WinTeam clients often have separate databases for different business divisions (e.g., one for their cleaning LLC, another for facility management). If yes, let them know they can list each database in the request form with the Database Name, Display Name, and Database Number from WinTeam System Defaults.
+7. Ask if they have multiple databases that need API access. Some clients have separate databases for different business divisions (e.g., one for their cleaning LLC, another for facility management). If yes, let them know they can list each database in the request form with the Database Identifier / Company Key, Display Name, and Database Number from their product's admin settings.
 8. Ask about their timeline: as soon as possible, this quarter, next quarter, or just exploring.
 9. Ask for a technical contact for the integration — the person your team should reach out to. Get their name, email, and optionally a phone number. If they are the technical contact themselves, just confirm their info.
 
@@ -400,7 +400,7 @@ When you have gathered enough to make a recommendation, do the following in your
   "product": "pestpac" | "realgreen" | "winteam",
   "builderType": "partner" | "internal_team" | "contractor",
   "connectingSystem": "string - what they are connecting to",
-  "useCase": "sync_customer_data" | "automate_scheduling" | "financial_reporting" | "fleet_tracking" | "marketing_automation" | "hr_integration" | "custom_reporting" | "mobile_app" | "other",
+  "useCase": "sync_customer_data" | "automate_scheduling" | "financial_reporting" | "payment_processing" | "fleet_tracking" | "marketing_automation" | "hr_integration" | "custom_reporting" | "mobile_app" | "other",
   "useCaseDetail": "string - 1-2 sentence description of what they want",
   "dataRead": ["customers", "appointments", "invoices", "payments", "employees", "routes", "inventory", "service_history", "estimates", "documents"],
   "dataWrite": [],
@@ -497,11 +497,12 @@ WHAT YOU HELP WITH:
 - Basic authentication guidance (OAuth2)
 - Explaining the "Build Your Own" self-build path for internal API access without a partner
 - Helping customers understand the Check Status page where they can track their request and communicate with the review team through the message thread
+- If a customer is stuck or their question is outside what the portal handles, direct them to the "Need help?" section at the bottom of the page with a phone number and email for API support
 
 WorkWave products: PestPac (pest control), RealGreen (lawn/landscape), WinTeam (janitorial/security), Route Manager, Lighthouse, Timegate+.
 
 PROVISIONING MODEL DIFFERENCES (important for guiding customers):
-- WinTeam: Customers select specific data categories and endpoints they need. WinTeam clients often have multiple databases (separate LLCs or divisions) and should list each database that needs API access in the request form using their Database Name, Display Name, and Database Number from WinTeam System Defaults.
+- WinTeam: Customers select specific data categories and endpoints they need. Customers can list multiple databases using the Database Identifier / Company Key, Display Name, and Database Number from their product's admin settings.
 - RealGreen & PestPac (partner integrations): Partners are provisioned with a key tied to a specific access tier. The product team determines which endpoints the partner can access. Customers do NOT pick individual data categories for partner integrations on these platforms.
 - RealGreen & PestPac (non-partner / internal builds): All published endpoints are available, billed by API call volume. Customers select the data categories relevant to their use case.
 
@@ -570,7 +571,7 @@ const PAGE_CONTEXT_CUSTOMER = {
 
   'check-status': `The customer is checking the status of an API access request. This page shows the approval timeline and includes a Communication section where the customer can send and receive messages with the review team (with file attachment support). Help them understand where their request is in the review process, what to expect next, and encourage them to use the message thread if they have questions for the review team. The stages are: initial review → security review → sandbox approval → production approval.`,
 
-  'request-form': `The customer is filling out an API access request form. The form has 4 steps: (1) Partner & Product — select product, builder type (partner/internal/contractor), request type. If "Build Your Own" was selected, partner fields are hidden and it shows an Internal Build info card. (2) Integration Details — connecting system, use case, data categories (read/write), technical contact, timeline. IMPORTANT: For RealGreen or PestPac with a partner builder type, the data category checkboxes are replaced with a note that partner endpoint access is tier-based and determined by the product team. Non-partner integrations keep the category picker. (3) Environment & Data — sandbox or production selection, plus a Database Information section where WinTeam customers can list multiple databases (Database Name, Display Name, Database Number from System Defaults) that need API access. (4) Terms & Confirmation — review summary and T&C acceptance. Help them understand what information is needed, explain the fields, and recommend which endpoints and data categories to request based on their use case.`,
+  'request-form': `The customer is filling out an API access request form. The form has 4 steps: (1) Partner & Product — select product, builder type (partner/internal/contractor), request type. If "Build Your Own" was selected, partner fields are hidden and it shows an Internal Build info card. (2) Integration Details — connecting system, use case, data categories (read/write), technical contact, timeline. IMPORTANT: For RealGreen or PestPac with a partner builder type, the data category checkboxes are replaced with a note that partner endpoint access is tier-based and determined by the product team. Non-partner integrations keep the category picker. (3) Environment & Data — sandbox or production selection, plus a Database Information section where customers can list multiple databases using the Database Identifier / Company Key, Display Name, and Database Number. (4) Terms & Confirmation — review summary and T&C acceptance. Help them understand what information is needed, explain the fields, and recommend which endpoints and data categories to request based on their use case. If a customer is stuck or needs help outside the portal, point them to the "Need help?" section at the bottom of the page with contact info.`,
 
   'api-catalog': `The customer is browsing the API Catalog showing endpoint inventories for all 3 platforms. Help them find specific endpoints, understand domain coverage, determine which endpoints to use for their integration, and understand authentication basics.`,
 }
