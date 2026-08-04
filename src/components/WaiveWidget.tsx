@@ -238,6 +238,9 @@ interface WizardRequestData {
   partnerName: string | null
   partnerWebsite: string | null
   partnerContact: string | null
+  technicalContactName: string | null
+  technicalContactEmail: string | null
+  technicalContactPhone: string | null
   targetTimeline: string
   requestType: string
   environment: string
@@ -389,7 +392,7 @@ export function WaiveWidget({ viewMode, activeUser }: { viewMode: ViewMode; acti
   useEffect(() => {
     if (wizardActive && wizardMessages.length === 0 && !loading && !wizardInitRef.current) {
       wizardInitRef.current = true
-      sendWizardMessage('I want to request API access.')
+      sendWizardMessage('start')
     }
     if (!wizardActive) {
       wizardInitRef.current = false
@@ -440,9 +443,9 @@ export function WaiveWidget({ viewMode, activeUser }: { viewMode: ViewMode; acti
         endpointsRequested: wizardRequestData.endpointsRequested || '',
         thirdPartyTool: null,
         thirdPartyToolUrl: null,
-        technicalContactName: null,
-        technicalContactEmail: null,
-        technicalContactPhone: null,
+        technicalContactName: wizardRequestData.technicalContactName || null,
+        technicalContactEmail: wizardRequestData.technicalContactEmail || null,
+        technicalContactPhone: wizardRequestData.technicalContactPhone || null,
         targetTimeline: wizardRequestData.targetTimeline || null,
         environment: (wizardRequestData.environment === 'production' ? 'production' : 'sandbox') as 'sandbox' | 'production',
         requestType: 'new_access',
@@ -582,7 +585,7 @@ export function WaiveWidget({ viewMode, activeUser }: { viewMode: ViewMode; acti
                   </div>
                 </div>
                 <div className="flex items-center gap-0.5">
-                  {usage && (
+                  {usage && viewMode === 'reviewer' && (
                     <span className="text-[9px] font-mono text-white/40 mr-1">
                       ${((usage.dailyBudgetCents - usage.dailySpentCents) / 100).toFixed(2)}
                     </span>
@@ -695,6 +698,18 @@ export function WaiveWidget({ viewMode, activeUser }: { viewMode: ViewMode; acti
                             <div>
                               <span className="text-ww-gray-500">Recommended Endpoints</span>
                               <p className="text-[11px] text-ww-navy mt-0.5 leading-relaxed">{wizardRequestData.endpointsRequested}</p>
+                            </div>
+                          )}
+                          {wizardRequestData.technicalContactName && (
+                            <div className="flex justify-between">
+                              <span className="text-ww-gray-500">Tech Contact</span>
+                              <span className="font-medium text-ww-navy">{wizardRequestData.technicalContactName}</span>
+                            </div>
+                          )}
+                          {wizardRequestData.technicalContactEmail && (
+                            <div className="flex justify-between">
+                              <span className="text-ww-gray-500">Contact Email</span>
+                              <span className="font-medium text-ww-navy text-[11px]">{wizardRequestData.technicalContactEmail}</span>
                             </div>
                           )}
                           <div className="flex justify-between">
