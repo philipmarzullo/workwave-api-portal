@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Search, ChevronDown, ChevronRight, Plus, X, HelpCircle } from 'lucide-react'
+import { WaiveIcon } from '@/components/WaiveIcon'
 import { store } from '@/data/store'
 import type { CustomerUser, WorkWaveProduct, IntegrationType, PartnerTier, Partner } from '@/data/types'
 import { PRODUCT_LABELS, TIER_LABELS } from '@/App'
@@ -362,9 +363,16 @@ export function Directory({ activeUser, isReviewerView = false, hideHeader = fal
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
               <h2 className="text-lg font-display font-bold">Ready to integrate?</h2>
-              <p className="text-white/70 text-sm mt-1">Select a partner below or submit a new request</p>
+              <p className="text-white/70 text-sm mt-1">Select a partner below or let WAIve guide you through the process</p>
             </div>
             <div className="flex items-center gap-3">
+              <button
+                onClick={() => window.dispatchEvent(new CustomEvent('waive:start-wizard'))}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[#6310D1] text-white text-sm font-semibold hover:bg-[#5009B0] transition-colors shadow-lg shadow-[#6310D1]/30"
+              >
+                <WaiveIcon size={16} className="brightness-0 invert" />
+                Guided Request
+              </button>
               <button
                 onClick={() => navigate('/request')}
                 className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-white text-ww-navy text-sm font-semibold hover:bg-white/90 transition-colors"

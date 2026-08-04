@@ -402,8 +402,18 @@ export function WaiveWidget({ viewMode }: { viewMode: ViewMode }) {
   }, [messages, open])
 
   useEffect(() => {
-    if (open) setTimeout(() => inputRef.current?.focus(), 150)
-  }, [open])
+    if (open && !wizardActive) setTimeout(() => inputRef.current?.focus(), 150)
+  }, [open, wizardActive])
+
+  // Listen for external wizard trigger (from CTA buttons on other pages)
+  useEffect(() => {
+    const handler = () => {
+      setOpen(true)
+      startWizard()
+    }
+    window.addEventListener('waive:start-wizard', handler)
+    return () => window.removeEventListener('waive:start-wizard', handler)
+  }, [])
 
   const ask = async (q?: string) => {
     const text = (q ?? question).trim()
