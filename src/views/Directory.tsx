@@ -92,7 +92,7 @@ export function Directory({ activeUser, isReviewerView = false, hideHeader = fal
         return false
       }
       return true
-    })
+    }).sort((a: Partner, b: Partner) => a.name.localeCompare(b.name))
   }, [partners, searchQuery, selectedProduct, selectedIntegrationType])
 
   // Group filtered partners by tier (reviewer view)
